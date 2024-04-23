@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+######################################################################
+#                        Pipe cht.sh to navi                         #
+######################################################################
+not_in_tmux() {
+    [ -z "$TMUX" ]
+}
+
+read -r -p "Enter Query: " query
+
+# --border-label="╣ Navi ╠"
+if not_in_tmux; then
+    navi --fzf-overrides '--border-label-pos=-3,bottom' --cheatsh "$query"
+else
+    navi --fzf-overrides '--height 100% --border-label-pos=-3,bottom' --cheatsh "$query"
+fi

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+######################################################################
+#                  Pipe `tmux ls` to fzf and attach                  #
+######################################################################
+fzf_tat=$(
+    tmux ls | awk '{print $1}' | rg ':' -r '' | fzf \
+        --border-label="╣ Tmux Attach ╠" \
+        --header="Enter to attach, Ctrl-C to cancel"
+)
+for s in $fzf_tat; do
+    tmux attach-session -t "$s"
+done

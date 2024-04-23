@@ -1,0 +1,58 @@
+#!/bin/sh
+
+# Alias
+alias sozsh='source ~/.zshenv && source "$XDG_CONFIG_HOME"/zsh/.zshrc'
+alias nv='nvim'
+alias vim='vim -i NONE'
+# alias cat='/usr/share/vim/vim90/macros/less.sh' # wrapper for bat
+alias yarn='yarn --use-yarnrc "$XDG_CONFIG_HOME/yarn/config"'
+alias py='python3'
+alias nvf='nvim `fzf`'
+alias ls='lsd -l'
+# alias ls='eza -1lFaBhHm --git --group-directories-first --no-permissions --octal-permissions --time-style="long-iso" -I=".DS_Store|.CFUserTextEncoding"'
+# alias rm='trash' # mv to trash bin
+alias lg='lazygit'
+alias lzd='lazydocker'
+# alias CA='conda activate'
+# alias CD='conda deactivate'
+# alias tb='tensorboard --logdir'
+# [[ $TMUX != "" ]] && export TERM="tmux-256color"
+# alias tmux="~/tools/tmux/tmux -f ~/.config/tmux/tmux.conf"
+alias fzz='zoxide query | fzf'
+alias fzp='cat /etc/services | fzf'
+alias flsof4="lsof -Pni4 | awk '{printf \"%10s %6s %5s %4s %-20s\n\", \$1, \$2, \$3, \$8, \$9}' | fzf --header-lines=1 --cycle"
+alias gcob='git checkout $(git branch | fzf --cycle'
+alias gadd="git status --short | fzf --multi --cycle --preview-window=right:70% --preview=\"git diff --color {+2}\" | awk '{print \$2}'  | xargs git add"
+alias gco="git diff --name-only | fzf --multi --cycle --preview-window=right:70% --preview=\"git diff --color {+1}\" | xargs git checkout"
+alias gustg="git diff --name-only --cached | fzf --multi --cycle --preview-window=right:70% --preview="git diff --color --staged {+1}" | xargs git reset HEAD"
+alias gbrd="git branch --color=always | fzf --multi --cycle | sed 's/*//' | awk '{print \$1}' | xargs git branch -d"
+alias rm='rm -iv'
+alias mkdir='mkdir -pv'
+alias ps='ps auxf'
+alias ping='ping -c 5'
+alias less='less -R'
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias .....='cd ../../../..'
+alias tree='tree -CAF --dirsfirst'
+alias treed='tree -CAFd'
+alias cargobin='cargo binstall --no-discover-github-token -y'
+
+# cd to the previous directory
+alias bd='cd "$OLDPWD"'
+
+# show open ports
+alias openports='netstat -nape --inet'
+
+# reboot
+alias rebootsafe='sudo shutdown -r now'
+alias rebootforce='sudo shutdown -r -n now'
+
+# Alias's for archives
+alias mktar='tar -cvf'
+alias mkbz2='tar -cvjf'
+alias mkgz='tar -cvzf'
+alias untar='tar -xvf'
+alias unbz2='tar -xvjf'
+alias ungz='tar -xvzf'
