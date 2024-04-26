@@ -2,6 +2,7 @@
 typeset -U PATH path # make sure $PATH is unique
 path=("$HOME/.local/bin" "$path[@]")
 export PATH
+[ -d /opt/homebrew/bin/ ] && path=(/opt/homebrew/bin/ $path)
 
 export XDG_CONFIG_HOME="$HOME"/.config # analogous to /etc
 export XDG_CACHE_HOME="$HOME"/.cache # analogous to /var/cache
@@ -43,6 +44,7 @@ add_path() {
             ;;
     *)
         export PATH="$*:$PATH"
+        path=("$HOME/.local/bin" "$path[@]")
             ;;
     esac
 }
