@@ -1,4 +1,6 @@
-{ pkgs, lib, ... }: {
+{ pkgs, lib, ... }:
+with lib;
+{
   # home.username = lib.strings.removeSuffix "\n" (builtins.readFile /etc/hostname);
   home.username = "charles";
   home.homeDirectory = builtins.getEnv "HOME";
@@ -19,7 +21,6 @@
     git
     vim
     tmux
-    neovim-nightly # overlays
     # c/c++ cli
     btop
     fzy
@@ -29,12 +30,13 @@
     git-fame
     # golang cli
     fzf
-    pistol
     glow
+    lazydocker
     lazygit
     lf
-    lazydocker
     nix-search-cli
+    pistol
+    # vfox ## TODO: https://github.com/version-fox/vfox/issues/53
     # rust cli
     bat
     eza
@@ -50,7 +52,7 @@
     tree-sitter
     xh
     xq
-    mise
+    # mise
     # joshuto
     lsd
     starship
@@ -64,7 +66,7 @@
 
   home.file = {
     ".zshenv".source = ./conf.d/zsh/.zshenv;
-    ".ssh/config".source = ./conf.d/ssh/config;
+    # ".ssh/config".source = ./conf.d/ssh/config;
     ".config/starship.toml".source = ./conf.d/starship/starship.toml;
     ".config/topgrade.toml".source = ./conf.d/topgrade/topgrade.toml;
     ".local/bin" = {
@@ -153,4 +155,35 @@
       ${pkgs.git}/bin/git clone https://github.com/CharlesChiuGit/nvimdots.lua.git ~/.config/nvim
     fi
   '';
+
+  programs.neovim = {
+    enable = true;
+    package = pkgs.neovim-nightly;
+    withNodeJs = true;
+    withPython3 = true;
+    withRuby = true;
+
+    extraPackages = with pkgs;[
+      # Dependent packages used by default plugins
+      doq
+      cargo
+      clang
+      cmake
+      gcc
+      gnumake
+      go
+      ninja
+      pkg-config
+      yarn
+    ];
+
+    extraPython3Packages = ps: with ps; [
+      docformatter
+      isort
+      pynvim
+    ];
+    extraLuaPackages = ls: with ls; [
+      luarocks
+    ];
+  };
 }
