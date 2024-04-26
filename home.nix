@@ -159,6 +159,7 @@ with lib;
   programs.neovim = {
     enable = true;
     package = pkgs.neovim-nightly;
+
     withNodeJs = true;
     withPython3 = true;
     withRuby = true;
@@ -179,9 +180,9 @@ with lib;
 
     extraPython3Packages = ps: with ps; [
       docformatter
-      isort
       pynvim
     ];
+
     extraLuaPackages = ls: with ls; [
       luarocks
     ];

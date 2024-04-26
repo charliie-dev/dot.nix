@@ -6,30 +6,42 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    # https://github.com/nix-community/neovim-nightly-overlay/
-    neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
+    nix-darwin = {
+      url = "github:lnl7/nix-darwin";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    flake-parts = {
+      url = "github:hercules-ci/flake-parts";
+      inputs.nixpkgs-lib.follows = "nixpkgs";
+    };
+    devshell = {
+      url = "github:numtide/devshell";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    flake-utils.url = "github:numtide/flake-utils";
+    flake-compat.url = "https://flakehub.com/f/edolstra/flake-compat/1.tar.gz";
+    neovim.url = "github:nix-community/neovim-nightly-overlay";
+
   };
 
-  outputs = { self, nixpkgs, home-manager, neovim-nightly-overlay, ... }:
+  outputs = { self, ... }@inputs:
     let
+      hm = inputs.home-manager;
       # $nix eval --impure --raw --expr 'builtins.currentSystem'
-      arch = builtins.currentSystem;
-      lib = home-manager.lib;
+      system = builtins.currentSystem;
       overlays = [
-        neovim-nightly-overlay.overlay
+        inputs.neovim.overlay
       ];
     in
     {
-      defaultPackage = {
-        "x86_64-linux" = home-manager.defaultPackage."x86_64-linux";
-        "aarch64-linux" = home-manager.defaultPackage."aarch64-linux";
-        "aarch64-darwin" = home-manager.defaultPackage."aarch64-darwin";
-      };
-
-
       homeConfigurations = {
-        charles = lib.homeManagerConfiguration {
-          pkgs = import nixpkgs { inherit arch; overlays = overlays; };
+        charles = hm.lib.homeManagerConfiguration {
+          pkgs = (import inputs.nixpkgs) {
+            inherit system;
+            overlays = overlays;
+          };
           modules = [ ./home.nix ];
         };
       };
