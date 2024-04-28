@@ -1,8 +1,7 @@
 # ENVs
 typeset -U PATH path # make sure $PATH is unique
-path=("$HOME/.local/bin" "$path[@]")
 export PATH
-[ -d /opt/homebrew/bin/ ] && path=(/opt/homebrew/bin/ $path)
+[ -d /opt/homebrew/bin/ ] && path=(/opt/homebrew/bin/ "$path[@]")
 
 export XDG_CONFIG_HOME="$HOME"/.config # analogous to /etc
 export XDG_CACHE_HOME="$HOME"/.cache # analogous to /var/cache
@@ -35,22 +34,21 @@ export GTK2_RC_FILES="$XDG_CONFIG_HOME"/gtk-2.0/gtkrc
 export ZELLIJ_CONFIG_DIR="$XDG_CONFIG_HOME"/zellij
 export GNUPGHOME="$XDG_DATA_HOME"/gnupg
 export EDITOR='nvim'
-path=("$XDG_DATA_HOME"/go/bin $path[@])
-
 
 add_path() {
     case ":${PATH}:" in
         *:"$*":*)
             ;;
     *)
-        export PATH="$*:$PATH"
-        path=("$HOME/.local/bin" "$path[@]")
+        path=("$PATH" "$path[@]")
             ;;
     esac
 }
 
 autoload -Uz add_path
+add_path "$HOME"/.local/bin
 add_path "$CARGO_HOME"/bin
+add_path "$GOPATH"/bin
 add_path "$PNPM_HOME"
 
 # nixpkgs and nix home manager
