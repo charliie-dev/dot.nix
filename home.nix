@@ -52,7 +52,7 @@ with lib;
     tree-sitter
     xh
     xq
-    # mise
+    mise
     # joshuto
     lsd
     starship

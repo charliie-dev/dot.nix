@@ -41,10 +41,10 @@ bindkey '^[[b' history-substring-search-down
 bindkey ',' autosuggest-accept
 
 # Init mise
-# eval "$(mise activate zsh)"
+eval "$(mise activate zsh)"
 
 # Init vfox
-eval "$(vfox activate zsh)"
+# eval "$(vfox activate zsh)"
 
 # Init zoxide
 eval "$(zoxide init zsh)"
