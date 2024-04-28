@@ -67,7 +67,6 @@ with lib;
   home.file = {
     ".zshenv".source = ./conf.d/zsh/.zshenv;
     # ".ssh/config".source = ./conf.d/ssh/config;
-    ".config/starship.toml".source = ./conf.d/starship/starship.toml;
     ".config/topgrade.toml".source = ./conf.d/topgrade/topgrade.toml;
     ".local/bin" = {
       recursive = true;
@@ -131,6 +130,10 @@ with lib;
     "pistol" = {
       recursive = true;
       source = ./conf.d/pistol;
+    };
+    "starship" = {
+      recursive = true;
+      source = ./conf.d/starship;
     };
     "tmux" = {
       recursive = true;
