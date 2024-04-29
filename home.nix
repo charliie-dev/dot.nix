@@ -165,7 +165,7 @@ with lib;
 
     withNodeJs = true;
     withPython3 = true;
-    withRuby = true;
+    withRuby = false;
 
     extraPackages = with pkgs;[
       # Dependent packages used by default plugins
@@ -179,15 +179,16 @@ with lib;
       ninja
       pkg-config
       yarn
+      lua51Packages.luarocks
     ];
 
-    extraPython3Packages = ps: with ps; [
+    extraPython3Packages = pyPkgs: with pyPkgs; [
       docformatter
       pynvim
     ];
 
-    extraLuaPackages = ls: with ls; [
-      luarocks
-    ];
+    # extraLuaPackages = luaPkgs: with luaPkgs; [
+    # luarocks # doesn't work, put in extraPackages
+    # ];
   };
 }
