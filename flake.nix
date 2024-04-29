@@ -20,8 +20,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    flake-utils.url = "github:numtide/flake-utils";
-    flake-compat.url = "https://flakehub.com/f/edolstra/flake-compat/1.tar.gz";
+    # flake-utils.url = "github:numtide/flake-utils";
+    # flake-compat.url = "https://flakehub.com/f/edolstra/flake-compat/1.tar.gz";
     neovim.url = "github:nix-community/neovim-nightly-overlay";
 
   };
