@@ -52,7 +52,8 @@ with lib;
     tokei
     tree-sitter
     xh
-    xq
+    # xq
+    jaq
     mise
     # joshuto
     lsd
