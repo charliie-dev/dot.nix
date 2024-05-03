@@ -59,9 +59,6 @@ with lib;
     starship
     topgrade
     zellij
-    cargo-binstall
-    cargo-cache
-    cargo-update
     zoxide
   ];
 
