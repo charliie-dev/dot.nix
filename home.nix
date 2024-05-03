@@ -21,6 +21,7 @@ with lib;
     git
     vim
     tmux
+    chafa
     # c/c++ cli
     btop
     fzy
@@ -190,5 +191,7 @@ with lib;
     # extraLuaPackages = luaPkgs: with luaPkgs; [
     # luarocks # doesn't work, put in extraPackages
     # ];
+    viAlias = true;
+    vimdiffAlias = true;
   };
 }
