@@ -39,7 +39,7 @@ alias tree='tree -CAF --dirsfirst'
 alias treed='tree -CAFd'
 alias cargobin='cargo binstall --no-discover-github-token -y'
 alias nixup='cd $HOME/.config/home-manager && nix flake update && home-manager switch --impure'
-alias nixclean='nix-collect-garbage -d && nix-env --delete-generations old && nix-store --gc'
+alias nixclean='nix-collect-garbage -d && nix-env --delete-generations old && nix-store --gc && nix-store --optimise'
 
 # cd to the previous directory
 alias bd='cd "$OLDPWD"'
