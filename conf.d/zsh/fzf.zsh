@@ -13,6 +13,12 @@ export FZF_DEFAULT_OPTS="\
 # export FZF_CTRL_T_OPTS="$FZF_DEFAULT_OPTS"
 # export FZF_ALT_C_COMMAND='fd -H --type d . --color=never'
 # export FZF_ALT_T_OPTS="$FZF_DEFAULT_OPTS"
+export _ZO_FZF_OPTS="\
+    --ansi --height 40% --layout=reverse --border --separator='╸' --scrollbar '▌▐' --select-1 \
+    --color=border:#cba6f7,label:#cba6f7,separator:#a6e3a1 \
+    --color=bg+:#313244,bg:,spinner:#f5e0dc,hl:#f38ba8 \
+    --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
+    --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8" # use `zi` to open fzf search
 
 # Use fd instead of the default find
 # command for listing path candidates.

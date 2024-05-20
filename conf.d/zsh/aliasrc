@@ -38,8 +38,22 @@ alias .....='cd ../../../..'
 alias tree='tree -CAF --dirsfirst'
 alias treed='tree -CAFd'
 alias cargobin='cargo binstall --no-discover-github-token -y'
+alias z='zi' # map z to zoxide interactive selection
 alias nixup='cd $HOME/.config/home-manager && nix flake update && home-manager switch --impure && cd "$OLDPWD"'
 alias nixclean='nix-collect-garbage -d && nix-env --delete-generations old && nix-store --gc && nix-store --optimise'
+alias nixsearch='nix search nixpkgs'
+
+nix_reload() {
+	if [[ $(uname) == "Darwin" ]]; then
+		alias nixreload='sudo launchctl remove org.nixos.nix-daemon && sudo launchctl load /Library/LaunchDaemons/org.nixos.nix-daemon.plist'
+		echo "Darwin/nix-daemon reload!"
+	elif [[ $(uname) == "Linux" ]]; then
+		alias nixreload='sudo systemctl daemon-reload && sudo systemctl restart nix-daemon '
+		echo "Linux/nix-daemon reload!"
+	else
+		echo 'Unknown OS!'
+	fi
+}
 
 # cd to the previous directory
 alias bd='cd "$OLDPWD"'
