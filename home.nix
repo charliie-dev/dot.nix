@@ -63,6 +63,7 @@ with lib;
     zoxide
     rye # like cargo but for python
     uv # pip in rust
+    fh # official CLI for FlakeHub
   ];
 
   home.file = {
