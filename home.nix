@@ -61,6 +61,8 @@ with lib;
     topgrade
     zellij
     zoxide
+    rye # like cargo but for python
+    uv # pip in rust
   ];
 
   home.file = {
