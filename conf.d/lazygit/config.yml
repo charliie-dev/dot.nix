@@ -171,7 +171,7 @@ keybinding:
     nextMatch: "n"
     prevMatch: "N"
     startSearch: /
-    optionMenu: <disabled>
+    optionMenu: '?'
     optionMenu-alt1: '?'
     select: <space>
     goInto: <enter>
