@@ -13,7 +13,7 @@ http2 = true
 EOF
 
 # install nix
-curl -L https://nixos.org/nix/install | sh -s -- --daemon
+curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
 
 # check nix xdg location
 nix_state_home=${XDG_STATE_HOME-$HOME/.local/state}/nix
@@ -33,14 +33,16 @@ if [[ -f $HOME/.nix-channels ]]; then
 fi
 
 # install home-manager
+nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs-unstable
 nix-channel --add https://github.com/nix-community/home-manager/archive/master.tar.gz home-manager
 nix-channel --update
 nix-shell '<home-manager>' -A install
 
 # clone configs
+rm -rf ~/.config/home-manager
 git clone https://github.com/CharlesChiuGit/nix-hm-config.git ~/.config/home-manager
 
 # run home-manager switch
 cd ~/.config/home-manager
-nix flakes update && home-manager switch --impure
+nix flake update && home-manager switch --impure
 cd "$OLDPWD"
