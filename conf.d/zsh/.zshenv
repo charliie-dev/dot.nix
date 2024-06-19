@@ -52,6 +52,12 @@ add_path "$CARGO_HOME"/bin
 add_path "$GOPATH"/bin
 add_path "$PNPM_HOME"
 
+# set cuda path if nvidia gpus 
+if command -v nvidia-smi &> /dev/null; then
+    add_path "/usr/local/cuda/bin"
+    export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+fi
+
 # nixpkgs and nix home manager
 if [ -e "$XDG_STATE_HOME"/nix/profile/etc/profile.d/nix.sh ]; then 
     . "$XDG_STATE_HOME"/nix/profile/etc/profile.d/nix.sh; 
@@ -61,6 +67,5 @@ fi
 # Only source this once
 if [[ -z "$__HM_ZSH_SESS_VARS_SOURCED" ]]; then
   export __HM_ZSH_SESS_VARS_SOURCED=1
-  
 fi
 
