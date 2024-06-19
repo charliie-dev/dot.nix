@@ -50,5 +50,7 @@ nix run home-manager/master -- init --switch --impure
 ```
 
 ref: https://github.com/ryantm/home-manager-template/blob/master/README.md
+
 ref: https://github.com/the-argus/spicetify-nix/blob/master/home-manager-install.md
+
 ref: https://tech.aufomm.com/my-nix-journey-use-nix-with-ubuntu/
