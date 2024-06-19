@@ -46,5 +46,9 @@ nix-channel --add https://github.com/nix-community/home-manager/archive/master.t
 nix-channel --update
 nix-shell -p home-manager git
 git clone https://github.com/CharlesChiuGit/nix-hm-config.git ~/.config/home-manager
-home-manager switch --flake . --extra-experimental-features nix-command --extra-experimental-features flakes --impure
+nix run home-manager/master -- init --switch --impure 
 ```
+
+ref: https://github.com/ryantm/home-manager-template/blob/master/README.md
+ref: https://github.com/the-argus/spicetify-nix/blob/master/home-manager-install.md
+ref: https://tech.aufomm.com/my-nix-journey-use-nix-with-ubuntu/
