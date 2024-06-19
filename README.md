@@ -53,4 +53,7 @@ ref: https://github.com/ryantm/home-manager-template/blob/master/README.md
 
 ref: https://github.com/the-argus/spicetify-nix/blob/master/home-manager-install.md
 
+# remove snap on ubuntu
+https://www.baeldung.com/linux/snap-remove-disable
+
 ref: https://tech.aufomm.com/my-nix-journey-use-nix-with-ubuntu/
