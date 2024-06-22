@@ -163,7 +163,7 @@ with lib;
 
   programs.neovim = {
     enable = true;
-    package = pkgs.neovim-nightly;
+    # package = pkgs.neovim-nightly;
 
     withNodeJs = true;
     withPython3 = true;

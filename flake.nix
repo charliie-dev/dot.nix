@@ -58,7 +58,7 @@
         charles = hm.lib.homeManagerConfiguration {
           pkgs = (import inputs.nixpkgs) {
             inherit system;
-            overlays = overlays;
+            # overlays = overlays;
           };
           modules = [ ./home.nix ];
         };
