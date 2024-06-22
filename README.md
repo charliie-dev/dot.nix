@@ -44,7 +44,7 @@ fi
 nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs-unstable
 nix-channel --add https://github.com/nix-community/home-manager/archive/master.tar.gz home-manager
 nix-channel --update
-nix-shell -p home-manager git
+nix-shell -p home-manager git # nix-env -iA nixpkgs.home-manager nixpkg.git
 git clone https://github.com/CharlesChiuGit/nix-hm-config.git ~/.config/home-manager
 nix run home-manager/master -- init --switch --impure 
 ```
