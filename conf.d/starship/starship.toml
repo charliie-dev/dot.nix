@@ -202,6 +202,13 @@ style = "yellow bold"
 format = '\[[${symbol}${pyenv_prefix}(${version})(\($virtualenv\))]($style)\]'
 version_format = 'v${raw}'
 symbol = '󰌠 '
+[conda]
+disabled = false
+style = "dimmed green"
+format = '[$symbol$environment]($style) '
+symbol = ' '
+truncation_length = 1
+ignore_base = false
 [lua]
 disabled = false
 symbol = ' '
