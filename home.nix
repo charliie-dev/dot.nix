@@ -92,6 +92,10 @@ with lib;
       recursive = true;
       source = ./conf.d/mise;
     };
+    "conda" = {
+      recursive = true;
+      source = ./conf.d/conda;
+    };
     # cli-utils
     "bat" = {
       recursive = true;

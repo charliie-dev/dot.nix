@@ -34,6 +34,8 @@ export GTK2_RC_FILES="$XDG_CONFIG_HOME"/gtk-2.0/gtkrc
 export ZELLIJ_CONFIG_DIR="$XDG_CONFIG_HOME"/zellij
 export GNUPGHOME="$XDG_DATA_HOME"/gnupg
 export DOTNET_CLI_HOME="$XDG_DATA_HOME"/dotnet
+export CUDA_CACHE_PATH="$XDG_CACHE_HOME"/nv
+export CONDARC="$XDG_CONFIG_HOME"/conda/condarc
 export EDITOR='nvim'
 
 add_path() {
@@ -57,6 +59,30 @@ if command -v nvidia-smi &> /dev/null; then
     add_path "/usr/local/cuda/bin"
     export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 fi
+
+# set conda init
+function set_conda_dir() {
+    if [ -d "/opt/anaconda3" ]; then
+        export __conda_dir="/opt/anaconda3"
+    elif [ -d "$HOME/anaconda3" ]; then
+        export __conda_dir="$HOME/anaconda3"
+    else
+        echo "anaconda3 is not installed."
+    fi
+}
+set_conda_dir
+__conda_setup="$($__conda_dir/bin/conda 'shell.zsh' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "$__conda_dir/etc/profile.d/conda.sh" ]; then
+        . "$__conda_dir/etc/profile.d/conda.sh"
+    else
+        add_path "$__conda_dir/bin"
+    fi
+fi
+unset __conda_setup
+unset __conda_dir
 
 # nixpkgs and nix home manager
 if [ -e "$XDG_STATE_HOME"/nix/profile/etc/profile.d/nix.sh ]; then 

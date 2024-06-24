@@ -1,0 +1,6 @@
+auto_update_conda: true
+channel_priority: strict
+channels:
+  - conda-forge
+  - defaults
+ssl_verify: true
