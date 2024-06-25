@@ -2,3 +2,5 @@ auto_update_conda: true
 channels:
   - defaults
 ssl_verify: true
+
+# vim: set ft=yaml :
