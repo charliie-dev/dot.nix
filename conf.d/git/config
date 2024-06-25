@@ -19,6 +19,8 @@
     lrt = ls-remote --tags
     amend = commit --amend # amend last commit
     dlc = diff --cached HEAD^ # check the diff on last commit
+	alias = config --get-regexp alias
+	structure = log --oneline --simplify-by-decoration --graph --all
 
 [interactive]
     diffFilter = delta --color-only
