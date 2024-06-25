@@ -3,18 +3,22 @@
     email = charleschiu@hey.com
 [core]
     pager = delta
+[pretty]
+    slog = format:'%C(bold red)%h%Creset %C(bold cyan)<%an>%Creset %C(yellow)%d%Creset %s %Cgreen(%cr)' --abbrev-commit --date=relative
 [alias]
     st = status
     cm = commit -m
     co = checkout
     br = branch
     lo = log --oneline --graph
-    ls = log --graph --pretty=format:'%C(bold red)%h%Creset %C(bold cyan)<%an>%Creset %C(yellow)%d%Creset %s %Cgreen(%cr)' --abbrev-commit --date=relative
+    ls = log --graph --pretty=slog
+    l1 = log -1 --pretty=slog
     rh = reset --hard origin/main
     rp = remote prune origin
     lrh = ls-remote --heads
     lrt = ls-remote --tags
-    anmoclone = clone -c 'user.email=charles@anmo.com.tw'
+    amend = commit --amend # amend last commit
+    dlc = diff --cached HEAD^ # check the diff on last commit
 
 [interactive]
     diffFilter = delta --color-only
