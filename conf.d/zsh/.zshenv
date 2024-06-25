@@ -44,6 +44,7 @@ add_path() {
             ;;
     *)
         path=("$PATH" "$path[@]")
+        export PATH="$path"
             ;;
     esac
 }
