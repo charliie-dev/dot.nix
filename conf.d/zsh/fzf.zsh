@@ -46,3 +46,5 @@ export _ZO_FZF_OPTS="\
 #     *)            fzf --preview 'bat -n --color=always {}' "$@" ;;
 #   esac
 # }
+
+# vim: set ft=sh :

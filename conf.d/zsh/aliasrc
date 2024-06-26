@@ -13,19 +13,14 @@ alias ls='lsd -l'
 # alias rm='trash' # mv to trash bin
 alias lg='lazygit'
 alias lzd='lazydocker'
-# alias CA='conda activate'
-# alias CD='conda deactivate'
-# alias tb='tensorboard --logdir'
-# [[ $TMUX != "" ]] && export TERM="tmux-256color"
-# alias tmux="~/tools/tmux/tmux -f ~/.config/tmux/tmux.conf"
+alias CA='conda activate'
+alias CD='conda deactivate'
+alias tb='tensorboard --logdir'
+[ "$TMUX" != "" ] && export TERM="tmux-256color"
+alias tmux="~/tools/tmux/tmux -f ~/.config/tmux/tmux.conf"
 alias fzz='zoxide query | fzf'
 alias fzp='cat /etc/services | fzf'
 alias flsof4="lsof -Pni4 | awk '{printf \"%10s %6s %5s %4s %-20s\n\", \$1, \$2, \$3, \$8, \$9}' | fzf --header-lines=1 --cycle"
-alias gcob='git checkout $(git branch | fzf --cycle'
-alias gadd="git status --short | fzf --multi --cycle --preview-window=right:70% --preview=\"git diff --color {+2}\" | awk '{print \$2}'  | xargs git add"
-alias gco="git diff --name-only | fzf --multi --cycle --preview-window=right:70% --preview=\"git diff --color {+1}\" | xargs git checkout"
-alias gustg="git diff --name-only --cached | fzf --multi --cycle --preview-window=right:70% --preview="git diff --color --staged {+1}" | xargs git reset HEAD"
-alias gbrd="git branch --color=always | fzf --multi --cycle | sed 's/*//' | awk '{print \$1}' | xargs git branch -d"
 alias rm='rm -iv'
 alias mkdir='mkdir -pv'
 alias ps='ps auxf'
@@ -44,11 +39,24 @@ alias nixclean='nix-collect-garbage -d && nix-env --delete-generations old && ni
 alias nixsearch='nix search nixpkgs'
 alias docker_restart='docker compose down --remove-orphans && docker compose up -d'
 
+# FIX: restart cloudflared service on macOS to fix ssh login errors
+cfd_reload() {
+	if [ "$(uname)" = "Darwin" ]; then
+		alias nixreload='sudo launchctl stop com.cloudflare.cloudflared && sudo launchctl start com.cloudflare.cloudflared'
+		echo "Darwin/nix-daemon reload!"
+	elif [ "$(uname)" = "Linux" ]; then
+		alias nixreload='sudo systemctl restart cloudflared'
+		echo "Linux/nix-daemon reload!"
+	else
+		echo 'Unknown OS!'
+	fi
+}
+
 nix_reload() {
-	if [[ $(uname) == "Darwin" ]]; then
+	if [ "$(uname)" = "Darwin" ]; then
 		alias nixreload='sudo launchctl remove org.nixos.nix-daemon && sudo launchctl load /Library/LaunchDaemons/org.nixos.nix-daemon.plist'
 		echo "Darwin/nix-daemon reload!"
-	elif [[ $(uname) == "Linux" ]]; then
+	elif [ "$(uname)" = "Linux" ]; then
 		alias nixreload='sudo systemctl daemon-reload && sudo systemctl restart nix-daemon '
 		echo "Linux/nix-daemon reload!"
 	else
@@ -73,3 +81,5 @@ alias mkgz='tar -cvzf'
 alias untar='tar -xvf'
 alias unbz2='tar -xvjf'
 alias ungz='tar -xvzf'
+
+# vim: set ft=sh :
