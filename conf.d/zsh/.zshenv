@@ -39,17 +39,19 @@ export CONDARC="$XDG_CONFIG_HOME"/conda/condarc
 export EDITOR='nvim'
 
 add_path() {
-    case ":${PATH}:" in
-        *:"$*":*)
-            ;;
-    *)
-        path=("$PATH" "$path[@]")
-        export PATH="$path"
-            ;;
-    esac
+    if [ ! -e "$1" ]; then
+        return 1
+    fi
+
+    local incoming_path=$(cd "$1" && pwd)
+
+    if [[ ":$PATH:" == *":$incoming_path:"* ]]; then
+        return 0
+    fi
+
+    path=("$incoming_path" "$path[@]")
 }
 
-autoload -Uz add_path
 add_path "$HOME"/.local/bin
 add_path "$CARGO_HOME"/bin
 add_path "$GOPATH"/bin
