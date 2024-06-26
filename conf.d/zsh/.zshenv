@@ -67,8 +67,6 @@ function set_conda_dir() {
         export __conda_dir="/opt/anaconda3"
     elif [ -d "$HOME/anaconda3" ]; then
         export __conda_dir="$HOME/anaconda3"
-    else
-        echo "anaconda3 is not installed."
     fi
 }
 set_conda_dir
