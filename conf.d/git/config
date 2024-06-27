@@ -23,7 +23,9 @@
 	structure = log --oneline --simplify-by-decoration --graph --all
 	remoteurl  = remote get-url origin
 	rmbranch = "!f(){ git branch -d ${1} && git push origin --delete ${1}; }; f"
-	localignore = update-index --assume-unchanged
+	ignore = update-index --skip-worktree
+	unignore = update-index --no-skip-worktree
+	ignorels = !git ls-files -v | grep "^S"
 	# Delete all branches merged into master. 
 	# With -f also include branches merged into current
 	sweep = ! \
