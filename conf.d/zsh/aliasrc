@@ -43,10 +43,10 @@ alias docker_restart='docker compose down --remove-orphans && docker compose up 
 cfd_reload() {
 	if [ "$(uname)" = "Darwin" ]; then
 		alias nixreload='sudo launchctl stop com.cloudflare.cloudflared && sudo launchctl start com.cloudflare.cloudflared'
-		echo "Darwin/nix-daemon reload!"
+		echo "Darwin/cloudflared reload!"
 	elif [ "$(uname)" = "Linux" ]; then
 		alias nixreload='sudo systemctl restart cloudflared'
-		echo "Linux/nix-daemon reload!"
+		echo "Linux/cloudflared reload!"
 	else
 		echo 'Unknown OS!'
 	fi
