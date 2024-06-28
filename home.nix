@@ -34,36 +34,36 @@ with lib;
     glow
     lazydocker
     lazygit
-    lf
     nix-search-cli
     pistol
     # vfox ## TODO: https://github.com/version-fox/vfox/issues/53
     # rust cli
+    # joshuto
+    # xq
     bat
-    eza
     delta
     dua
     eva
+    eza
     fd
+    fh # official CLI for FlakeHub
+    jaq
+    lsd
+    mise
     ripgrep
     ripgrep-all
     ripsecrets
+    rye # like cargo but for python
     sd
-    tokei
-    tree-sitter
-    xh
-    # xq
-    jaq
-    mise
-    # joshuto
-    lsd
     starship
+    tokei
     topgrade
+    tree-sitter
+    uv # pip in rust
+    xh
+    yazi
     zellij
     zoxide
-    rye # like cargo but for python
-    uv # pip in rust
-    fh # official CLI for FlakeHub
   ];
 
   home.file = {
@@ -120,10 +120,6 @@ with lib;
     "lazygit" = {
       recursive = true;
       source = ./conf.d/lazygit;
-    };
-    "lf" = {
-      recursive = true;
-      source = ./conf.d/lf;
     };
     "lsd" = {
       recursive = true;
