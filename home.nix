@@ -22,6 +22,7 @@ with lib;
     vim
     tmux
     chafa
+    hstr
     # c/c++ cli
     btop
     fzy
