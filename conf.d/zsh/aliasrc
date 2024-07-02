@@ -34,30 +34,31 @@ alias tree='tree -CAF --dirsfirst'
 alias treed='tree -CAFd'
 alias cargobin='cargo binstall --no-discover-github-token -y'
 alias z='zi' # map z to zoxide interactive selection
+alias yz='yazi'
 alias nixup='cd $HOME/.config/home-manager && nix flake update && home-manager switch --impure && cd "$OLDPWD"'
 alias nixclean='nix-collect-garbage -d && nix-env --delete-generations old && nix-store --gc && nix-store --optimise'
 alias nixsearch='nix search nixpkgs'
 alias docker_restart='docker compose down --remove-orphans && docker compose up -d'
 
 # FIX: restart cloudflared service on macOS to fix ssh login errors
-cfdreload() {
+cfd_reload() {
 	if [ "$(uname)" = "Darwin" ]; then
-		alias cfd_reload='sudo launchctl stop com.cloudflare.cloudflared && sudo launchctl start com.cloudflare.cloudflared'
+		sudo launchctl stop com.cloudflare.cloudflared && sudo launchctl start com.cloudflare.cloudflared
 		echo "Darwin/cloudflared reload!"
 	elif [ "$(uname)" = "Linux" ]; then
-		alias cfd_reload='sudo systemctl restart cloudflared'
+		sudo systemctl restart cloudflared
 		echo "Linux/cloudflared reload!"
 	else
 		echo 'Unknown OS!'
 	fi
 }
 
-nixreload() {
+nix_reload() {
 	if [ "$(uname)" = "Darwin" ]; then
-		alias nix_reload='sudo launchctl remove org.nixos.nix-daemon && sudo launchctl load /Library/LaunchDaemons/org.nixos.nix-daemon.plist'
+		sudo launchctl remove org.nixos.nix-daemon && sudo launchctl load /Library/LaunchDaemons/org.nixos.nix-daemon.plist
 		echo "Darwin/nix-daemon reload!"
 	elif [ "$(uname)" = "Linux" ]; then
-		alias nix_reload='sudo systemctl daemon-reload && sudo systemctl restart nix-daemon '
+		sudo systemctl daemon-reload && sudo systemctl restart nix-daemon
 		echo "Linux/nix-daemon reload!"
 	else
 		echo 'Unknown OS!'
