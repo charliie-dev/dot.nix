@@ -41,12 +41,13 @@ fi
 
 # install home-manager
 ```sh
-nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs-unstable
-nix-channel --add https://github.com/nix-community/home-manager/archive/master.tar.gz home-manager
+nix-channel --add https://nixos.org/channels/nixpkgs-unstable unstable
+nix-channel --add https://github.com/nix-community/home-manager/archive/master.tar.gz hm
 nix-channel --update
-nix-env -iA nixpkgs-unstable.home-manager nixpkgs-unstable.git # nix-shell -p home-manager git
+nix-env -iA unstable.git
 git clone https://github.com/CharlesChiuGit/nix-hm-config.git ~/.config/home-manager
-home-manager switch --impure # nix run home-manager/master -- init --switch --impure 
+cd ~/.config/home-manager && nix build
+~/config/home-manager/result/bin/home-manager switch --flake ~/.config/home-manager --impure
 ```
 
 ref: https://github.com/ryantm/home-manager-template/blob/master/README.md
