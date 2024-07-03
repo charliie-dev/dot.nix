@@ -1,10 +1,10 @@
 [tools]
 # global tool versions go here
 # you can set these with `rtx use -g`
-node = "22.2.0"
-python = "3.12.3"
-ruby = "3.3.0"
-go = "1.22.3"
+node = "22.4.0"
+python = "3.12.4"
+ruby = "3.3.3"
+go = "1.22.5"
 
 [plugins]
 # specify a custom repo url
