@@ -4,7 +4,7 @@ with lib;
   # home.username = lib.strings.removeSuffix "\n" (builtins.readFile /etc/hostname);
   home.username = "charles";
   home.homeDirectory = builtins.getEnv "HOME";
-  home.stateVersion = "24.05";
+  home.stateVersion = "24.11";
   programs.home-manager.enable = true;
 
   # https://search.nixos.org/packages?query=
