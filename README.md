@@ -47,7 +47,7 @@ nix-channel --update
 nix-env -iA unstable.git
 git clone https://github.com/CharlesChiuGit/nix-hm-config.git ~/.config/home-manager
 cd ~/.config/home-manager && nix build
-~/config/home-manager/result/bin/home-manager switch --flake ~/.config/home-manager --impure
+~/.config/home-manager/result/bin/home-manager switch --flake ~/.config/home-manager --impure
 ```
 
 ref: https://github.com/ryantm/home-manager-template/blob/master/README.md
