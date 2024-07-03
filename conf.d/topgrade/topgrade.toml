@@ -14,7 +14,7 @@ pre_sudo = true
 sudo_command = "sudo"
 
 # Disable specific steps - same options as the command line flag
-disable = ["containers", "vim", "nix", "rye", "home_manager"]
+disable = ["containers", "vim", "nix", "rye", "home_manager", "clam_av_db"]
 
 # Ignore failures for these steps
 # ignore_failures = ["powershell"]
