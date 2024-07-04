@@ -36,7 +36,8 @@ alias cargobin='cargo binstall --no-discover-github-token -y'
 alias z='zi' # map z to zoxide interactive selection
 alias yz='yazi'
 alias nixup='cd $HOME/.config/home-manager && nix flake update && home-manager switch --impure && cd "$OLDPWD"'
-alias nixclean='nix-collect-garbage -d && nix-env --delete-generations old && nix-store --gc && nix-store --optimise'
+# alias nixclean='nix-collect-garbage -d && nix-env --delete-generations old && nix-store --gc && nix-store --optimise'
+alias nixclean='nix-collect-garbage -d && nix-store --gc && nix-store --optimise'
 alias nixsearch='nix search nixpkgs'
 alias docker_restart='docker compose down --remove-orphans && docker compose up -d'
 
