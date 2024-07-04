@@ -65,7 +65,7 @@ DeterminateSystems/nix-installer:
 /nix/nix-installer uninstall
 ```
 original Nix:
-- [](https://nix.dev/manual/nix/2.22/installation/uninstall)
+- [Nix Reference Manual/unistall](https://nix.dev/manual/nix/2.22/installation/uninstall)
 
 # Resources
 - [Nix Reference Manual(2.22)](https://nix.dev/manual/nix/2.22/introduction)
