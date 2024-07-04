@@ -1,15 +1,12 @@
 ---
 name: update-flake-lock-ds
 on:
-  workflow_dispatch:  # allows manual triggering
-  schedule:
-    - cron: 0 0 * * 0  # runs weekly on Sunday at 00:00
+  workflow_dispatch: # allows manual triggering
+  # schedule:
+  #   - cron: 0 0 * * 0 # runs weekly on Sunday at 00:00
 jobs:
   lockfile:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -20,8 +17,9 @@ jobs:
       - name: Update flake.lock
         uses: DeterminateSystems/update-flake-lock@main
         with:
-          git-commit-message: 'chore(lockfile): auto update flake.lock'
-          git-author-name: github-actions[bot]
-          git-author-email: 41898282+github-actions[bot]@users.noreply.github.com
-          git-committer-name: github-actions[bot]
-          git-committer-email: 41898282+github-actions[bot]@users.noreply.github.com
+          pr-title: Update flake.lock # Title of PR to be created
+          pr-labels: | # Labels to be set on the PR
+            dependencies
+            automated
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
