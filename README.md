@@ -9,8 +9,12 @@ cat <<EOF >>~/.config/nix/nix.conf
 experimental-features = nix-command flakes
 use-xdg-base-directories = true
 cores = 0 # use all available cores
+max-jobs = 10
 auto-optimise-store = true
-http2 = true
+warn-dirty = false
+http-connections = 50
+trusted-users = charles
+use-case-hack = true # only for macOS
 EOF
 ```
 
@@ -68,8 +72,13 @@ original Nix:
 - [Nix Reference Manual/unistall](https://nix.dev/manual/nix/2.22/installation/uninstall)
 
 # Resources
-- [Nix Reference Manual(2.22)](https://nix.dev/manual/nix/2.22/introduction)
-- [Ubuntu nix manpages(Ubuntu 24.04/2.18)](https://manpages.ubuntu.com/manpages/noble/man5/nix.conf.5.html)
+- [nixos.org](https://nixos.org/)
+- [Home Manager Option Search](https://home-manager-options.extranix.com/)
+- [nix.dev](https://nix.dev/)
 - [DeterminateSystems/nix(2.23)](https://github.com/DeterminateSystems/nix-installer)
 - [my-nix-journey-use-nix-with-ubuntu](https://tech.aufomm.com/my-nix-journey-use-nix-with-ubuntu/)
 - [FlakeHub](https://flakehub.com/)
+- [DeterminateSystems/zero-to-nix](https://zero-to-nix.com/)
+- [Home Manager Manual(24.05)](https://nix-community.github.io/home-manager/)
+- [NixOS Wiki](https://wiki.nixos.org/wiki/NixOS_Wiki)
+- [mynixos.com](https://mynixos.com/)
