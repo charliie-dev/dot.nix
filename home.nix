@@ -1,33 +1,35 @@
 { pkgs, lib, ... }:
 with lib;
 {
-  # home.username = lib.strings.removeSuffix "\n" (builtins.readFile /etc/hostname);
-  home.username = "charles";
-  home.homeDirectory = builtins.getEnv "HOME";
-  home.stateVersion = "24.11";
   programs.home-manager.enable = true;
+  home = {
+    # home.username = lib.strings.removeSuffix "\n" (builtins.readFile /etc/hostname);
+    username = "charles";
+    homeDirectory = builtins.getEnv "HOME";
+    stateVersion = "24.11";
+  };
 
   # https://search.nixos.org/packages?query=
   # https://home-manager-options.extranix.com/?query=
   home.packages = with pkgs; [
+    chafa
+    curl
+    git
+    gnupg
     gnutar
     gzip
-    unzip
-    xdg-ninja
-    curl
-    wget
-    gnupg
-    zsh
-    git
-    vim
-    tmux
-    chafa
     hstr
+    tmux
+    unzip
+    vim
+    wget
+    xdg-ninja
+    zsh
     # c/c++ cli
     btop
     fzy
-    lnav
     jq
+    lnav
     # python cli
     git-fame
     # golang cli
