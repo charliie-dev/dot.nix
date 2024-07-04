@@ -73,4 +73,3 @@ original Nix:
 - [DeterminateSystems/nix(2.23)](https://github.com/DeterminateSystems/nix-installer)
 - [my-nix-journey-use-nix-with-ubuntu](https://tech.aufomm.com/my-nix-journey-use-nix-with-ubuntu/)
 - [FlakeHub](https://flakehub.com/)
-- 
