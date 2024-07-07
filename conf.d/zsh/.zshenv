@@ -68,7 +68,8 @@ if [ $? -eq 0 ]; then
     eval "$__conda_setup"
     unset __conda_setup
 else
-    [ -f "$__conda_dir/etc/profile.d/conda.sh" ] && (. "$__conda_dir/etc/profile.d/conda.sh") || add_path "$__conda_dir/bin"
+    [ -f "$__conda_dir/etc/profile.d/conda.sh" ] && (. "$__conda_dir/etc/profile.d/conda.sh") || \
+        add_path "$__conda_dir/bin"
 fi
 unset __conda_dir
 
