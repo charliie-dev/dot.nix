@@ -41,7 +41,7 @@ bindkey '^[[b' history-substring-search-down
 bindkey ',' autosuggest-accept
 
 # Init mise
-eval "$(mise activate zsh)"
+[[ $(uname -s) == MSYS_NT* ]] || eval "$(mise activate zsh)"
 
 # Init vfox
 # eval "$(vfox activate zsh)"
