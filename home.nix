@@ -1,11 +1,34 @@
-{ pkgs, lib, ... }:
+{ inputs, outputs, config, pkgs, lib, ... }:
 with lib;
 {
-  programs.home-manager.enable = true;
+  imports = [
+    # If you want to use modules your own flake exports (from modules/home-manager):
+    # outputs.homeManagerModules.example
+
+    # Or modules exported from other flakes (such as nix-colors):
+    # inputs.nix-colors.homeManagerModules.default
+
+    # You can also split up your configuration and import pieces of it here:
+    # ./nvim.nix
+  ];
+
+  nixpkgs = {
+    overlays = [
+    ];
+    # Configure your nixpkgs instance
+    config = {
+      # Disable if you don't want unfree packages
+      allowUnfree = true;
+    };
+  };
+
+  # Nicely reload system units when changing configs
+  # systemd.user.startServices = "sd-switch";
+
   home = {
     # home.username = lib.strings.removeSuffix "\n" (builtins.readFile /etc/hostname);
     username = "charles";
-    homeDirectory = builtins.getEnv "HOME";
+    homeDirectory = "/home/charles";
     stateVersion = "24.11";
   };
 
@@ -78,6 +101,7 @@ with lib;
       source = ./conf.d/Usercommand;
     };
   };
+  programs.home-manager.enable = true;
 
   xdg.enable = true;
   xdg.configFile = {
