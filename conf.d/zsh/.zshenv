@@ -39,17 +39,10 @@ export CONDARC="$XDG_CONFIG_HOME"/conda/condarc
 export EDITOR='nvim'
 
 add_path() {
-    if [ ! -e "$1" ]; then
-        return 1
-    fi
-
-    local incoming_path=$(cd "$1" && pwd)
-
-    if [[ ":$PATH:" == *":$incoming_path:"* ]]; then
-        return 0
-    fi
-
-    path=("$incoming_path" "$path[@]")
+    # if arg_1 does not exist, exit function
+    [ -e "$1" ] || return 1
+    # if arg_1 is not a substring of $path, get full path and add it to $path
+    [[ ":$path:" == *" $1 "* ]] || path=("$(cd "$1" && pwd)" "$path[@]")
 }
 
 add_path "$HOME"/.local/bin
