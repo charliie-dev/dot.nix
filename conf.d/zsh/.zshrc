@@ -6,10 +6,10 @@ setopt hist_ignore_dups hist_ignore_all_dups hist_expire_dups_first hist_find_no
 setopt INC_APPEND_HISTORY
 
 # Load and initialise completion system
-zstyle ':completion:*' cache-path $XDG_CACHE_HOME/zsh/zcompcache
-fpath[1, 0]=~/.config/zsh/completion/ # local comp files
+zstyle ':completion:*' cache-path "$XDG_CACHE_HOME"/zsh/zcompcache
+fpath[1,0]=~/.config/zsh/completion/ # local comp files
 autoload -Uz compinit
-compinit -d ~/.cache/zsh/zcompdump-$ZSH_VERSION
+compinit -d ~/.cache/zsh/zcompdump-"$ZSH_VERSION"
 # End of lines added by compinstall
 
 # Core Keybinds
@@ -20,7 +20,7 @@ bindkey "^[[2~" vi-insert
 bindkey "^[[3~" delete-char
 
 # Created by Zap installer
-[ -f "${XDG_DATA_HOME:-$HOME/.local/share}/zap/zap.zsh" ] && source "${XDG_DATA_HOME:-$HOME/.local/share}/zap/zap.zsh"
+[ -f "$XDG_DATA_HOME"/zap/zap.zsh ] && . "$XDG_DATA_HOME"/zap/zap.zsh
 plug "zsh-users/zsh-autosuggestions"
 plug "zsh-users/zsh-completions"
 plug "zsh-users/zsh-history-substring-search"
@@ -54,4 +54,4 @@ export _ZO_EXCLUDE_DIRS="$XDG_CACHE_HOME;$XDG_DATA_HOME;$XDG_STATE_HOME"
 # Init Starship
 eval "$(starship init zsh)"
 
-# vim: set ft=sh :
+# vim: set ft=zsh :
