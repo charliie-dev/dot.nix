@@ -1,8 +1,6 @@
 # ENVs
 typeset -U PATH path # make sure $PATH is unique
 export PATH
-[ -d /opt/homebrew/bin/ ] && path=(/opt/homebrew/bin/ "$path[@]")
-
 export XDG_CONFIG_HOME="$HOME"/.config # analogous to /etc
 export XDG_CACHE_HOME="$HOME"/.cache # analogous to /var/cache
 export XDG_DATA_HOME="$HOME"/.local/share # analogous to /usr/share
@@ -49,33 +47,29 @@ add_path "$HOME"/.local/bin
 add_path "$CARGO_HOME"/bin
 add_path "$GOPATH"/bin
 add_path "$PNPM_HOME"
+add_path "/opt/homebrew/bin"
 
-# set cuda path if nvidia gpus 
+# set cuda path if nvidia gpus exists
 if command -v nvidia-smi &> /dev/null; then
     add_path "/usr/local/cuda/bin"
+    [[ ":$LD_LIBRARY_PATH:" == *":/usr/local/cuda/lib64:"* ]] || \
     export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 fi
 
+
 # set conda init
 function set_conda_dir() {
-    if [ -d "/opt/anaconda3" ]; then
-        export __conda_dir="/opt/anaconda3"
-    elif [ -d "$HOME/anaconda3" ]; then
-        export __conda_dir="$HOME/anaconda3"
-    fi
+    [ -d "/opt/anaconda3/" ] && export __conda_dir="/opt/anaconda3"
+    [ -d "$HOME/anaconda3" ] && export __conda_dir="$HOME/anaconda3"
 }
 set_conda_dir
 __conda_setup="$($__conda_dir/bin/conda 'shell.zsh' 'hook' 2> /dev/null)"
 if [ $? -eq 0 ]; then
     eval "$__conda_setup"
+    unset __conda_setup
 else
-    if [ -f "$__conda_dir/etc/profile.d/conda.sh" ]; then
-        . "$__conda_dir/etc/profile.d/conda.sh"
-    else
-        add_path "$__conda_dir/bin"
-    fi
+    [ -f "$__conda_dir/etc/profile.d/conda.sh" ] && (. "$__conda_dir/etc/profile.d/conda.sh") || add_path "$__conda_dir/bin"
 fi
-unset __conda_setup
 unset __conda_dir
 
 # nixpkgs and nix home manager
@@ -84,8 +78,6 @@ if [ -e "$XDG_STATE_HOME"/nix/profile/etc/profile.d/nix.sh ]; then
     . "$XDG_STATE_HOME"/nix/profile/etc/profile.d/hm-session-vars.sh;
 fi
 
-# Only source this once
-if [[ -z "$__HM_ZSH_SESS_VARS_SOURCED" ]]; then
-  export __HM_ZSH_SESS_VARS_SOURCED=1
-fi
+# Only source this env_var once
+[[ -z "$__HM_ZSH_SESS_VARS_SOURCED" ]] && export __HM_ZSH_SESS_VARS_SOURCED=1
 
