@@ -7,17 +7,17 @@ setopt INC_APPEND_HISTORY
 
 # Load and initialise completion system
 zstyle ':completion:*' cache-path $XDG_CACHE_HOME/zsh/zcompcache
-fpath[1,0]=~/.config/zsh/completion/ # local comp files
+fpath[1, 0]=~/.config/zsh/completion/ # local comp files
 autoload -Uz compinit
 compinit -d ~/.cache/zsh/zcompdump-$ZSH_VERSION
 # End of lines added by compinstall
 
 # Core Keybinds
 bindkey -v
-bindkey  "^[[H"   beginning-of-line
-bindkey  "^[[F"   end-of-line
-bindkey  "^[[2~"  vi-insert
-bindkey  "^[[3~"  delete-char
+bindkey "^[[H" beginning-of-line
+bindkey "^[[F" end-of-line
+bindkey "^[[2~" vi-insert
+bindkey "^[[3~" delete-char
 
 # Created by Zap installer
 [ -f "${XDG_DATA_HOME:-$HOME/.local/share}/zap/zap.zsh" ] && source "${XDG_DATA_HOME:-$HOME/.local/share}/zap/zap.zsh"
@@ -53,3 +53,5 @@ export _ZO_EXCLUDE_DIRS="$XDG_CACHE_HOME;$XDG_DATA_HOME;$XDG_STATE_HOME"
 
 # Init Starship
 eval "$(starship init zsh)"
+
+# vim: set ft=sh :

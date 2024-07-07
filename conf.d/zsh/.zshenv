@@ -82,3 +82,4 @@ fi
 # Only source this env_var once
 [[ -z "$__HM_ZSH_SESS_VARS_SOURCED" ]] && export __HM_ZSH_SESS_VARS_SOURCED=1
 
+# vim: set ft=sh :
