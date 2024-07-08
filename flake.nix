@@ -47,10 +47,10 @@
       # homeManagerModules = import ./modules/home-manager;
 
       homeConfigurations = {
-        "charlesdeMac-mini.local" = hm.lib.homeManagerConfiguration {
+        "charles@charlesdeMac-mini.local" = hm.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.aarch64-darwin;
           extraSpecialArgs = { inherit inputs outputs; };
-          modules = [ ./home.nix ];
+          modules = [ ./home-darwin.nix ];
         };
         "charles@bot" = hm.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.aarch64-linux;
