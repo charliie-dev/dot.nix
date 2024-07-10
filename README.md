@@ -1,8 +1,10 @@
-# nix-hm-config
+# Nix Home-Manager dotfiles
 
-# install curl, openssl
+> [!IMPORTANT]  
+> Make sure `curl` and `openssl` is already installed.
 
-# create ~/.condig/nix/nix.conf
+## create `~/.condig/nix/nix.conf`
+
 ```sh
 mkdir -p ~/.config/nix
 cat <<EOF >>~/.config/nix/nix.conf
@@ -18,32 +20,41 @@ use-case-hack = true # only for macOS
 EOF
 ```
 
-# Install nix(DeterminateSystems/nix-installer)
+## Install nix(DeterminateSystems/nix-installer)
+
 ```sh
 curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
 ```
+
 and open another shell.
 
-# Check Nix XDG Location
-```sh
-nix_state_home=${XDG_STATE_HOME-$HOME/.local/state}/nix
+## Check Nix XDG Location
 
-if [[ ! -d $nix_state_home ]]; then
-	mkdir -p $nix_state_home
-fi
+<details open>
+  <summary>Expand here</summary>
+    
+    ```bash
+    nix_state_home=${XDG_STATE_HOME-$HOME/.local/state}/nix
 
-if [[ -f $HOME/.nix-profile ]]; then
-	mv $HOME/.nix-profile $nix_state_home/profile
-fi
-if [[ -f $HOME/.nix-defexpr ]]; then
-	mv $HOME/.nix-defexpr $nix_state_home/defexpr
-fi
-if [[ -f $HOME/.nix-channels ]]; then
-	mv $HOME/.nix-channels $nix_state_home/channels
-fi
-```
+    if [[! -d $nix_state_home]]; then
+    mkdir -p $nix_state_home
+    fi
 
-# Install `home-manager`
+    if [[-f $HOME/.nix-profile]]; then
+    mv $HOME/.nix-profile $nix_state_home/profile
+    fi
+    if [[-f $HOME/.nix-defexpr]]; then
+    mv $HOME/.nix-defexpr $nix_state_home/defexpr
+    fi
+    if [[-f $HOME/.nix-channels]]; then
+    mv $HOME/.nix-channels $nix_state_home/channels
+    fi
+    ```
+
+</details>
+
+## Install `home-manager`
+
 ```sh
 nix-channel --add https://nixos.org/channels/nixpkgs-unstable unstable
 nix-channel --add https://github.com/nix-community/home-manager/archive/master.tar.gz hm
@@ -60,18 +71,18 @@ ref: https://github.com/ryantm/home-manager-template/blob/master/README.md
 
 ref: https://github.com/the-argus/spicetify-nix/blob/master/home-manager-install.md
 
-# Remove Snap on Ubuntu
-https://www.baeldung.com/linux/snap-remove-disable
+## Uninstall Nix
 
-# Uninstall Nix
-DeterminateSystems/nix-installer:
-```sh
-/nix/nix-installer uninstall
-```
-original Nix:
-- [Nix Reference Manual/unistall](https://nix.dev/manual/nix/2.22/installation/uninstall)
+- DeterminateSystems/nix-installer:
 
-# Resources
+  ```sh
+  /nix/nix-installer uninstall
+  ```
+
+- Uninstall original Nix: [Nix Reference Manual/unistall](https://nix.dev/manual/nix/2.22/installation/uninstall)
+
+## Resources
+
 - [nixos.org](https://nixos.org/)
 - [Home Manager Option Search](https://home-manager-options.extranix.com/)
 - [nix.dev](https://nix.dev/)
