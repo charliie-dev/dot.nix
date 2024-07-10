@@ -30,7 +30,7 @@ and open another shell.
 
 ## Check Nix XDG Location
 
-<details open>
+<details>
   <summary>Expand here</summary>
     
     ```bash
