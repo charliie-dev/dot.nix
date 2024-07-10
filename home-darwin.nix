@@ -55,6 +55,7 @@ with lib;
     lnav
     # python cli
     git-fame
+    git-filter-repo
     # golang cli
     fzf
     glow
