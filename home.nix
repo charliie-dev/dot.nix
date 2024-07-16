@@ -42,7 +42,6 @@ with lib;
     gnutar
     gzip
     hstr
-    tmux
     unzip
     vim
     wget
@@ -165,10 +164,6 @@ with lib;
       recursive = true;
       source = ./conf.d/starship;
     };
-    "tmux" = {
-      recursive = true;
-      source = ./conf.d/tmux;
-    };
     "wget" = {
       recursive = true;
       source = ./conf.d/wget;
@@ -227,4 +222,68 @@ with lib;
     viAlias = true;
     vimdiffAlias = true;
   };
+
+  programs.tmux = {
+    enable = true;
+    clock24 = true;
+    mouse = true;
+    secureSocket = true;
+    plugins = with pkgs; [
+      tmuxPlugins.better-mouse-mode
+      tmuxPlugins.tmux-fzf # prefix + F
+      {
+        plugin = tmuxPlugins.catppuccin;
+        extraConfig = ''
+          set -g @catppuccin_flavour 'macchiato' # or frappe, macchiato, mocha
+          set -g @catppuccin_window_tabs_enabled on
+          set -g @catppuccin_host "on"
+        '';
+      }
+      {
+        # automatically saves sessions for you every 15 minutes
+        # `prefix+Ctrl+s` to save, `prefix+Ctrl+r` to restore
+        plugin = tmuxPlugins.continuum;
+        extraConfig = ''
+          set -g @continuum-save-interval '15'
+          set -g @continuum-restore 'off'
+        '';
+      }
+      {
+        plugin = tmuxPlugins.prefix-highlight;
+        extraConfig = ''
+          set -g @prefix_highlight_prefix_prompt 'Wait'
+          set -g @prefix_highlight_copy_prompt 'Copy'
+          set -g @prefix_highlight_sync_prompt 'Sync'
+        '';
+      }
+      {
+        # persist tmux sessions after computer restart
+        plugin = tmuxPlugins.resurrect;
+        extraConfig = ''
+          set -g @resurrect-capture-pane-contents 'on'
+        '';
+      }
+      {
+        # add zoxide and fzf support for tmux session
+        # `prefix + T` to open session wizard
+        plugin = tmuxPlugins.session-wizard;
+        extraConfig = ''
+          set -g @session-wizard 'T'
+        '';
+      }
+      {
+        plugin = tmuxPlugins.yank;
+        extraConfig = ''
+          set -g @yank_selection 'chipboard'
+          set -g @yank_selection_mouse 'clipboard'
+          set -g @custom_copy_command 'yank > #{pane_tty}'
+        '';
+      }
+    ];
+
+    extraConfig = ''
+      ${builtins.readFile ./conf.d/tmux/tmux.conf}
+    '';
+  };
+
 }
