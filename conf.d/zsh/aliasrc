@@ -16,8 +16,6 @@ alias lzd='lazydocker'
 alias CA='conda activate'
 alias CD='conda deactivate'
 alias tb='tensorboard --logdir'
-[ "$TMUX" != "" ] && export TERM="tmux-256color"
-alias tmux="~/tools/tmux/tmux -f ~/.config/tmux/tmux.conf"
 alias fzz='zoxide query | fzf'
 alias fzp='cat /etc/services | fzf'
 alias flsof4="lsof -Pni4 | awk '{printf \"%10s %6s %5s %4s %-20s\n\", \$1, \$2, \$3, \$8, \$9}' | fzf --header-lines=1 --cycle"

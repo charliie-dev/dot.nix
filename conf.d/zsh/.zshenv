@@ -36,6 +36,7 @@ export DOTNET_CLI_HOME="$XDG_DATA_HOME"/dotnet
 export CUDA_CACHE_PATH="$XDG_CACHE_HOME"/nv
 export CONDARC="$XDG_CONFIG_HOME"/conda/condarc
 export EDITOR='nvim'
+[ "$TMUX" != "" ] && export TERM="tmux-256color"
 
 add_path() {
 	# if arg_1 does not exist, exit function
