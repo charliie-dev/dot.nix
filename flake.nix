@@ -45,6 +45,11 @@
       # Reusable home-manager modules you might want to export
       # These are usually stuff you would upstream into home-manager
       # homeManagerModules = import ./modules/home-manager;
+      defaultPackage = {
+        "x86_64-linux" = hm.defaultPackage."x86_64-linux";
+        "aarch64-linux" = hm.defaultPackage."aarch64-linux";
+        "aarch64-darwin" = hm.defaultPackage."aarch64-darwin";
+      };
 
       homeConfigurations = {
         "charles@charlesdeMac-mini.local" = hm.lib.homeManagerConfiguration {
