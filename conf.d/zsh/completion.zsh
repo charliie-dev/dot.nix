@@ -1,3 +1,16 @@
+# nix completions for zsh
+for profile in ${(z)NIX_PROFILES}; do
+  fpath+=($profile/share/zsh/site-functions $profile/share/zsh/$ZSH_VERSION/functions $profile/share/zsh/vendor-completions)
+done
+
+ZSH_COMPDUMP="$XDG_CACHE_HOME"/zsh/zcompdump
+mkdir -p "$XDG_CACHE_HOME"
+autoload -Uz compinit
+zmodload -i zsh/complist
+compinit -d "$ZSH_COMPDUMP"
+
+# fzf-tab
+
 # pistol mime preview
 zstyle ':fzf-tab:complete:*:*' fzf-preview 'pistol ${(Q)realpath}'
 zstyle ':fzf-tab:complete:*:*' fzf-flags --height=60%
@@ -56,5 +69,3 @@ function _ssh_hosts() {
 }
 compdef _ssh_hosts ssh
 zstyle ':fzf-tab:complete:ssh:*' fzf-preview 'sshconfig_preview $word'
-
-# vim: set ft=zsh :

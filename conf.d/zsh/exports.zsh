@@ -1,13 +1,10 @@
-# shellcheck disable=SC1091
-# ENVs
-typeset -U PATH path # make sure $PATH is unique
-export PATH
+# XDG ENVs
+typeset -U path path cdpath fpath manpath
 export XDG_CONFIG_HOME="$HOME"/.config     # analogous to /etc
 export XDG_CACHE_HOME="$HOME"/.cache       # analogous to /var/cache
 export XDG_DATA_HOME="$HOME"/.local/share  # analogous to /usr/share
 export XDG_STATE_HOME="$HOME"/.local/state # analogous to /var/lib
 export XDG_RUNTIME_DIR=/tmp/users/$UID
-export HISTFILE="$XDG_STATE_HOME"/zsh_history
 export ZDOTDIR="$XDG_CONFIG_HOME"/zsh
 export LESSHISTFILE="$XDG_DATA_HOME"/less_lesshst
 export LESSKEY="$XDG_DATA_HOME"/less_lesskey
@@ -35,8 +32,35 @@ export GNUPGHOME="$XDG_DATA_HOME"/gnupg
 export DOTNET_CLI_HOME="$XDG_DATA_HOME"/dotnet
 export CUDA_CACHE_PATH="$XDG_CACHE_HOME"/nv
 export CONDARC="$XDG_CONFIG_HOME"/conda/condarc
-export EDITOR='nvim'
+export FZF_DEFAULT_OPTS="\
+    --ansi --height 40% --layout=reverse --border --separator='╸' --header='E to edit' \
+    --preview-label='┓ ⟪Preview⟫ ┏' --preview-window=border-bold --scrollbar '▌▐'\
+    --color=border:#cba6f7,label:#cba6f7,separator:#a6e3a1 \
+    --color=bg+:#313244,bg:,spinner:#f5e0dc,hl:#f38ba8 \
+    --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
+    --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8"
+export _ZO_FZF_OPTS="\
+    --ansi --height 40% --layout=reverse --border --separator='╸' --scrollbar '▌▐' --select-1 \
+    --color=border:#cba6f7,label:#cba6f7,separator:#a6e3a1 \
+    --color=bg+:#313244,bg:,spinner:#f5e0dc,hl:#f38ba8 \
+    --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
+    --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8" # use `zi` to open fzf search
+
+# Setup terminal, and turn on colors
 [ "$TMUX" != "" ] && export TERM="tmux-256color"
+export CLICOLOR=1
+export LSCOLORS=Gxfxcxdxbxegedabagacad
+
+# Enable color in grep
+export GREP_OPTIONS='--color=auto'
+export GREP_COLOR='3;33'
+
+# TODO:
+export LESS='--ignore-case --raw-control-chars'
+# export PAGER='most'
+export EDITOR='nvim'
+# CTAGS Sorting in VIM/Emacs is better behaved with this in place
+export LC_COLLATE=C
 
 add_path() {
 	# if arg_1 does not exist, exit function
