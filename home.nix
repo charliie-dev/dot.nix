@@ -261,6 +261,7 @@ with lib;
         plugin = tmuxPlugins.resurrect;
         extraConfig = ''
           set -g @resurrect-capture-pane-contents 'on'
+          set -g @resurrect-dir "$XDG_DATA_HOME/tmux/resurrect"
         '';
       }
       {
