@@ -24,7 +24,6 @@ with lib;
       warn-dirty = false;
       http-connections = 50;
       trusted-users = "charles";
-      use-case-hack = true; # only for macOS
     };
     gc = {
       automatic = true;
