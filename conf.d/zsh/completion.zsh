@@ -1,13 +1,9 @@
-# nix completions for zsh
-for profile in ${(z)NIX_PROFILES}; do
-  fpath+=($profile/share/zsh/site-functions $profile/share/zsh/$ZSH_VERSION/functions $profile/share/zsh/vendor-completions)
-done
-
-ZSH_COMPDUMP="$XDG_CACHE_HOME"/zsh/zcompdump
-mkdir -p "$XDG_CACHE_HOME"
-autoload -Uz compinit
-zmodload -i zsh/complist
-compinit -d "$ZSH_COMPDUMP"
+# auto-convert case
+zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}'
+# error correction
+zstyle ':completion:*' completer _complete _match _approximate
+zstyle ':completion:*:match:*' original only
+zstyle ':completion:*:approximate:*' max-errors 1 numeric compinit -d "$ZSH_COMPDUMP"
 
 # fzf-tab
 
@@ -24,18 +20,12 @@ zstyle ':fzf-tab:complete:(kill|ps):argument-rest' fzf-flags --header="[process 
 # show systemd unit status
 zstyle ':fzf-tab:complete:systemctl-*:*' fzf-preview 'SYSTEMD_COLORS=1 systemctl status $word'
 
-# show runit unit status
-zstyle ':fzf-tab:complete:sv:*' fzf-preview 'sudo sv status $word'
-
 # show environment variable
 zstyle ':fzf-tab:complete:(-command-|-parameter-|-brace-parameter-|export|unset|expand):*' \
 	fzf-preview 'echo ${(P)word}'
 
 # show alias
 zstyle ':fzf-tab:complete:alias:*' fzf-preview 'alias $word'
-
-# show tldr
-zstyle ':fzf-tab:complete:tldr:argument-1' fzf-preview 'tldr --color always $word'
 
 # disable sort when completing `git checkout`
 zstyle ':completion:*:git-checkout:*' sort false

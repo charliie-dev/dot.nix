@@ -32,6 +32,7 @@ export GNUPGHOME="$XDG_DATA_HOME"/gnupg
 export DOTNET_CLI_HOME="$XDG_DATA_HOME"/dotnet
 export CUDA_CACHE_PATH="$XDG_CACHE_HOME"/nv
 export CONDARC="$XDG_CONFIG_HOME"/conda/condarc
+export PAGER=ov
 export FZF_DEFAULT_OPTS="\
     --ansi --height 40% --layout=reverse --border --separator='╸' --header='E to edit' \
     --preview-label='┓ ⟪Preview⟫ ┏' --preview-window=border-bold --scrollbar '▌▐'\
@@ -45,6 +46,10 @@ export _ZO_FZF_OPTS="\
     --color=bg+:#313244,bg:,spinner:#f5e0dc,hl:#f38ba8 \
     --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
     --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8" # use `zi` to open fzf search
+
+# zsh plugins options
+export ZSH_EVALCACHE_DIR="$XDG_CACHE_HOME"/zsh/zsh-evalcache
+export ZSH_AUTOSUGGEST_USE_ASYNC="true"
 
 # Setup terminal, and turn on colors
 [ "$TMUX" != "" ] && export TERM="tmux-256color"
@@ -65,9 +70,8 @@ export LC_COLLATE=C
 add_path() {
 	# if arg_1 does not exist, exit function
 	[ -e "$1" ] || return 1
-	# if arg_1 is not a substring of $path, get full path and add it to $path
-	# shellcheck disable=SC1087
-	[[ ":$path:" == *" $1 "* ]] || path=("$(cd "$1" && pwd)" "$path[@]")
+	# if $1 is not a substring of $path, get full path and add it to $path
+	(( $path[(I)$1] )) || path=("$1" "$path[@]")
 }
 
 add_path "$HOME"/.local/bin
@@ -77,9 +81,10 @@ add_path "$PNPM_HOME"
 add_path "/opt/homebrew/bin"
 
 # set cuda path if nvidia gpus exists
-if command -v nvidia-smi &>/dev/null; then
+if (( $+commands[nvidia-smi] )); then
 	add_path "/usr/local/cuda/bin"
-	[[ ":$LD_LIBRARY_PATH:" == *":/usr/local/cuda/lib64:"* ]] ||
+
+	(( $LD_LIBRARY_PATH[(I)/usr/local/cuda/lib64] )) || 
 		export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 fi
 
@@ -89,8 +94,9 @@ function set_conda_dir() {
 	[ -d "$HOME/anaconda3" ] && export __conda_dir="$HOME/anaconda3"
 }
 set_conda_dir
-if command -v conda &>/dev/null; then
-	eval "$("$__conda_dir"/bin/conda 'shell.zsh' 'hook' 2>/dev/null)"
+if (( $+commands[conda] )); then
+	# eval "$("$__conda_dir"/bin/conda 'shell.zsh' 'hook' 2>/dev/null)"
+	_evalcache "$__conda_dir"/bin/conda shell.zsh hook 
 else
 	if [ -f "$__conda_dir/etc/profile.d/conda.sh" ]; then
 		# shellcheck disable=SC1091

@@ -12,6 +12,27 @@ with lib;
     # ./nvim.nix
   ];
 
+  nix = {
+    package = pkgs.nix;
+    checkConfig = true;
+    settings = {
+      experimental-features = [ "nix-command" "flakes" ];
+      use-xdg-base-directories = true;
+      cores = 0; # use all available cores
+      max-jobs = 10;
+      auto-optimise-store = true;
+      warn-dirty = false;
+      http-connections = 50;
+      trusted-users = "charles";
+      use-case-hack = true; # only for macOS
+    };
+    gc = {
+      automatic = true;
+      options = "--max-freed $((64 * 1024**3))";
+    };
+  };
+
+
   nixpkgs = {
     overlays = [
     ];
@@ -46,7 +67,7 @@ with lib;
     vim
     wget
     xdg-ninja
-    zsh
+    antidote #zsh-framwork
     # c/c++ cli
     btop
     fzy
@@ -93,7 +114,6 @@ with lib;
   ];
 
   home.file = {
-    ".zshenv".source = ./conf.d/zsh/.zshenv;
     # ".ssh/config".source = ./conf.d/ssh/config;
     ".config/topgrade.toml".source = ./conf.d/topgrade/topgrade.toml;
     ".local/bin" = {
@@ -287,4 +307,42 @@ with lib;
     '';
   };
 
+  programs.zsh = {
+    enable = true;
+    dotDir = ".config/zsh";
+    zprof.enable = false;
+    antidote = {
+      enable = true;
+      useFriendlyNames = true;
+      plugins = [
+        # lazy-loading `kind:defer`
+        "Aloxaf/fzf-tab kind:defer"
+        "zsh-users/zsh-autosuggestions kind:defer"
+        "zsh-users/zsh-completions kind:fpath"
+        "belak/zsh-utils path:completion"
+        "zsh-users/zsh-history-substring-search kind:defer"
+        "zdharma-continuum/fast-syntax-highlighting kind:defer"
+        "MichaelAquilina/zsh-you-should-use kind:defer"
+        "hlissner/zsh-autopair"
+        "mroth/evalcache"
+        # oh-my-zsh plugins
+        "getantidote/use-omz" # handle OMZ dependencies
+        "ohmyzsh/ohmyzsh path:lib" # load OMZ's library
+        "ohmyzsh/ohmyzsh path:plugins/colored-man-pages kind:defer" # load OMZ plugins
+        "ohmyzsh/ohmyzsh path:plugins/magic-enter kind:defer"
+      ];
+    };
+    initExtra = ''
+      ${builtins.readFile ./conf.d/zsh/setopt.zsh}
+      ${builtins.readFile ./conf.d/zsh/exports.zsh}
+      ${builtins.readFile ./conf.d/zsh/history.zsh}
+      ${builtins.readFile ./conf.d/zsh/functions.zsh}
+      ${builtins.readFile ./conf.d/zsh/bindkeys.zsh}
+      ${builtins.readFile ./conf.d/zsh/history.zsh}
+      ${builtins.readFile ./conf.d/zsh/plugins.zsh}
+      ${builtins.readFile ./conf.d/zsh/aliases.zsh}
+      ${builtins.readFile ./conf.d/zsh/completion.zsh}
+      ${builtins.readFile ./conf.d/zsh/hashdirs.zsh}
+    '';
+  };
 }

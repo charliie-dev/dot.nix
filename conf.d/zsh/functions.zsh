@@ -39,10 +39,10 @@ extract() {
 
 # restart cloudflared daemon to fix ssh login errors
 cfd_reload() {
-	if [ "$(uname)" = "Darwin" ]; then
+	if (( $OSTYPE[(I)darwin] )); then
 		sudo launchctl stop com.cloudflare.cloudflared && sudo launchctl start com.cloudflare.cloudflared
 		echo "Darwin/cloudflared reload!"
-	elif [ "$(uname)" = "Linux" ]; then
+	elif (( $OSTYPE[(I)linux-gnu] )); then
 		sudo systemctl restart cloudflared
 		echo "Linux/cloudflared reload!"
 	else
@@ -51,10 +51,10 @@ cfd_reload() {
 }
 
 nix_reload() {
-	if [ "$(uname)" = "Darwin" ]; then
+	if (( $OSTYPE[(I)darwin] )); then
 		sudo launchctl remove org.nixos.nix-daemon && sudo launchctl load /Library/LaunchDaemons/org.nixos.nix-daemon.plist
 		echo "Darwin/nix-daemon reload!"
-	elif [ "$(uname)" = "Linux" ]; then
+	elif (( $OSTYPE[(I)linux-gnu] )); then
 		sudo systemctl daemon-reload && sudo systemctl restart nix-daemon
 		echo "Linux/nix-daemon reload!"
 	else

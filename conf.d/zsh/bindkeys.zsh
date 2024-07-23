@@ -12,4 +12,9 @@ bindkey "^[[2~"   vi-insert                            # Key: Insert
 bindkey "^[[3~"   delete-char                          # Key: Delete
 bindkey -v # Default to vi bindings
 
+# Plugin Keybinds
+bindkey '^[[a' history-substring-search-up
+bindkey '^[[b' history-substring-search-down
+bindkey ',' autosuggest-accept
+
 # vim: set ft=zsh :
