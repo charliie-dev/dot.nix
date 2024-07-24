@@ -16,5 +16,5 @@ export _ZO_EXCLUDE_DIRS="$XDG_CACHE_HOME;$XDG_DATA_HOME;$XDG_STATE_HOME"
 # Use mroth/evalcache to speedup zsh loading time
 _evalcache zoxide init zsh
 _evalcache starship init zsh
-[[ $(uname -s) == MSYS_NT* ]] || _evalcache mise activate zsh
+(( $OSTYPE[(I)msys] )) && _evalcache mise activate zsh
 # vim: set ft=zsh :

@@ -78,7 +78,7 @@ add_path "$HOME"/.local/bin
 add_path "$CARGO_HOME"/bin
 add_path "$GOPATH"/bin
 add_path "$PNPM_HOME"
-add_path "/opt/homebrew/bin"
+(( $OSTYPE[(I)darwin] )) && add_path "/opt/homebrew/bin"
 
 # set cuda path if nvidia gpus exists
 if (( $+commands[nvidia-smi] )); then
