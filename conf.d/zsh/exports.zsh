@@ -5,7 +5,7 @@ export XDG_CACHE_HOME="$HOME"/.cache       # analogous to /var/cache
 export XDG_DATA_HOME="$HOME"/.local/share  # analogous to /usr/share
 export XDG_STATE_HOME="$HOME"/.local/state # analogous to /var/lib
 export XDG_RUNTIME_DIR=/tmp/users/$UID
-export ZDOTDIR="$XDG_CONFIG_HOME"/zsh
+# export ZDOTDIR="$XDG_CONFIG_HOME"/zsh    # now set via nix/hm
 export LESSHISTFILE="$XDG_DATA_HOME"/less_lesshst
 export LESSKEY="$XDG_DATA_HOME"/less_lesskey
 export WGETRC="$XDG_CONFIG_HOME"/wget/wgetrc
@@ -106,16 +106,5 @@ else
 	fi
 fi
 unset __conda_dir
-
-# nixpkgs and nix home manager
-if [ -e "$XDG_STATE_HOME"/nix/profile/etc/profile.d/nix.sh ]; then
-	. "$XDG_STATE_HOME"/nix/profile/etc/profile.d/nix.sh
-	. "$XDG_STATE_HOME"/nix/profile/etc/profile.d/hm-session-vars.sh
-fi
-
-# Only source this once
-if [[ -z "$__HM_ZSH_SESS_VARS_SOURCED" ]]; then
-	export __HM_ZSH_SESS_VARS_SOURCED=1
-fi
 
 # vim: set ft=sh :
