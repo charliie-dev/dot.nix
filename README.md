@@ -93,3 +93,6 @@ ref: https://github.com/the-argus/spicetify-nix/blob/master/home-manager-install
 - [Home Manager Manual(24.05)](https://nix-community.github.io/home-manager/)
 - [NixOS Wiki](https://wiki.nixos.org/wiki/NixOS_Wiki)
 - [mynixos.com](https://mynixos.com/)
+- [manix](https://github.com/nix-community/manix)
+- [NixOS & Flakes Book - An unofficial book for beginners](https://nixos-and-flakes.thiscute.world/)
+- 
