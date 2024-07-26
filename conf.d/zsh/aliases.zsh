@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Core Aliases
-alias sozsh='source ~/.zshenv && source "$XDG_CONFIG_HOME"/zsh/.zshrc'
+alias sozsh='source ~/.zshenv && zsh_recompile'
 alias rm='rm -iv'
 alias mkdir='mkdir -pv'
 alias ps='ps auxf'

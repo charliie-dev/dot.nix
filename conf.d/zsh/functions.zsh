@@ -1,35 +1,35 @@
 zsh_recompile() {
 	# ${ZDOTDIR} cache
+	rm -rf ${ZDOTDIR}/.zcompdump
 	for zfile in ${ZDOTDIR}/(.zshenv|.zshrc|.zcompdump); do
-		if [[ ! ${zfile}.zwc -nt ${zfile} ]]; then
-			zcompile -UR ${zfile} && echo "${zfile}.zwc compiled!"
-		fi
+		rm -rf ${zfile}.zwc
+		zcompile -UR ${zfile} && echo "${zfile}.zwc compiled!"
 	done
 	unset zfile
 
 	# ${ZSH_COMPDUMP} cache
+	rm -rf ${zfile}.zwc
 	if [[ ! ${ZSH_COMPDUMP}.zwc -nt ${ZSH_COMPDUMP} ]]; then
 		zcompile -UR ${ZSH_COMPDUMP} && echo "${ZSH_COMPDUMP}.zwc compiled!"
 	fi
 	# belak/zsh-utils compdump
 	compdump="$XDG_CACHE_HOME"/zsh/compdump
-	if [[ ! ${compdump}.zwc -nt ${compdump} ]]; then
-		zcompile -UR ${compdump} && echo "${compdump}.zwc compiled!"
-	fi
+	rm -rf ${compdump} 
+	source ${ZDOTDIR}/.zshrc
+	rm -rf ${compdump}.zwc
+	zcompile -UR ${compdump} && echo "${compdump}.zwc compiled!"
 	unset compdump
 
 	# antidote plugins
 	for zfile in ${XDG_CACHE_HOME}/antidote/**/**/*.zsh; do
-		if [[ ! ${zfile}.zwc -nt ${zfile} ]]; then
-			zcompile -UR ${zfile} && echo "${zfile}.zwc compiled!"
-		fi
+		rm -rf ${zfile}.zwc
+		zcompile -UR ${zfile} # && echo "${zfile}.zwc compiled!"
 	done
 	unset zfile
 
 	for zfile in ${XDG_CACHE_HOME}/antidote/**/**/**/*.zsh; do
-		if [[ ! ${zfile}.zwc -nt ${zfile} ]]; then
-			zcompile -UR ${zfile} && echo "${zfile}.zwc compiled!"
-		fi
+		rm -rf ${zfile}.zwc
+		zcompile -UR ${zfile} # && echo "${zfile}.zwc compiled!"
 	done
 	unset zfile
 
