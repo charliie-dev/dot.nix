@@ -1,18 +1,39 @@
 zsh_recompile() {
-	autoload -U zrecompile
-	rm -rf ~/.config/zsh/*.zwc
-	[[ -f ~/.zshenv.zwc ]] && rm -rf ~/.zshenv.zwc
-	[[ -f ~/.zshenv ]] && zrecompile -p ~/.zshenv
-
-	for f in "$XDG_CONFIG_HOME"/zsh; do
-		[[ -f "$f".zwc ]] && rm -rf "$f".zwc
-		zrecompile -p "$f"
+	# ${ZDOTDIR} cache
+	for zfile in ${ZDOTDIR}/(.zshenv|.zshrc|.zcompdump); do
+		if [[ ! ${zfile}.zwc -nt ${zfile} ]]; then
+			zcompile -UR ${zfile} && echo "${zfile}.zwc compiled!"
+		fi
 	done
+	unset zfile
 
-	[[ -f "$ZSH_COMPDUMP".zwc ]] && rm -rf "$ZSH_COMPDUMP".zwc
-	[[ -f "$ZSH_COMPDUMP" ]] && zrecompile -p "$ZSH_COMPDUMP"
+	# ${ZSH_COMPDUMP} cache
+	if [[ ! ${ZSH_COMPDUMP}.zwc -nt ${ZSH_COMPDUMP} ]]; then
+		zcompile -UR ${ZSH_COMPDUMP} && echo "${ZSH_COMPDUMP}.zwc compiled!"
+	fi
+	# belak/zsh-utils compdump
+	compdump="$XDG_CACHE_HOME"/zsh/compdump
+	if [[ ! ${compdump}.zwc -nt ${compdump} ]]; then
+		zcompile -UR ${compdump} && echo "${compdump}.zwc compiled!"
+	fi
+	unset compdump
 
-        source ~/.zshenv
+	# antidote plugins
+	for zfile in ${XDG_CACHE_HOME}/antidote/**/**/*.zsh; do
+		if [[ ! ${zfile}.zwc -nt ${zfile} ]]; then
+			zcompile -UR ${zfile} && echo "${zfile}.zwc compiled!"
+		fi
+	done
+	unset zfile
+
+	for zfile in ${XDG_CACHE_HOME}/antidote/**/**/**/*.zsh; do
+		if [[ ! ${zfile}.zwc -nt ${zfile} ]]; then
+			zcompile -UR ${zfile} && echo "${zfile}.zwc compiled!"
+		fi
+	done
+	unset zfile
+
+	source ~/.zshenv
 }
 
 extract() {

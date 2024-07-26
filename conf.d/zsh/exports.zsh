@@ -1,5 +1,4 @@
 # XDG ENVs
-typeset -U path path cdpath fpath manpath
 export XDG_CONFIG_HOME="$HOME"/.config     # analogous to /etc
 export XDG_CACHE_HOME="$HOME"/.cache       # analogous to /var/cache
 export XDG_DATA_HOME="$HOME"/.local/share  # analogous to /usr/share
@@ -50,6 +49,7 @@ export _ZO_FZF_OPTS="\
 # zsh plugins options
 export ZSH_EVALCACHE_DIR="$XDG_CACHE_HOME"/zsh/zsh-evalcache
 export ZSH_AUTOSUGGEST_USE_ASYNC="true"
+export ZSH_COMPDUMP="$XDG_CACHE_HOME"/zsh/compdump
 
 # Setup terminal, and turn on colors
 [ "$TMUX" != "" ] && export TERM="tmux-256color"

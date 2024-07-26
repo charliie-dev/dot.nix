@@ -17,4 +17,7 @@ export _ZO_EXCLUDE_DIRS="$XDG_CACHE_HOME;$XDG_DATA_HOME;$XDG_STATE_HOME"
 _evalcache zoxide init zsh
 _evalcache starship init zsh
 (( $OSTYPE[(I)msys] )) && _evalcache mise activate zsh
+
+# belak/zsh-utils xdg config
+zstyle ':zsh-utils:*:*' use-xdg-basedirs 'yes'
 # vim: set ft=zsh :
