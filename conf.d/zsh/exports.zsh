@@ -47,6 +47,7 @@ export _ZO_FZF_OPTS="\
     --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8" # use `zi` to open fzf search
 
 # zsh plugins options
+export ANTIDOTE_HOME="$XDG_CACHE_HOME"/antidote
 export ZSH_EVALCACHE_DIR="$XDG_CACHE_HOME"/zsh/zsh-evalcache
 export ZSH_AUTOSUGGEST_USE_ASYNC="true"
 export ZSH_COMPDUMP="$XDG_CACHE_HOME"/zsh/compdump

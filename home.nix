@@ -66,7 +66,6 @@ with lib;
     vim
     wget
     xdg-ninja
-    antidote #zsh-framwork
     # c/c++ cli
     btop
     fzy
