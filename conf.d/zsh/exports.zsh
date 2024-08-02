@@ -31,7 +31,6 @@ export GNUPGHOME="$XDG_DATA_HOME"/gnupg
 export DOTNET_CLI_HOME="$XDG_DATA_HOME"/dotnet
 export CUDA_CACHE_PATH="$XDG_CACHE_HOME"/nv
 export CONDARC="$XDG_CONFIG_HOME"/conda/condarc
-export PAGER=ov
 export FZF_DEFAULT_OPTS="\
     --ansi --height 40% --layout=reverse --border --separator='╸' --header='E to edit' \
     --preview-label='┓ ⟪Preview⟫ ┏' --preview-window=border-bold --scrollbar '▌▐'\
@@ -48,7 +47,8 @@ export _ZO_FZF_OPTS="\
 
 # zsh plugins options
 export ANTIDOTE_HOME="$XDG_CACHE_HOME"/antidote
-export ZSH_EVALCACHE_DIR="$XDG_CACHE_HOME"/zsh/zsh-evalcache
+# export ZSH_EVALCACHE_DIR="$XDG_CACHE_HOME"/zsh/evalcache
+export ZSH_SMARTCACHE_DIR="$XDG_CACHE_HOME"/zsh/smartcache
 export ZSH_AUTOSUGGEST_USE_ASYNC="true"
 export ZSH_COMPDUMP="$XDG_CACHE_HOME"/zsh/compdump
 
@@ -97,7 +97,7 @@ function set_conda_dir() {
 set_conda_dir
 if (( $+commands[conda] )); then
 	# eval "$("$__conda_dir"/bin/conda 'shell.zsh' 'hook' 2>/dev/null)"
-	_evalcache "$__conda_dir"/bin/conda shell.zsh hook 
+	smartcache eval "$__conda_dir"/bin/conda shell.zsh hook 
 else
 	if [ -f "$__conda_dir/etc/profile.d/conda.sh" ]; then
 		# shellcheck disable=SC1091

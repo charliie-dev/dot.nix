@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Core Aliases
-alias sozsh='source ~/.zshenv && zsh_recompile'
+alias sozsh='source ~/.zshenv && source ~/.config/zsh/.zshrc && zsh_recompile'
 alias rm='rm -iv'
 alias mkdir='mkdir -pv'
 alias ps='ps auxf'

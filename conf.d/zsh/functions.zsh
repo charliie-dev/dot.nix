@@ -1,24 +1,11 @@
 zsh_recompile() {
 	# ${ZDOTDIR} cache
 	rm -rf ${ZDOTDIR}/.zcompdump
-	for zfile in ${ZDOTDIR}/(.zshenv|.zshrc|.zcompdump); do
+	for zfile in ${ZDOTDIR}/(.zshenv|.zshrc); do
 		rm -rf ${zfile}.zwc
 		zcompile -UR ${zfile} && echo "${zfile}.zwc compiled!"
 	done
 	unset zfile
-
-	# ${ZSH_COMPDUMP} cache
-	rm -rf ${zfile}.zwc
-	if [[ ! ${ZSH_COMPDUMP}.zwc -nt ${ZSH_COMPDUMP} ]]; then
-		zcompile -UR ${ZSH_COMPDUMP} && echo "${ZSH_COMPDUMP}.zwc compiled!"
-	fi
-	# belak/zsh-utils compdump
-	compdump="$XDG_CACHE_HOME"/zsh/compdump
-	rm -rf ${compdump} 
-	source ${ZDOTDIR}/.zshrc
-	rm -rf ${compdump}.zwc
-	zcompile -UR ${compdump} && echo "${compdump}.zwc compiled!"
-	unset compdump
 
 	# antidote plugins
 	for zfile in ${XDG_CACHE_HOME}/antidote/**/**/*.zsh; do
@@ -81,6 +68,10 @@ nix_reload() {
 	else
 		echo 'Unknown OS!'
 	fi
+}
+
+-help() {
+  bat -plhelp --paging=always --color=always
 }
 
 # vim: set ft=zsh :

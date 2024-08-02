@@ -3,5 +3,5 @@
 HISTSIZE="10000"
 SAVEHIST="10000"
 
-HISTFILE="$XDG_CACHE_HOME"/zsh/zsh_history
+HISTFILE="$XDG_CACHE_HOME"/zsh/history
 mkdir -p "$(dirname "$HISTFILE")"

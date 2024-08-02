@@ -319,11 +319,16 @@ with lib;
         "zsh-users/zsh-autosuggestions kind:defer"
         "zsh-users/zsh-completions kind:fpath"
         "belak/zsh-utils path:completion"
+        "zdharma-continuum/fast-syntax-highlighting kind:defer" # add before zsh-history-substring-search to prevent breaking
         "zsh-users/zsh-history-substring-search kind:defer"
-        "zdharma-continuum/fast-syntax-highlighting kind:defer"
         "MichaelAquilina/zsh-you-should-use kind:defer"
         "hlissner/zsh-autopair"
-        "mroth/evalcache"
+        "QuarticCat/zsh-smartcache" # better mroth/evalcache
+        "unixorn/docker-helpers.zshplugin kind:defer"
+        "zpm-zsh/colorize kind:defer" # Colorize the output of various programs
+        "zpm-zsh/colors" # Enhanced colors for zsh
+        "MichaelAquilina/zsh-autoswitch-virtualenv kind:defer" # Auto-switch python venv, pipenv, poetry
+        "Freed-Wu/zsh-help" # colorize `XXX --help`
         # oh-my-zsh plugins
         "getantidote/use-omz" # handle OMZ dependencies
         "ohmyzsh/ohmyzsh path:lib" # load OMZ's library
