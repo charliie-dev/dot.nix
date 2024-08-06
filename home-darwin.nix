@@ -89,6 +89,7 @@ with lib;
     bat
     delta
     dua
+    git-ignore # sondr3/git-ignore
     eva
     eza
     fd
@@ -100,6 +101,7 @@ with lib;
     ripgrep-all
     ripsecrets
     rye # like cargo but for python
+    skim
     sd
     starship
     tokei
@@ -322,13 +324,15 @@ with lib;
         "zdharma-continuum/fast-syntax-highlighting kind:defer" # add before zsh-history-substring-search to prevent breaking
         "zsh-users/zsh-history-substring-search kind:defer"
         "MichaelAquilina/zsh-you-should-use kind:defer"
-        "hlissner/zsh-autopair"
         "QuarticCat/zsh-smartcache" # better mroth/evalcache
         "unixorn/docker-helpers.zshplugin kind:defer"
         "zpm-zsh/colorize kind:defer" # Colorize the output of various programs
         "zpm-zsh/colors" # Enhanced colors for zsh
         "MichaelAquilina/zsh-autoswitch-virtualenv kind:defer" # Auto-switch python venv, pipenv, poetry
         "Freed-Wu/zsh-help" # colorize `XXX --help`
+        "reegnz/jq-zsh-plugin kind:defer"
+        "nix-community/nix-zsh-completions kind:defer"
+        "fdw/yazi-zoxide-zsh" # "y {part path}"
         # oh-my-zsh plugins
         "getantidote/use-omz" # handle OMZ dependencies
         "ohmyzsh/ohmyzsh path:lib" # load OMZ's library
@@ -345,6 +349,7 @@ with lib;
       ${builtins.readFile ./conf.d/zsh/history.zsh}
       ${builtins.readFile ./conf.d/zsh/plugins.zsh}
       ${builtins.readFile ./conf.d/zsh/aliases.zsh}
+      ${builtins.readFile ./conf.d/zsh/macos.zsh}
       ${builtins.readFile ./conf.d/zsh/completion.zsh}
       ${builtins.readFile ./conf.d/zsh/hashdirs.zsh}
     '';

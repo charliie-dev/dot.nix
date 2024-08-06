@@ -16,5 +16,6 @@ bindkey -v # Default to vi bindings
 bindkey '^[[a' history-substring-search-up
 bindkey '^[[b' history-substring-search-down
 bindkey ',' autosuggest-accept
+bindkey '^j' jq-complete
 
 # vim: set ft=zsh :

@@ -14,6 +14,7 @@ alias .....='cd ../../../..'
 alias bd='cd "$OLDPWD"' # cd to the previous directory
 alias nv='nvim'
 alias vim='vim -i NONE'
+alias ips="ifconfig -a | grep -o 'inet6\? \(addr:\)\?\s\?\(\(\([0-9]\+\.\)\{3\}[0-9]\+\)\|[a-fA-F0-9:]\+\)' | awk '{ sub(/inet6? (addr:)? ?/, \"\"); print }'"
 
 # Extanded Aliases
 alias yarn='yarn --use-yarnrc "$XDG_CONFIG_HOME/yarn/config"'

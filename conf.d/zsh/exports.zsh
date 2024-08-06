@@ -85,7 +85,7 @@ add_path "$PNPM_HOME"
 if (( $+commands[nvidia-smi] )); then
 	add_path "/usr/local/cuda/bin"
 
-	(( $LD_LIBRARY_PATH[(I)/usr/local/cuda/lib64] )) || 
+	(( $LD_LIBRARY_PATH[(I)/usr/local/cuda/lib64] )) ||
 		export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 fi
 
@@ -97,7 +97,7 @@ function set_conda_dir() {
 set_conda_dir
 if (( $+commands[conda] )); then
 	# eval "$("$__conda_dir"/bin/conda 'shell.zsh' 'hook' 2>/dev/null)"
-	smartcache eval "$__conda_dir"/bin/conda shell.zsh hook 
+	smartcache eval "$__conda_dir"/bin/conda shell.zsh hook
 else
 	if [ -f "$__conda_dir/etc/profile.d/conda.sh" ]; then
 		# shellcheck disable=SC1091
