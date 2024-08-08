@@ -1,6 +1,6 @@
-auto_update_conda: true
 channels:
-  - defaults
-ssl_verify: true
+  - conda-forge
+  - nodefaults
+channel_priority: strict
 
 # vim: set ft=yaml :

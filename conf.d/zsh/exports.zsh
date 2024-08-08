@@ -89,23 +89,4 @@ if (( $+commands[nvidia-smi] )); then
 		export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 fi
 
-# set conda init
-function set_conda_dir() {
-	[ -d "/opt/anaconda3/" ] && export __conda_dir="/opt/anaconda3"
-	[ -d "$HOME/anaconda3" ] && export __conda_dir="$HOME/anaconda3"
-}
-set_conda_dir
-if (( $+commands[conda] )); then
-	# eval "$("$__conda_dir"/bin/conda 'shell.zsh' 'hook' 2>/dev/null)"
-	smartcache eval "$__conda_dir"/bin/conda shell.zsh hook
-else
-	if [ -f "$__conda_dir/etc/profile.d/conda.sh" ]; then
-		# shellcheck disable=SC1091
-		. "$__conda_dir/etc/profile.d/conda.sh"
-	else
-		add_path "$__conda_dir/bin"
-	fi
-fi
-unset __conda_dir
-
 # vim: set ft=sh :

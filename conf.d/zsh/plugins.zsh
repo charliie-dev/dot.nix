@@ -13,6 +13,10 @@ export _ZO_EXCLUDE_DIRS="$XDG_CACHE_HOME;$XDG_DATA_HOME;$XDG_STATE_HOME"
 # Init Starship
 # eval "$(starship init zsh)"
 
+# Init micromamba
+export MAMBA_ROOT_PREFIX="$HOME"/.local/state/nix/profile/bin
+eval "$($MAMBA_ROOT_PREFIX/micromamba shell hook -s zsh)"
+
 # Use mroth/evalcache to speedup zsh loading time
 smartcache eval zoxide init zsh
 smartcache eval starship init zsh

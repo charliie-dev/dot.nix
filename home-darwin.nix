@@ -72,6 +72,7 @@ with lib;
     fzy
     jq
     lnav
+    micromamba # conda replacement
     # python cli
     git-fame
     git-filter-repo
