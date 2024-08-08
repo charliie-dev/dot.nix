@@ -83,6 +83,7 @@ with lib;
     lazygit
     nix-search-cli
     pistol
+    yq-go # jq but for YAML, JSON, XML, CSV, TOML
     # vfox ## TODO: https://github.com/version-fox/vfox/issues/53
     # rust cli
     # joshuto
@@ -95,7 +96,6 @@ with lib;
     eza
     fd
     fh # official CLI for FlakeHub
-    jaq
     lsd
     mise
     ripgrep
