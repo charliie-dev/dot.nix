@@ -66,6 +66,7 @@ with lib;
     unzip
     vim
     wget
+    wget2
     xdg-ninja
     # c/c++ cli
     btop
