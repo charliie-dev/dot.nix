@@ -72,7 +72,8 @@ with lib;
     fzy
     jq
     lnav
-    micromamba # conda replacement
+    # https://wiki.nixos.org/wiki/Python#Using_micromamba
+    # micromamba # conda replacement, don't install via nix, install directly
     # python cli
     git-fame
     git-filter-repo
