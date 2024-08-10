@@ -3,6 +3,8 @@
     email = charleschiu@hey.com
 [core]
     pager = delta
+	preloadindex = true
+	fscache = true
 [pretty]
     slog = format:'%C(bold red)%h%Creset %C(bold cyan)<%an>%Creset %C(yellow)%d%Creset %s %Cgreen(%cr)' --abbrev-commit --date=relative
 [alias]
@@ -26,7 +28,7 @@
 	ignore = update-index --skip-worktree
 	unignore = update-index --no-skip-worktree
 	ignorels = !git ls-files -v | grep "^S"
-	# Delete all branches merged into master. 
+	# Delete all branches merged into master.
 	# With -f also include branches merged into current
 	sweep = ! \
 			git branch --merged $( \
@@ -35,7 +37,7 @@
 			) \
 			| egrep -v \"(^\\*|^\\s*(master|develop)$)\" \\\n \
 			| xargs git branch -d
-	# Open repo in browser  
+	# Open repo in browser
 	browse = "!f() { \
 			open `git remote -v \
 			| awk '/fetch/{print $2}' \
