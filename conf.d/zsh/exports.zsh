@@ -31,23 +31,16 @@ export GNUPGHOME="$XDG_DATA_HOME"/gnupg
 export DOTNET_CLI_HOME="$XDG_DATA_HOME"/dotnet
 export CUDA_CACHE_PATH="$XDG_CACHE_HOME"/nv
 export CONDARC="$XDG_CONFIG_HOME"/conda/condarc
-export FZF_DEFAULT_OPTS="\
-    --ansi --height 40% --layout=reverse --border --separator='╸' --header='E to edit' \
-    --preview-label='┓ ⟪Preview⟫ ┏' --preview-window=border-bold --scrollbar '▌▐'\
-    --color=border:#cba6f7,label:#cba6f7,separator:#a6e3a1 \
-    --color=bg+:#313244,bg:,spinner:#f5e0dc,hl:#f38ba8 \
-    --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
-    --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8"
-export _ZO_FZF_OPTS="\
-    --ansi --height 40% --layout=reverse --border --separator='╸' --scrollbar '▌▐' --select-1 \
-    --color=border:#cba6f7,label:#cba6f7,separator:#a6e3a1 \
-    --color=bg+:#313244,bg:,spinner:#f5e0dc,hl:#f38ba8 \
-    --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
-    --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8" # use `zi` to open fzf search
+# export FZF_DEFAULT_OPTS="\
+#     --ansi --height 40% --layout=reverse --border --separator='╸' --header='E to edit' \
+#     --preview-label='┓ ⟪Preview⟫ ┏' --preview-window=border-bold --scrollbar '▌▐'\
+#     --color=border:#cba6f7,label:#cba6f7,separator:#a6e3a1 \
+#     --color=bg+:#313244,bg:,spinner:#f5e0dc,hl:#f38ba8 \
+#     --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
+#     --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8"
 
 # zsh plugins options
 export ANTIDOTE_HOME="$XDG_CACHE_HOME"/antidote
-# export ZSH_EVALCACHE_DIR="$XDG_CACHE_HOME"/zsh/evalcache
 export ZSH_SMARTCACHE_DIR="$XDG_CACHE_HOME"/zsh/smartcache
 export ZSH_AUTOSUGGEST_USE_ASYNC="true"
 export ZSH_COMPDUMP="$XDG_CACHE_HOME"/zsh/compdump
@@ -64,7 +57,6 @@ export GREP_COLOR='3;33'
 # TODO:
 export LESS='--ignore-case --raw-control-chars'
 # export PAGER='most'
-export EDITOR='nvim'
 # CTAGS Sorting in VIM/Emacs is better behaved with this in place
 export LC_COLLATE=C
 

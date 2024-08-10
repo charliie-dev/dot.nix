@@ -9,6 +9,12 @@
 # Use mroth/evalcache to speedup zsh loading time
 export _ZO_DATA_DIR="$XDG_DATA_HOME"/zoxide
 export _ZO_EXCLUDE_DIRS="$XDG_CACHE_HOME;$XDG_DATA_HOME;$XDG_STATE_HOME"
+export _ZO_FZF_OPTS="\
+    --ansi --height 40% --layout=reverse --border --separator='╸' --scrollbar '▌▐' --select-1"
+    # --color=border:#cba6f7,label:#cba6f7,separator:#a6e3a1 \
+    # --color=bg+:#313244,bg:,spinner:#f5e0dc,hl:#f38ba8 \
+    # --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
+    # --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8" # use `zi` to open fzf search
 
 # Init Starship
 # eval "$(starship init zsh)"

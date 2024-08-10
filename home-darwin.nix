@@ -10,6 +10,7 @@ with lib;
 
     # You can also split up your configuration and import pieces of it here:
     # ./nvim.nix
+    inputs.catppuccin.homeManagerModules.catppuccin
   ];
 
   nix = {
@@ -69,7 +70,6 @@ with lib;
     wget2
     xdg-ninja
     # c/c++ cli
-    btop
     fzy
     jq
     lnav
@@ -79,7 +79,6 @@ with lib;
     git-fame
     git-filter-repo
     # golang cli
-    fzf
     glow
     lazydocker
     lazygit
@@ -90,7 +89,6 @@ with lib;
     # rust cli
     # joshuto
     # xq
-    bat
     delta
     dua
     git-ignore # sondr3/git-ignore
@@ -104,7 +102,6 @@ with lib;
     ripgrep-all
     ripsecrets
     rye # like cargo but for python
-    skim
     sd
     starship
     tokei
@@ -130,10 +127,6 @@ with lib;
   xdg.enable = true;
   xdg.configFile = {
     # core-utils
-    "zsh" = {
-      recursive = true;
-      source = ./conf.d/zsh;
-    };
     "git" = {
       recursive = true;
       source = ./conf.d/git;
@@ -148,14 +141,6 @@ with lib;
       source = ./conf.d/conda;
     };
     # cli-utils
-    "bat" = {
-      recursive = true;
-      source = ./conf.d/bat;
-    };
-    "btop" = {
-      recursive = true;
-      source = ./conf.d/btop;
-    };
     "fd" = {
       recursive = true;
       source = ./conf.d/fd;
@@ -206,6 +191,102 @@ with lib;
     };
   };
 
+  catppuccin = {
+    accent = "green";
+    flavor = "mocha";
+  };
+
+  programs.bat = {
+    enable = true;
+    catppuccin.enable = true;
+    extraPackages = with pkgs.bat-extras; [
+      batgrep
+      batwatch
+      prettybat
+    ];
+    config = {
+      paging = "auto";
+      pager = "less --RAW-CONTROL-CHARS --quit-if-one-screen --mouse";
+      color = "always";
+      decorations = "always";
+      italic-text = "always";
+      style = "changes,header-filename,header-filesize,grid,numbers,snip";
+    };
+  };
+
+  programs.btop = {
+    enable = true;
+    catppuccin.enable = true;
+    extraConfig = ''
+      #* Set to True to enable "h,j,k,l,g,G" keys for directional control in lists.
+      #* Conflicting keys for h:"help" and k:"kill" is accessible while holding shift.
+      vim_keys = True
+
+      #* Update time in milliseconds, recommended 2000 ms or above for better sample times for graphs.
+      update_ms = 100
+
+      #* Show processes as a tree.
+      proc_tree = True
+
+      #* Use a darkening gradient in the process list.
+      proc_gradient = False
+
+      log_level = "WARNING"
+    '';
+  };
+
+  programs.fzf = {
+    enable = true;
+    catppuccin.enable = true;
+    enableZshIntegration = true;
+    # defaultCommand = "";
+    defaultOptions = [
+      "--ansi"
+      "--height 40%"
+      "--layout=reverse"
+      "--border --separator='╸'"
+    ];
+    changeDirWidgetCommand = "fd --type d"; # ALT-C
+    changeDirWidgetOptions = [
+      "--ansi"
+      "--height 40%"
+      "--layout=reverse"
+      "--border --separator='╸'"
+      "--header='E to edit'"
+      "--preview-label='┓ ⟪Preview⟫ ┏'"
+      "--preview-window=border-bold"
+      "--scrollbar '▌▐'"
+    ];
+    fileWidgetCommand = "fd --type f"; # CTRL-T
+    fileWidgetOptions = [
+      "--ansi"
+      "--height 40%"
+      "--layout=reverse"
+      "--border --separator='╸'"
+      "--header='E to edit'"
+      "--preview-label='┓ ⟪Preview⟫ ┏'"
+      "--preview-window=border-bold"
+      "--scrollbar '▌▐'"
+    ];
+    # CTRL-R
+    historyWidgetOptions = [
+      "--sort"
+      "--exact"
+    ];
+    tmux = {
+      enableShellIntegration = true;
+      shellIntegrationOptions = [
+        "-d 40%"
+      ];
+    };
+  };
+
+  programs.gh-dash = {
+    enable = true;
+    catppuccin.enable = true;
+    # settings = {};
+  };
+
   home.activation.nvimdotsActivatioinAction = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     if [ ! -d ~/.config/nvim ]; then
       ${pkgs.git}/bin/git clone https://github.com/CharlesChiuGit/nvimdots.lua.git ~/.config/nvim
@@ -243,8 +324,11 @@ with lib;
     # extraLuaPackages = luaPkgs: with luaPkgs; [
     # luarocks # doesn't work, put in extraPackages
     # ];
-    viAlias = true;
-    vimdiffAlias = true;
+  };
+
+  programs.skim = {
+    enable = true;
+    catppuccin.enable = true;
   };
 
   programs.tmux = {
@@ -252,17 +336,18 @@ with lib;
     clock24 = true;
     mouse = true;
     secureSocket = true;
+    catppuccin = {
+      enable = true;
+      flavor = "macchiato"; # or frappe, macchiato, mocha
+      extraConfig = ''
+        set -g @catppuccin_window_tabs_enabled on
+        set -g @catppuccin_host "on"
+      '';
+    };
+
     plugins = with pkgs; [
       tmuxPlugins.better-mouse-mode
       tmuxPlugins.tmux-fzf # prefix + F
-      {
-        plugin = tmuxPlugins.catppuccin;
-        extraConfig = ''
-          set -g @catppuccin_flavour 'macchiato' # or frappe, macchiato, mocha
-          set -g @catppuccin_window_tabs_enabled on
-          set -g @catppuccin_host "on"
-        '';
-      }
       {
         # automatically saves sessions for you every 15 minutes
         # `prefix+Ctrl+s` to save, `prefix+Ctrl+r` to restore
@@ -315,6 +400,10 @@ with lib;
     enable = true;
     dotDir = ".config/zsh";
     zprof.enable = false;
+    syntaxHighlighting.catppuccin = {
+      enable = true;
+      flavor = "frappe";
+    };
     antidote = {
       enable = true;
       useFriendlyNames = true;

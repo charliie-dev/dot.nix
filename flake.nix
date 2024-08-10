@@ -7,12 +7,14 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     # neovim.url = "github:nix-community/neovim-nightly-overlay";
+    catppuccin.url = "github:catppuccin/nix";
   };
 
   outputs =
     { self
     , nixpkgs
     , home-manager
+    , catppuccin
     }@inputs:
     let
       inherit (self) outputs;
