@@ -20,7 +20,7 @@ alias wget='wget2'
 # Extanded Aliases
 alias yarn='yarn --use-yarnrc "$XDG_CONFIG_HOME/yarn/config"'
 alias py='python3'
-alias ls='lsd -l'
+alias ls='lsd -lAh'
 alias lg='lazygit'
 alias lzd='lazydocker'
 alias conda='micromamba'
