@@ -110,14 +110,18 @@ with lib;
     rye # like cargo but for python
     sd
     starship
+    statix # lints and suggestions for the nix
+    deadnix # Scan Nix files for dead code
+    nixfmt-rfc-style # nixfmt was renamed to nixfmt-classic. The nixfmt attribute may be used for the new RFC 166-style formatter in the future, which is currently available as nixfmt-rfc-style
     tokei
     topgrade
     tree-sitter
     uv # pip in rust
     xh
     yazi
-    zellij
+    # zellij
     zoxide
+    vivid
   ];
 
   home.file = {
@@ -128,7 +132,6 @@ with lib;
       source = ./conf.d/Usercommand;
     };
   };
-  programs.home-manager.enable = true;
 
   xdg.enable = true;
   xdg.configFile = {
@@ -147,21 +150,9 @@ with lib;
       source = ./conf.d/conda;
     };
     # cli-utils
-    "fd" = {
-      recursive = true;
-      source = ./conf.d/fd;
-    };
     "glow" = {
       recursive = true;
       source = ./conf.d/glow;
-    };
-    "htop" = {
-      recursive = true;
-      source = ./conf.d/htop;
-    };
-    "lazygit" = {
-      recursive = true;
-      source = ./conf.d/lazygit;
     };
     "lsd" = {
       recursive = true;
@@ -170,10 +161,6 @@ with lib;
     "npm" = {
       recursive = true;
       source = ./conf.d/npm;
-    };
-    "pistol" = {
-      recursive = true;
-      source = ./conf.d/pistol;
     };
     "starship" = {
       recursive = true;
@@ -191,106 +178,15 @@ with lib;
       recursive = true;
       source = ./conf.d/yazi;
     };
-    "zellij" = {
-      recursive = true;
-      source = ./conf.d/zellij;
-    };
+    # "zellij" = {
+    #   recursive = true;
+    #   source = ./conf.d/zellij;
+    # };
   };
 
   catppuccin = {
     accent = "green";
     flavor = "mocha";
-  };
-
-  programs.bat = {
-    enable = true;
-    catppuccin.enable = true;
-    extraPackages = with pkgs.bat-extras; [
-      batgrep
-      batwatch
-      prettybat
-    ];
-    config = {
-      paging = "auto";
-      pager = "less --RAW-CONTROL-CHARS --quit-if-one-screen --mouse";
-      color = "always";
-      decorations = "always";
-      italic-text = "always";
-      style = "changes,header-filename,header-filesize,grid,numbers,snip";
-    };
-  };
-
-  programs.btop = {
-    enable = true;
-    catppuccin.enable = true;
-    extraConfig = ''
-      #* Set to True to enable "h,j,k,l,g,G" keys for directional control in lists.
-      #* Conflicting keys for h:"help" and k:"kill" is accessible while holding shift.
-      vim_keys = True
-
-      #* Update time in milliseconds, recommended 2000 ms or above for better sample times for graphs.
-      update_ms = 100
-
-      #* Show processes as a tree.
-      proc_tree = True
-
-      #* Use a darkening gradient in the process list.
-      proc_gradient = False
-
-      log_level = "WARNING"
-    '';
-  };
-
-  programs.fzf = {
-    enable = true;
-    catppuccin.enable = true;
-    enableZshIntegration = true;
-    # defaultCommand = "";
-    defaultOptions = [
-      "--ansi"
-      "--height 40%"
-      "--layout=reverse"
-      "--border --separator='╸'"
-    ];
-    changeDirWidgetCommand = "fd --type d"; # ALT-C
-    changeDirWidgetOptions = [
-      "--ansi"
-      "--height 40%"
-      "--layout=reverse"
-      "--border --separator='╸'"
-      "--header='E to edit'"
-      "--preview-label='┓ ⟪Preview⟫ ┏'"
-      "--preview-window=border-bold"
-      "--scrollbar '▌▐'"
-    ];
-    fileWidgetCommand = "fd --type f"; # CTRL-T
-    fileWidgetOptions = [
-      "--ansi"
-      "--height 40%"
-      "--layout=reverse"
-      "--border --separator='╸'"
-      "--header='E to edit'"
-      "--preview-label='┓ ⟪Preview⟫ ┏'"
-      "--preview-window=border-bold"
-      "--scrollbar '▌▐'"
-    ];
-    # CTRL-R
-    historyWidgetOptions = [
-      "--sort"
-      "--exact"
-    ];
-    tmux = {
-      enableShellIntegration = true;
-      shellIntegrationOptions = [
-        "-d 40%"
-      ];
-    };
-  };
-
-  programs.gh-dash = {
-    enable = true;
-    catppuccin.enable = true;
-    # settings = {};
   };
 
   home.activation.nvimdotsActivatioinAction = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
@@ -299,157 +195,341 @@ with lib;
     fi
   '';
 
-  programs.neovim = {
-    enable = true;
-    # package = pkgs.neovim-nightly;
-
-    withNodeJs = true;
-    withPython3 = true;
-    withRuby = false;
-
-    extraPackages = with pkgs;[
-      # Dependent packages used by default plugins
-      doq
-      cargo
-      clang
-      cmake
-      gcc
-      gnumake
-      go
-      ninja
-      pkg-config
-      yarn
-      lua51Packages.luarocks
-    ];
-
-    extraPython3Packages = pyPkgs: with pyPkgs; [
-      docformatter
-      pynvim
-    ];
-
-    # extraLuaPackages = luaPkgs: with luaPkgs; [
-    # luarocks # doesn't work, put in extraPackages
-    # ];
-  };
-
-  programs.skim = {
-    enable = true;
-    catppuccin.enable = true;
-  };
-
-  programs.tmux = {
-    enable = true;
-    clock24 = true;
-    mouse = true;
-    secureSocket = true;
-    catppuccin = {
+  programs = {
+    home-manager.enable = true;
+    bat = {
       enable = true;
-      flavor = "macchiato"; # or frappe, macchiato, mocha
+      catppuccin.enable = true;
+      extraPackages = with pkgs.bat-extras; [
+        batgrep
+        batwatch
+        prettybat
+      ];
+      config = {
+        paging = "auto";
+        pager = "less --RAW-CONTROL-CHARS --quit-if-one-screen --mouse";
+        color = "always";
+        decorations = "always";
+        italic-text = "always";
+        style = "changes,header-filename,header-filesize,grid,numbers,snip";
+      };
+    };
+
+    btop = {
+      enable = true;
+      catppuccin.enable = true;
       extraConfig = ''
-        set -g @catppuccin_window_tabs_enabled on
-        set -g @catppuccin_host "on"
+        #* Set to True to enable "h,j,k,l,g,G" keys for directional control in lists.
+        #* Conflicting keys for h:"help" and k:"kill" is accessible while holding shift.
+        vim_keys = True
+
+        #* Update time in milliseconds, recommended 2000 ms or above for better sample times for graphs.
+        update_ms = 100
+
+        #* Show processes as a tree.
+        proc_tree = True
+
+        #* Use a darkening gradient in the process list.
+        proc_gradient = False
+
+        log_level = "WARNING"
       '';
     };
 
-    plugins = with pkgs; [
-      tmuxPlugins.better-mouse-mode
-      tmuxPlugins.tmux-fzf # prefix + F
-      {
-        # automatically saves sessions for you every 15 minutes
-        # `prefix+Ctrl+s` to save, `prefix+Ctrl+r` to restore
-        plugin = tmuxPlugins.continuum;
-        extraConfig = ''
-          set -g @continuum-save-interval '15'
-          set -g @continuum-restore 'off'
-        '';
-      }
-      {
-        plugin = tmuxPlugins.prefix-highlight;
-        extraConfig = ''
-          set -g @prefix_highlight_prefix_prompt 'Wait'
-          set -g @prefix_highlight_copy_prompt 'Copy'
-          set -g @prefix_highlight_sync_prompt 'Sync'
-        '';
-      }
-      {
-        # persist tmux sessions after computer restart
-        plugin = tmuxPlugins.resurrect;
-        extraConfig = ''
-          set -g @resurrect-capture-pane-contents 'on'
-          set -g @resurrect-dir "$XDG_DATA_HOME/tmux/resurrect"
-        '';
-      }
-      {
-        # add zoxide and fzf support for tmux session
-        # `prefix + T` to open session wizard
-        plugin = tmuxPlugins.session-wizard;
-        extraConfig = ''
-          set -g @session-wizard 'T'
-        '';
-      }
-      {
-        plugin = tmuxPlugins.yank;
-        extraConfig = ''
-          set -g @yank_selection 'chipboard'
-          set -g @yank_selection_mouse 'clipboard'
-          set -g @custom_copy_command 'yank > #{pane_tty}'
-        '';
-      }
-    ];
-
-    extraConfig = ''
-      ${builtins.readFile ./conf.d/tmux/tmux.conf}
-    '';
-  };
-
-  programs.zsh = {
-    enable = true;
-    dotDir = ".config/zsh";
-    zprof.enable = false;
-    syntaxHighlighting.catppuccin = {
+    fd = {
       enable = true;
-      flavor = "frappe";
-    };
-    antidote = {
-      enable = true;
-      useFriendlyNames = true;
-      plugins = [
-        # lazy-loading `kind:defer`
-        "Aloxaf/fzf-tab kind:defer"
-        "zsh-users/zsh-autosuggestions kind:defer"
-        "zsh-users/zsh-completions kind:fpath"
-        "belak/zsh-utils path:completion"
-        "zdharma-continuum/fast-syntax-highlighting kind:defer" # add before zsh-history-substring-search to prevent breaking
-        "zsh-users/zsh-history-substring-search kind:defer"
-        "MichaelAquilina/zsh-you-should-use kind:defer"
-        "QuarticCat/zsh-smartcache" # better mroth/evalcache
-        "unixorn/docker-helpers.zshplugin kind:defer"
-        "zpm-zsh/colorize kind:defer" # Colorize the output of various programs
-        "zpm-zsh/colors" # Enhanced colors for zsh
-        "MichaelAquilina/zsh-autoswitch-virtualenv kind:defer" # Auto-switch python venv, pipenv, poetry
-        "Freed-Wu/zsh-help" # colorize `XXX --help`
-        "reegnz/jq-zsh-plugin kind:defer"
-        "nix-community/nix-zsh-completions kind:defer"
-        "fdw/yazi-zoxide-zsh" # "y {part path}"
-        # oh-my-zsh plugins
-        "getantidote/use-omz" # handle OMZ dependencies
-        "ohmyzsh/ohmyzsh path:lib" # load OMZ's library
-        "ohmyzsh/ohmyzsh path:plugins/colored-man-pages kind:defer" # load OMZ plugins
-        "ohmyzsh/ohmyzsh path:plugins/magic-enter kind:defer"
+      hidden = true;
+      ignores = [
+        ".git/"
+        "/mnt/c/"
       ];
     };
-    initExtra = ''
-      ${builtins.readFile ./conf.d/zsh/setopt.zsh}
-      ${builtins.readFile ./conf.d/zsh/exports.zsh}
-      ${builtins.readFile ./conf.d/zsh/history.zsh}
-      ${builtins.readFile ./conf.d/zsh/functions.zsh}
-      ${builtins.readFile ./conf.d/zsh/bindkeys.zsh}
-      ${builtins.readFile ./conf.d/zsh/history.zsh}
-      ${builtins.readFile ./conf.d/zsh/plugins.zsh}
-      ${builtins.readFile ./conf.d/zsh/aliases.zsh}
-      ${builtins.readFile ./conf.d/zsh/macos.zsh}
-      ${builtins.readFile ./conf.d/zsh/completion.zsh}
-      ${builtins.readFile ./conf.d/zsh/hashdirs.zsh}
-    '';
+
+    fzf = {
+      enable = true;
+      catppuccin.enable = true;
+      enableZshIntegration = true;
+      # defaultCommand = "";
+      defaultOptions = [
+        "--ansi"
+        "--height 40%"
+        "--layout=reverse"
+        "--border --separator='╸'"
+      ];
+      changeDirWidgetCommand = "fd --type d"; # ALT-C
+      changeDirWidgetOptions = [
+        "--ansi"
+        "--height 40%"
+        "--layout=reverse"
+        "--border --separator='╸'"
+        "--header='E to edit'"
+        "--preview-label='┓ ⟪Preview⟫ ┏'"
+        "--preview-window=border-bold"
+        "--scrollbar '▌▐'"
+      ];
+      fileWidgetCommand = "fd --type f"; # CTRL-T
+      fileWidgetOptions = [
+        "--ansi"
+        "--height 40%"
+        "--layout=reverse"
+        "--border --separator='╸'"
+        "--header='E to edit'"
+        "--preview-label='┓ ⟪Preview⟫ ┏'"
+        "--preview-window=border-bold"
+        "--scrollbar '▌▐'"
+      ];
+      # CTRL-R
+      historyWidgetOptions = [
+        "--sort"
+        "--exact"
+      ];
+      tmux = {
+        enableShellIntegration = true;
+        shellIntegrationOptions = [ "-d 40%" ];
+      };
+    };
+
+    htop = {
+      enable = true;
+    };
+
+    lazygit = {
+      enable = true;
+      catppuccin.enable = true;
+      settings = {
+        gui = {
+          mouseEvents = true;
+          language = "en"; # one of 'auto' | 'en' | 'zh' | 'pl' | 'nl' | 'ja' | 'ko'
+          timeFormat = "2022-11-03 15:04"; # https://pkg.go.dev/time#Time.Format
+          shortTimeFormat = "15:04";
+          showRandomTip = false;
+          showBottomLine = false;
+          nerdFontsVersion = "3";
+        };
+        git = {
+          paging = {
+            pager = "delta --dark --paging=never";
+          };
+          parseEmoji = true;
+        };
+        update = {
+          method = "never";
+        };
+        os = {
+          editPreset = "nvim";
+        };
+        notARepository = "skip"; # one of: 'prompt' | 'create' | 'skip' | 'quit'
+      };
+    };
+
+    pistol = {
+      enable = true;
+      associations = [
+        {
+          fpath = ".*.md$";
+          command = "sh: glow -s dark %pistol-filename%";
+        }
+        {
+          fpath = ".*.log$";
+          command = "sh: lnav -n %pistol-filename%";
+        }
+        {
+          mime = "inode/directory";
+          command = "eza -h --tree --color=always %pistol-filename%";
+        }
+        {
+          mime = "text/.*";
+          command = "bat %pistol-filename% --style auto";
+        }
+        {
+          mime = "image/.*";
+          command = "chafa --passthrough=auto --polite=on --exact-size=off --clear --align=top,left %pistol-filename%";
+        }
+        {
+          mime = "application/pdf";
+          command = "sh: pdftotext %pistol-filename% -";
+        }
+        {
+          mime = "application/json";
+          command = "sh: yq -CP -oj %pistol-filename%";
+        }
+        {
+          mime = "application/yaml";
+          command = "sh: yq -CP %pistol-filename%";
+        }
+        {
+          mime = "application/toml";
+          command = " sh: yq -CP -oy %pistol-filename%";
+        }
+        {
+          mime = "application/xml";
+          command = "sh: yq -CP -ox %pistol-filename% ";
+        }
+        {
+          mime = "application/csv";
+          command = "sh: yq -CP -oc %pistol-filename% ";
+        }
+        {
+          mime = "application/tsv";
+          command = "sh: yq -CP -ot %pistol-filename% ";
+        }
+      ];
+    };
+
+    gh-dash = {
+      enable = true;
+      catppuccin.enable = true;
+      # settings = {};
+    };
+
+    neovim = {
+      enable = true;
+      # package = pkgs.neovim-nightly;
+      withNodeJs = true;
+      withPython3 = true;
+      withRuby = false;
+      extraPackages = with pkgs; [
+        # Dependent packages used by default plugins
+        doq
+        cargo
+        clang
+        cmake
+        gcc
+        gnumake
+        go
+        ninja
+        pkg-config
+        yarn
+        lua51Packages.luarocks
+      ];
+      extraPython3Packages =
+        pyPkgs: with pyPkgs; [
+          docformatter
+          pynvim
+        ];
+
+      # extraLuaPackages = luaPkgs: with luaPkgs; [
+      # luarocks # doesn't work, put in extraPackages
+      # ];
+    };
+
+    skim = {
+      enable = true;
+      catppuccin.enable = true;
+    };
+
+    tmux = {
+      enable = true;
+      clock24 = true;
+      mouse = true;
+      secureSocket = true;
+      catppuccin = {
+        enable = true;
+        flavor = "macchiato"; # or frappe, macchiato, mocha
+        extraConfig = ''
+          set -g @catppuccin_window_tabs_enabled on
+          set -g @catppuccin_host "on"
+        '';
+      };
+      plugins = with pkgs; [
+        tmuxPlugins.better-mouse-mode
+        tmuxPlugins.tmux-fzf # prefix + F
+        {
+          # automatically saves sessions for you every 15 minutes
+          # `prefix+Ctrl+s` to save, `prefix+Ctrl+r` to restore
+          plugin = tmuxPlugins.continuum;
+          extraConfig = ''
+            set -g @continuum-save-interval '15'
+            set -g @continuum-restore 'off'
+          '';
+        }
+        {
+          plugin = tmuxPlugins.prefix-highlight;
+          extraConfig = ''
+            set -g @prefix_highlight_prefix_prompt 'Wait'
+            set -g @prefix_highlight_copy_prompt 'Copy'
+            set -g @prefix_highlight_sync_prompt 'Sync'
+          '';
+        }
+        {
+          # persist tmux sessions after computer restart
+          plugin = tmuxPlugins.resurrect;
+          extraConfig = ''
+            set -g @resurrect-capture-pane-contents 'on'
+            set -g @resurrect-dir "$XDG_DATA_HOME/tmux/resurrect"
+          '';
+        }
+        {
+          # add zoxide and fzf support for tmux session
+          # `prefix + T` to open session wizard
+          plugin = tmuxPlugins.session-wizard;
+          extraConfig = ''
+            set -g @session-wizard 'T'
+          '';
+        }
+        {
+          plugin = tmuxPlugins.yank;
+          extraConfig = ''
+            set -g @yank_selection 'chipboard'
+            set -g @yank_selection_mouse 'clipboard'
+            set -g @custom_copy_command 'yank > #{pane_tty}'
+          '';
+        }
+      ];
+      extraConfig = ''
+        ${builtins.readFile ./conf.d/tmux/tmux.conf}
+      '';
+    };
+
+    zsh = {
+      enable = true;
+      dotDir = ".config/zsh";
+      zprof.enable = false;
+      syntaxHighlighting.catppuccin = {
+        enable = true;
+        flavor = "frappe";
+      };
+      antidote = {
+        enable = true;
+        useFriendlyNames = true;
+        plugins = [
+          # lazy-loading `kind:defer`
+          "Aloxaf/fzf-tab kind:defer"
+          "zsh-users/zsh-autosuggestions kind:defer"
+          "zsh-users/zsh-completions kind:fpath"
+          "belak/zsh-utils path:completion"
+          "zdharma-continuum/fast-syntax-highlighting kind:defer" # add before zsh-history-substring-search to prevent breaking
+          "zsh-users/zsh-history-substring-search kind:defer"
+          "MichaelAquilina/zsh-you-should-use kind:defer"
+          "QuarticCat/zsh-smartcache" # better mroth/evalcache
+          "unixorn/docker-helpers.zshplugin kind:defer"
+          "zpm-zsh/colorize kind:defer" # Colorize the output of various programs
+          "zpm-zsh/colors" # Enhanced colors for zsh
+          "MichaelAquilina/zsh-autoswitch-virtualenv kind:defer" # Auto-switch python venv, pipenv, poetry
+          "Freed-Wu/zsh-help" # colorize `XXX --help`
+          "reegnz/jq-zsh-plugin kind:defer"
+          "nix-community/nix-zsh-completions kind:defer"
+          "fdw/yazi-zoxide-zsh" # "y {part path}"
+          # oh-my-zsh plugins
+          "getantidote/use-omz" # handle OMZ dependencies
+          "ohmyzsh/ohmyzsh path:lib" # load OMZ's library
+          "ohmyzsh/ohmyzsh path:plugins/colored-man-pages kind:defer" # load OMZ plugins
+          "ohmyzsh/ohmyzsh path:plugins/magic-enter kind:defer"
+        ];
+      };
+      initExtra = ''
+        ${builtins.readFile ./conf.d/zsh/setopt.zsh}
+        ${builtins.readFile ./conf.d/zsh/exports.zsh}
+        ${builtins.readFile ./conf.d/zsh/history.zsh}
+        ${builtins.readFile ./conf.d/zsh/functions.zsh}
+        ${builtins.readFile ./conf.d/zsh/bindkeys.zsh}
+        ${builtins.readFile ./conf.d/zsh/history.zsh}
+        ${builtins.readFile ./conf.d/zsh/plugins.zsh}
+        ${builtins.readFile ./conf.d/zsh/aliases.zsh}
+        ${builtins.readFile ./conf.d/zsh/macos.zsh}
+        ${builtins.readFile ./conf.d/zsh/completion.zsh}
+        ${builtins.readFile ./conf.d/zsh/hashdirs.zsh}
+      '';
+    };
   };
 }

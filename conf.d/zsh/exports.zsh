@@ -48,7 +48,9 @@ export ZSH_COMPDUMP="$XDG_CACHE_HOME"/zsh/compdump
 # Setup terminal, and turn on colors
 [ "$TMUX" != "" ] && export TERM="tmux-256color"
 export CLICOLOR=1
-export LSCOLORS=Gxfxcxdxbxegedabagacad
+export LSCOLORS=Gxfxcxdxbxegedabagacad # for BSD-based distros, like macOS
+export LS_COLORS="$(vivid generate catppuccin-mocha)" # for GNU-based distros
+
 
 # Enable color in grep
 export GREP_OPTIONS='--color=auto'
