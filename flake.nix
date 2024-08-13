@@ -11,10 +11,11 @@
   };
 
   outputs =
-    { self
-    , nixpkgs
-    , home-manager
-    , catppuccin
+    {
+      self,
+      nixpkgs,
+      home-manager,
+      catppuccin,
     }@inputs:
     let
       inherit (self) outputs;
@@ -56,22 +57,30 @@
       homeConfigurations = {
         "charles@charlesdeMac-mini.local" = hm.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.aarch64-darwin;
-          extraSpecialArgs = { inherit inputs outputs; };
+          extraSpecialArgs = {
+            inherit inputs outputs;
+          };
           modules = [ ./home-darwin.nix ];
         };
         "charles@bot" = hm.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.aarch64-linux;
-          extraSpecialArgs = { inherit inputs outputs; };
+          extraSpecialArgs = {
+            inherit inputs outputs;
+          };
           modules = [ ./home.nix ];
         };
         "charles@gemini" = hm.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          extraSpecialArgs = { inherit inputs outputs; };
+          extraSpecialArgs = {
+            inherit inputs outputs;
+          };
           modules = [ ./home.nix ];
         };
         "charles@RDSrv01" = hm.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          extraSpecialArgs = { inherit inputs outputs; };
+          extraSpecialArgs = {
+            inherit inputs outputs;
+          };
           modules = [ ./home.nix ];
         };
       };

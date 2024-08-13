@@ -1,4 +1,9 @@
-{ inputs, outputs, config, pkgs, lib, ... }:
+{
+  inputs,
+  pkgs,
+  lib,
+  ...
+}:
 with lib;
 {
   imports = [
@@ -17,7 +22,10 @@ with lib;
     package = pkgs.nix;
     checkConfig = true;
     settings = {
-      experimental-features = [ "nix-command" "flakes" ];
+      experimental-features = [
+        "nix-command"
+        "flakes"
+      ];
       use-xdg-base-directories = true;
       cores = 0; # use all available cores
       max-jobs = 10;
@@ -33,10 +41,8 @@ with lib;
     };
   };
 
-
   nixpkgs = {
-    overlays = [
-    ];
+    overlays = [ ];
     # Configure your nixpkgs instance
     config = {
       # Disable if you don't want unfree packages
