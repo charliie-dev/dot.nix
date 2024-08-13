@@ -1,5 +1,5 @@
 #!/bin/sh
 
-rg -x --no-line-number -A6 "Host\ $1" ~/.ssh/config
+rg --no-line-number -A6 "Host\ $1" ~/.ssh/config
 
 # vim: set ft=sh :
