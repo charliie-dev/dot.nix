@@ -25,15 +25,13 @@
         "x86_64-linux"
         "aarch64-darwin"
       ];
+      # overlays = [
+      #   inputs.neovim.overlay
+      # ];
       # This is a function that generates an attribute by calling a function you
       # pass to it, with each system as an argument
       forAllSystems = nixpkgs.lib.genAttrs systems;
       hm = home-manager;
-      # $nix eval --impure --raw --expr 'builtins.currentSystem'
-      # system = builtins.currentSystem;
-      # overlays = [
-      #   inputs.neovim.overlay
-      # ];
     in
     {
       # Your custom packages
