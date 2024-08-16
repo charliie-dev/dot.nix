@@ -5,9 +5,9 @@
 ######################################################################
 fzf_tks=$(
     tmux ls | awk '{print $1}' | rg ':' -r '' | fzf -m \
-        --border-label="╣ Tmux Kill ╠" \
+        --border-label=" Tmux Kill " \
         --header="Tab to select, Ctrl-C to cancel"
 )
-for s in $fzf_tks; do
+for s in "${fzf_tks[@]}"; do
     tmux kill-session -t "$s"
 done

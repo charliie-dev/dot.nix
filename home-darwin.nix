@@ -87,19 +87,15 @@ with lib;
     # golang cli
     glow
     lazydocker
-    lazygit
     nix-search-cli
     pistol
     yq-go # jq but for YAML, JSON, XML, CSV, TOML
     # vfox ## TODO: https://github.com/version-fox/vfox/issues/53
     # rust cli
-    # joshuto
-    # xq
     delta
     dua
     git-ignore # sondr3/git-ignore
     eva
-    eza
     fd
     fh # official CLI for FlakeHub
     lsd
@@ -157,6 +153,10 @@ with lib;
     "lsd" = {
       recursive = true;
       source = ./conf.d/lsd;
+    };
+    "pistol" = {
+      recursive = true;
+      source = ./conf.d/pistol;
     };
     "npm" = {
       recursive = true;
@@ -251,33 +251,13 @@ with lib;
       enableZshIntegration = true;
       # defaultCommand = "";
       defaultOptions = [
-        "--ansi"
-        "--height 40%"
-        "--layout=reverse"
-        "--border --separator='╸'"
+        "--ansi --height ~100% --reverse --tmux --border rounded"
+        "--highlight-line"
+        "--marker '▏' --marker-multi-line '╔║╚' --separator '╸' --scrollbar '▌▐'"
+        "--preview 'pistol {}'"
       ];
       changeDirWidgetCommand = "fd --type d"; # ALT-C
-      changeDirWidgetOptions = [
-        "--ansi"
-        "--height 40%"
-        "--layout=reverse"
-        "--border --separator='╸'"
-        "--header='E to edit'"
-        "--preview-label='┓ ⟪Preview⟫ ┏'"
-        "--preview-window=border-bold"
-        "--scrollbar '▌▐'"
-      ];
       fileWidgetCommand = "fd --type f"; # CTRL-T
-      fileWidgetOptions = [
-        "--ansi"
-        "--height 40%"
-        "--layout=reverse"
-        "--border --separator='╸'"
-        "--header='E to edit'"
-        "--preview-label='┓ ⟪Preview⟫ ┏'"
-        "--preview-window=border-bold"
-        "--scrollbar '▌▐'"
-      ];
       # CTRL-R
       historyWidgetOptions = [
         "--sort"
@@ -285,7 +265,7 @@ with lib;
       ];
       tmux = {
         enableShellIntegration = true;
-        shellIntegrationOptions = [ "-d 40%" ];
+        shellIntegrationOptions = [ "-d 60%" ];
       };
     };
 
@@ -320,66 +300,6 @@ with lib;
         };
         notARepository = "skip"; # one of: 'prompt' | 'create' | 'skip' | 'quit'
       };
-    };
-
-    pistol = {
-      enable = true;
-      associations = [
-        {
-          fpath = ".*.md$";
-          command = "sh: glow -s dark %pistol-filename%";
-        }
-        {
-          fpath = ".*.log$";
-          command = "sh: lnav -n %pistol-filename%";
-        }
-        {
-          mime = "inode/directory";
-          command = "eza -h --tree --color=always %pistol-filename%";
-        }
-        {
-          mime = "text/.*";
-          command = "bat %pistol-filename% --style auto";
-        }
-        {
-          mime = "image/.*";
-          command = "chafa --passthrough=auto --polite=on --exact-size=off --clear --align=top,left %pistol-filename%";
-        }
-        {
-          mime = "application/pdf";
-          command = "sh: pdftotext %pistol-filename% -";
-        }
-        {
-          mime = "application/json";
-          command = "sh: yq -CP -oj %pistol-filename%";
-        }
-        {
-          mime = "application/yaml";
-          command = "sh: yq -CP %pistol-filename%";
-        }
-        {
-          mime = "application/toml";
-          command = " sh: yq -CP -oy %pistol-filename%";
-        }
-        {
-          mime = "application/xml";
-          command = "sh: yq -CP -ox %pistol-filename% ";
-        }
-        {
-          mime = "application/csv";
-          command = "sh: yq -CP -oc %pistol-filename% ";
-        }
-        {
-          mime = "application/tsv";
-          command = "sh: yq -CP -ot %pistol-filename% ";
-        }
-      ];
-    };
-
-    gh-dash = {
-      enable = true;
-      catppuccin.enable = true;
-      # settings = {};
     };
 
     neovim = {
@@ -494,19 +414,19 @@ with lib;
         useFriendlyNames = true;
         plugins = [
           # lazy-loading `kind:defer`
-          "Aloxaf/fzf-tab kind:defer"
-          "zsh-users/zsh-autosuggestions kind:defer"
+          "QuarticCat/zsh-smartcache" # better mroth/evalcache
           "zsh-users/zsh-completions kind:fpath"
           "belak/zsh-utils path:completion"
+          "Aloxaf/fzf-tab kind:defer" # needs to load after `compinit`, but before wrap widgets, such as `zsh-autosuggestions` or `fast-syntax-highlighting`
+          "zsh-users/zsh-autosuggestions kind:defer"
           "zdharma-continuum/fast-syntax-highlighting kind:defer" # add before zsh-history-substring-search to prevent breaking
-          "zsh-users/zsh-history-substring-search kind:defer"
-          "MichaelAquilina/zsh-you-should-use kind:defer"
-          "QuarticCat/zsh-smartcache" # better mroth/evalcache
-          "unixorn/docker-helpers.zshplugin kind:defer"
           "zpm-zsh/colorize kind:defer" # Colorize the output of various programs
           "zpm-zsh/colors" # Enhanced colors for zsh
-          "MichaelAquilina/zsh-autoswitch-virtualenv kind:defer" # Auto-switch python venv, pipenv, poetry
           "Freed-Wu/zsh-help" # colorize `XXX --help`
+          "zsh-users/zsh-history-substring-search kind:defer"
+          "MichaelAquilina/zsh-you-should-use kind:defer"
+          "unixorn/docker-helpers.zshplugin kind:defer"
+          "MichaelAquilina/zsh-autoswitch-virtualenv kind:defer" # Auto-switch python venv, pipenv, poetry
           "reegnz/jq-zsh-plugin kind:defer"
           "nix-community/nix-zsh-completions kind:defer"
           "fdw/yazi-zoxide-zsh" # "y {part path}"

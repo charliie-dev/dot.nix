@@ -7,9 +7,20 @@ zstyle ':completion:*:approximate:*' max-errors 1 numeric compinit -d "$ZSH_COMP
 
 # fzf-tab
 
+# set descriptions format to enable group support
+# NOTE: don't use escape sequences here, fzf-tab will ignore them
+zstyle ':completion:*:descriptions' format '[%d]'
+# set list-colors to enable filename colorizing
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+# switch group using `<` and `>`
+zstyle ':fzf-tab:*' switch-group '<' '>'
+
 # pistol mime preview
-zstyle ':fzf-tab:complete:*:*' fzf-preview 'pistol ${(Q)realpath}'
-zstyle ':fzf-tab:complete:*:*' fzf-flags --height=60%
+zstyle ':fzf-tab:*' fzf-preview 'pistol ${(Q)realpath}'
+zstyle ':fzf-tab:*' fzf-flags --height 60%
+zstyle ':fzf-tab:*' fzf-pad 4
+zstyle ':fzf-tab:*' fzf-bindings 'space:accept'
+zstyle ':fzf-tab:*' accept-line enter
 
 # give a preview of commandline arguments when completing `kill`
 zstyle ':completion:*:*:*:*:processes' command "ps -u $USER -o pid,user,comm -w -w"
@@ -27,21 +38,6 @@ zstyle ':fzf-tab:complete:(-command-|-parameter-|-brace-parameter-|export|unset|
 # show alias
 zstyle ':fzf-tab:complete:alias:*' fzf-preview 'alias $word'
 
-# disable sort when completing `git checkout`
-zstyle ':completion:*:git-checkout:*' sort false
-
-# set descriptions format to enable group support
-zstyle ':completion:*:descriptions' format '[%d]'
-
-# preview directory's content with exa when completing cd
-zstyle ':fzf-tab:complete:cd:*' fzf-preview 'eza -1 -h --color=always $realpath'
-
-# basic file preview for ls (you can replace with something more sophisticated than head)
-zstyle ':completion::*:ls::*' fzf-preview='eval head {1}'
-
-# switch group using `,` and `.`
-zstyle ':fzf-tab:*' switch-group ',' '.'
-
 # show command manual
 zstyle ':fzf-tab:complete:-command-:*' fzf-preview \
 	'(out=$(tldr --color always "$word") 2>/dev/null && echo $out) || (out=$(MANWIDTH=$FZF_PREVIEW_COLUMNS man "$word") 2>/dev/null && echo $out) || (out=$(which "$word") && echo $out) || echo "${(P)word}"'
@@ -49,6 +45,9 @@ zstyle ':fzf-tab:complete:-command-:*' fzf-preview \
 # man or help
 zstyle ':fzf-tab:complete:(\\|)run-help:*' fzf-preview 'run-help $word'
 zstyle ':fzf-tab:complete:(\\|*/|)man:*' fzf-preview 'man $word'
+
+# disable sort when completing `git checkout`
+zstyle ':completion:*:git-checkout:*' sort false
 
 # ssh
 ## remove all previous ssh hosts
