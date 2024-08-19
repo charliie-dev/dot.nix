@@ -97,7 +97,6 @@ with lib;
     git-ignore # sondr3/git-ignore
     eva
     fd
-    fh # official CLI for FlakeHub
     lsd
     mise
     ripgrep
