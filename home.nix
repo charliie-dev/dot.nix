@@ -148,6 +148,10 @@ with lib;
       recursive = true;
       source = ./conf.d/glow;
     };
+    "lazydocker" = {
+      recursive = true;
+      source = ./conf.d/lazydocker;
+    };
     "lsd" = {
       recursive = true;
       source = ./conf.d/lsd;
