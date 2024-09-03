@@ -12,13 +12,13 @@ setopt AUTO_CD
 setopt HIST_FCNTL_LOCK
 
 # Allow multiple terminal sessions to all append to one zsh command history
-setopt APPEND_HISTORY 
+setopt APPEND_HISTORY
 
 # Save each command's beginning timestamp(sec), duration(sec) to the histfile
 setopt EXTENDED_HISTORY
 
 # Add comamnds as they are typed, don't wait until shell exit
-setopt INC_APPEND_HISTORY 
+setopt INC_APPEND_HISTORY
 
 # Add EXTENDED_HISTORY format for INC_APPEND_HISTORY
 setopt INC_APPEND_HISTORY_TIME
@@ -50,10 +50,10 @@ setopt HIST_REDUCE_BLANKS
 # Include more information about when the command was executed, etc
 setopt EXTENDED_HISTORY
 
-# ===== Completion 
+# ===== Completion
 
 # Allow completion from within a word/phrase
-setopt COMPLETE_IN_WORD 
+setopt COMPLETE_IN_WORD
 
 # When completing from the middle of a word, move the cursor to the end of the word
 setopt ALWAYS_TO_END
@@ -63,7 +63,7 @@ setopt ALWAYS_TO_END
 # Enable parameter expansion, command substitution, and arithmetic expansion in the prompt
 setopt PROMPT_SUBST
 
-unsetopt MENU_COMPLETE
-setopt AUTO_MENU
+# unsetopt MENU_COMPLETE
+# setopt AUTO_MENU
 
 # vim: set ft=sh :
