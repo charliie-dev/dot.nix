@@ -79,7 +79,7 @@ git-clean-branch() {
 }
 
 wdym() {
-  echo -n "$1 means: " && grep -i "$1\`" <(curl -fsSL https://raw.githubusercontent.com/Ashpex/Slang-Word/master/slang.txt) | awk -F'`' '{ print $2 }'
+  echo -n "$1 means: " && grep -i "^$1\`" <(curl -fsSL https://raw.githubusercontent.com/Ashpex/Slang-Word/master/slang.txt) | awk -F'`' '{ print $2 }'
 }
 
 # vim: set ft=zsh :
