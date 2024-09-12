@@ -78,4 +78,8 @@ git-clean-branch() {
   git fetch -p && for branch in $(git for-each-ref --format '%(refname) %(upstream:track)' refs/heads | awk '$2 == "[gone]" {sub("refs/heads/", "", $1); print $1}'); do git branch -D $branch; done
 }
 
+wdym() {
+  echo -n "$1 means: " && grep -i "$1\`" <(curl -fsSL https://raw.githubusercontent.com/Ashpex/Slang-Word/master/slang.txt) | awk -F'`' '{ print $2 }'
+}
+
 # vim: set ft=zsh :
