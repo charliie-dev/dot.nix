@@ -53,7 +53,7 @@
       };
 
       homeConfigurations = {
-        "charles@Mac-mini" = hm.lib.homeManagerConfiguration {
+        "charles@Mac-mini.local" = hm.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.aarch64-darwin;
           extraSpecialArgs = {
             inherit inputs outputs;
