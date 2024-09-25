@@ -45,7 +45,7 @@ alias docker_restart='docker compose down --remove-orphans && docker compose up 
 
 # Network Aliases
 alias openports='netstat -nape --inet' # show open ports
-alias flsof4="lsof -Pni4 | awk '{printf \"%10s %6s %5s %4s %-20s\n\", \$1, \$2, \$3, \$8, \$9}' | fzf --header-lines=1 --cycle"
+alias lsof4="lsof -Pni4 | awk '{printf \"%10s %6s %5s %4s %-20s\n\", \$1, \$2, \$3, \$8, \$9}' | fzf --header-lines=1 --cycle"
 
 # Archive Aliases
 alias mktar='tar -cvf'
@@ -54,5 +54,31 @@ alias mkgz='tar -cvzf'
 alias untar='tar -xvf'
 alias unbz2='tar -xvjf'
 alias ungz='tar -xvzf'
+
+# Docker Aliases - All Docker commands start with "d" AND Docker Compose commands start with "dc"
+alias dstop='sudo docker stop $(sudo docker ps -a -q)' # usage: dstop container_name
+alias dstopall='sudo docker stop $(sudo docker ps -aq)' # stop all containers
+alias drm='sudo docker rm $(sudo docker ps -a -q)' # usage: drm container_name
+alias dprunevol='sudo docker volume prune' # remove unused volumes
+alias dprunesys='sudo docker system prune -a' # remove unsed docker data
+alias ddelimages='sudo docker rmi $(sudo docker images -q)' # remove unused docker images
+alias derase='dstopcont ; drmcont ; ddelimages ; dvolprune ; dsysprune' # WARNING: removes everything!
+alias dprune='ddelimages ; dprunevol ; dprunesys' # remove unused data, volumes, and images (perfect for safe clean up)
+alias dexec='sudo docker exec -ti' # usage: dexec container_name (to access container terminal)
+alias dps='sudo docker ps -a' # running docker processes
+alias dpss='sudo docker ps -a --format "table {{.Names}}\t{{.State}}\t{{.Status}}\t{{.Image}}" | (sed -u 1q; sort)' # running docker processes as nicer table
+alias ddf='sudo docker system df' # docker data usage (/var/lib/docker)
+alias dlogs='sudo docker logs -tf --tail="50" ' # usage: dlogs container_name
+
+alias dcrun='sudo docker compose -f ./docker-compose.yml'
+alias dclogs='dcrun logs -tf --tail="50" ' # usage: dclogs container_name
+alias dcup='dcrun up -d --build --remove-orphans' # up the stack
+alias dcdown='dcrun down --remove-orphans' # down the stack
+alias dcrec='dcrun up -d --force-recreate --remove-orphans' # usage: dcrec container_name
+alias dcstop='dcrun stop' # usage: dcstop container_name
+alias dcrestart='dcrun restart ' # usage: dcrestart container_name
+alias dcstart='dcrun start ' # usage: dcstart container_name
+alias dcpull='dcrun pull' # usage: dcpull to pull all new images or dcpull container_name
+
 
 # vim: set ft=sh :
