@@ -427,11 +427,7 @@ with lib;
           "Freed-Wu/zsh-help" # colorize `XXX --help`
           "zsh-users/zsh-history-substring-search kind:defer"
           "MichaelAquilina/zsh-you-should-use kind:defer"
-          "unixorn/docker-helpers.zshplugin kind:defer"
           "MichaelAquilina/zsh-autoswitch-virtualenv kind:defer" # Auto-switch python venv, pipenv, poetry
-          "reegnz/jq-zsh-plugin kind:defer"
-          "nix-community/nix-zsh-completions kind:defer"
-          "fdw/yazi-zoxide-zsh" # "y {part path}"
           # oh-my-zsh plugins
           "getantidote/use-omz" # handle OMZ dependencies
           "ohmyzsh/ohmyzsh path:lib" # load OMZ's library
