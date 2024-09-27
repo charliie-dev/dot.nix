@@ -15,3 +15,12 @@ Host gitlab.com
     IdentityFile ~/.ssh/gitlab_rsa
     ServerAliveInterval 300
     ServerAliveCountMax 10
+
+# huggingface
+Host hf.co
+	User git
+    HostName hf.co
+    PreferredAuthentications publickey
+    IdentityFile ~/.ssh/huggingface_rsa
+    ServerAliveInterval 300
+    ServerAliveCountMax 10
