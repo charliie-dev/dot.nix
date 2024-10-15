@@ -111,7 +111,7 @@ with lib;
     tokei
     topgrade
     tree-sitter
-    uv # pip in rust
+    # uv # pip in rust
     xh
     yazi
     # zellij
