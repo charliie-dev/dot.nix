@@ -94,6 +94,7 @@ with lib;
     # rust cli
     delta
     dua
+    git-lfs
     git-ignore # sondr3/git-ignore
     eva
     fd
@@ -143,6 +144,10 @@ with lib;
     "conda" = {
       recursive = true;
       source = ./conf.d/conda;
+    };
+    "python" = {
+      recursive = true;
+      source = ./conf.d/python;
     };
     # cli-utils
     "glow" = {
