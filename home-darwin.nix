@@ -99,7 +99,7 @@ with lib;
     eva
     fd
     lsd
-    mise
+    # mise
     ripgrep
     ripgrep-all
     ripsecrets
