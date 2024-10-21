@@ -57,10 +57,10 @@ and open another shell.
 
 ```sh
 nix-channel --add https://nixos.org/channels/nixpkgs-unstable unstable
-nix-channel --add https://github.com/nix-community/home-manager/archive/master.tar.gz hm
 nix-channel --update
 nix-env -iA unstable.git
 git clone https://github.com/CharlesChiuGit/nix-hm-config.git ~/.config/home-manager
+nix-env -e git
 cd ~/.config/home-manager && nix build
 # add `trusted-users `: trusted-users = charles in `/etc/nix/nix.conf`
 ~/.config/home-manager/result/bin/home-manager switch --flake ~/.config/home-manager --impure
