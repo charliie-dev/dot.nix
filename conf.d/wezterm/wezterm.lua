@@ -36,7 +36,7 @@ local FONT_NAME = "IntoneMono NFP"
 
 config = {
 	font = font_with_fallback(FONT_NAME),
-	font_size = 120,
+	font_size = 20,
 	font_rules = {
 		{
 			italic = true,
