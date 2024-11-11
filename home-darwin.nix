@@ -174,6 +174,10 @@ with lib;
       recursive = true;
       source = ./conf.d/starship;
     };
+    "wezterm" = {
+      recursive = true;
+      source = ./conf.d/wezterm;
+    };
     "wget" = {
       recursive = true;
       source = ./conf.d/wget;
