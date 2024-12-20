@@ -90,6 +90,9 @@ no_self_update = true
 # "Emacs Snapshot" = "rm -rf ~/.emacs.d/elpa.bak && cp -rl ~/.emacs.d/elpa ~/.emacs.d/elpa.bak"
 "home-manager" = "home-manager switch"
 "home-manager cleanup" = "nix-collect-garbage -d && nix-env --delete-generations old && nix-store --gc && nix-store --optimise"
+"antidote" = "~/.local/state/nix/profile/share/antidote/antidote update"
+"micromamba" = "micromamba self-update"
+"zsh_recompule" = "source ~/.config/home-manager/conf.d/zsh/functions.zsh && zsh_recompile"
 
 
 # Custom commands
@@ -192,7 +195,7 @@ repos = ["~/.config/nvim", "~/.config/home-manager"]
 # pull_predefined = false
 
 # Arguments to pass Git when pulling Repositories
-# arguments = "--rebase --autostash"
+arguments = "--rebase --autostash"
 
 
 [windows]
