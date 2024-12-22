@@ -113,7 +113,6 @@ with lib;
     tree-sitter
     # uv # pip in rust
     xh
-    yazi
     # zellij
     zoxide
     vivid
@@ -181,10 +180,10 @@ with lib;
       recursive = true;
       source = ./conf.d/yarn;
     };
-    "yazi" = {
-      recursive = true;
-      source = ./conf.d/yazi;
-    };
+    # "yazi" = {
+    #   recursive = true;
+    #   source = ./conf.d/yazi;
+    # };
     # "zellij" = {
     #   recursive = true;
     #   source = ./conf.d/zellij;
@@ -194,6 +193,21 @@ with lib;
   catppuccin = {
     accent = "green";
     flavor = "mocha";
+    bat = {
+      enable = true;
+    };
+    btop = {
+      enable = true;
+    };
+    fzf = {
+      enable = true;
+    };
+    lazygit = {
+      enable = true;
+    };
+    skim = {
+      enable = true;
+    };
     tmux = {
       enable = true;
       flavor = "macchiato"; # or frappe, macchiato, mocha
@@ -202,20 +216,9 @@ with lib;
         set -g @catppuccin_host "on"
       '';
     };
-    skim = {
+    yazi = {
       enable = true;
-    };
-    lazygit = {
-      enable = true;
-    };
-    fzf = {
-      enable = true;
-    };
-    btop = {
-      enable = true;
-    };
-    bat = {
-      enable = true;
+      flavor = "macchiato";
     };
     zsh-syntax-highlighting = {
       enable = true;
@@ -420,6 +423,23 @@ with lib;
       extraConfig = ''
         ${builtins.readFile ./conf.d/tmux/tmux.conf}
       '';
+    };
+
+    yazi = {
+      enable = true;
+      enableZshIntegration = true;
+      settings = {
+        manager = {
+          ratio = [
+            2
+            4
+            3
+          ];
+          show_hidden = true;
+          sort_by = "natural";
+          sort_dir_first = true;
+        };
+      };
     };
 
     zsh = {
