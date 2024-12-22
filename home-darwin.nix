@@ -199,6 +199,33 @@ with lib;
   catppuccin = {
     accent = "green";
     flavor = "mocha";
+    tmux = {
+      enable = true;
+      flavor = "macchiato"; # or frappe, macchiato, mocha
+      extraConfig = ''
+        set -g @catppuccin_window_tabs_enabled on
+        set -g @catppuccin_host "on"
+      '';
+    };
+    skim = {
+      enable = true;
+    };
+    lazygit = {
+      enable = true;
+    };
+    fzf = {
+      enable = true;
+    };
+    btop = {
+      enable = true;
+    };
+    bat = {
+      enable = true;
+    };
+    zsh-syntax-highlighting = {
+      enable = true;
+      flavor = "frappe";
+    };
   };
 
   home.activation.nvimdotsActivatioinAction = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
@@ -211,7 +238,6 @@ with lib;
     home-manager.enable = true;
     bat = {
       enable = true;
-      catppuccin.enable = true;
       extraPackages = with pkgs.bat-extras; [
         batgrep
         batwatch
@@ -229,7 +255,6 @@ with lib;
 
     btop = {
       enable = true;
-      catppuccin.enable = true;
       extraConfig = ''
         #* Set to True to enable "h,j,k,l,g,G" keys for directional control in lists.
         #* Conflicting keys for h:"help" and k:"kill" is accessible while holding shift.
@@ -259,7 +284,6 @@ with lib;
 
     fzf = {
       enable = true;
-      catppuccin.enable = true;
       enableZshIntegration = true;
       # defaultCommand = "";
       defaultOptions = [
@@ -287,7 +311,6 @@ with lib;
 
     lazygit = {
       enable = true;
-      catppuccin.enable = true;
       settings = {
         gui = {
           mouseEvents = true;
@@ -347,7 +370,6 @@ with lib;
 
     skim = {
       enable = true;
-      catppuccin.enable = true;
     };
 
     tmux = {
@@ -355,14 +377,6 @@ with lib;
       clock24 = true;
       mouse = true;
       secureSocket = true;
-      catppuccin = {
-        enable = true;
-        flavor = "macchiato"; # or frappe, macchiato, mocha
-        extraConfig = ''
-          set -g @catppuccin_window_tabs_enabled on
-          set -g @catppuccin_host "on"
-        '';
-      };
       plugins = with pkgs; [
         tmuxPlugins.better-mouse-mode
         tmuxPlugins.tmux-fzf # prefix + F
@@ -417,10 +431,6 @@ with lib;
       enable = true;
       dotDir = ".config/zsh";
       zprof.enable = false;
-      syntaxHighlighting.catppuccin = {
-        enable = true;
-        flavor = "frappe";
-      };
       antidote = {
         enable = true;
         useFriendlyNames = true;
