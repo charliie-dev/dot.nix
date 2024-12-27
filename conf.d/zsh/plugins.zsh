@@ -1,5 +1,5 @@
 # Init mise
-# [[ $(uname -s) == MSYS_NT* ]] || eval "$(mise activate zsh)"
+[[ $(uname -s) == MSYS_NT* ]] || eval "$(mise activate zsh)"
 
 # Init vfox
 # eval "$(vfox activate zsh)"
