@@ -467,12 +467,11 @@ with lib;
           "Freed-Wu/zsh-help" # colorize `XXX --help`
           "zsh-users/zsh-history-substring-search kind:defer"
           "MichaelAquilina/zsh-you-should-use kind:defer"
-          "MichaelAquilina/zsh-autoswitch-virtualenv kind:defer" # Auto-switch python venv, pipenv, poetry
+          # "MichaelAquilina/zsh-autoswitch-virtualenv kind:defer" # Auto-switch python venv, pipenv, poetry
           # oh-my-zsh plugins
           "getantidote/use-omz" # handle OMZ dependencies
           "ohmyzsh/ohmyzsh path:lib" # load OMZ's library
           "ohmyzsh/ohmyzsh path:plugins/colored-man-pages kind:defer" # load OMZ plugins
-          "ohmyzsh/ohmyzsh path:plugins/magic-enter kind:defer"
         ];
       };
       initExtra = ''
