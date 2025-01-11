@@ -73,6 +73,7 @@ with lib;
     vim
     wget
     wget2
+    nitch
     xdg-ninja
     # c/c++ cli
     fzy
