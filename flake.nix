@@ -7,7 +7,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     # neovim.url = "github:nix-community/neovim-nightly-overlay";
-    catppuccin.url = "github:catppuccin/nix";
+    catppuccin.url = "github:catppuccin/nix/main";
   };
 
   outputs =

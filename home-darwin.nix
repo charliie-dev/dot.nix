@@ -204,10 +204,16 @@ with lib;
     btop = {
       enable = true;
     };
+    delta = {
+      enable = true;
+    };
     fzf = {
       enable = true;
     };
     lazygit = {
+      enable = true;
+    };
+    lsd = {
       enable = true;
     };
     skim = {
