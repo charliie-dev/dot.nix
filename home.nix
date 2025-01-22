@@ -192,7 +192,7 @@ with lib;
   };
 
   catppuccin = {
-    accent = "green";
+    # accent = "green";
     flavor = "mocha";
     bat = {
       enable = true;
