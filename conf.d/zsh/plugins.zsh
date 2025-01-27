@@ -9,12 +9,18 @@
 # Use mroth/evalcache to speedup zsh loading time
 export _ZO_DATA_DIR="$XDG_DATA_HOME"/zoxide
 export _ZO_EXCLUDE_DIRS="$XDG_CACHE_HOME;$XDG_DATA_HOME;$XDG_STATE_HOME"
-export _ZO_FZF_OPTS="\
-    --ansi --height 40% --layout=reverse --border --separator='╸' --scrollbar '▌▐' --select-1"
-    # --color=border:#cba6f7,label:#cba6f7,separator:#a6e3a1 \
-    # --color=bg+:#313244,bg:,spinner:#f5e0dc,hl:#f38ba8 \
-    # --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
-    # --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8" # use `zi` to open fzf search
+# use `zi` to open fzf search
+export _ZO_FZF_OPTS="--select-1 --height=40% --reverse --margin=3% --style=full \
+  --border=rounded --border-label=' zoxide ' \
+  --prompt='$ > ' --input-border --input-label=' Input ' \
+  --list-border --highlight-line --gap --pointer='>' \
+  --color 'border:#ca9ee6,label:#cba6f7' \
+  --color 'input-border:#ea999c,input-label:#eba0ac' \
+  --color 'list-border:#81c8be,list-label:#94e2d5' \
+  --color 'info:#cba6f7,pointer:#f5e0dc,spinner:#f5e0dc,hl:#f38ba8' \
+  --color 'marker:#b4befe,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8' \
+  --color 'selected-bg:#45475a'"
+
 
 # Init Starship
 # eval "$(starship init zsh)"

@@ -74,6 +74,7 @@ with lib; {
     wget
     wget2
     xdg-ninja
+    # xpdf # xpdf_4.05 is not secure, with lots of CVE
     # c/c++ cli
     fzy
     jq
@@ -208,9 +209,6 @@ with lib; {
     delta = {
       enable = true;
     };
-    fzf = {
-      enable = true;
-    };
     lazygit = {
       enable = true;
     };
@@ -295,13 +293,42 @@ with lib; {
     fzf = {
       enable = true;
       enableZshIntegration = true;
-      # defaultCommand = "";
+      # defaultCommand = ""
       defaultOptions = [
-        "--ansi --height ~100% --reverse --tmux --border rounded"
-        "--highlight-line"
-        "--marker '▏' --marker-multi-line '╔║╚' --separator '╸' --scrollbar '▌▐'"
-        "--preview 'pistol {}'"
+        "--reverse --margin=3% --style=full"
+        "--border=rounded"
+        "--prompt='$ > '"
+        "--input-border"
+        "--input-label=' Input '"
+        "--header-border"
+        "--header-label=' File Type '"
+        "--list-border --multi --highlight-line --gap --pointer='>'"
+        "--preview-border"
+        "--preview='pistol {}'"
+        "--bind 'focus:transform-preview-label:[ -n {} ] && printf \\\" Previewing [{}] \\\"'"
+        "--bind 'focus:+transform-header:file --brief {} || echo \\\" No file selected \\\"'"
       ];
+      colors = {
+        border = "#ca9ee6";
+        label = "#cba6f7";
+        preview-border = "#f2d5cf";
+        preview-label = "#f5e0dc";
+        list-border = "#81c8be";
+        list-label = "#94e2d5";
+        input-border = "#ea999c";
+        input-label = "#eba0ac";
+        header-border = "#85c1dc";
+        header-label = "#74c7ec";
+        info = "#cba6f7";
+        pointer = "#f5e0dc";
+        spinner = "#f5e0dc";
+        hl = "#f38ba8";
+        marker = "#b4befe";
+        "fg+" = "#cdd6f4";
+        prompt = "#cba6f7";
+        "hl+" = "#f38ba8";
+        selected-bg = "#45475a";
+      };
       changeDirWidgetCommand = "fd --type d"; # ALT-C
       fileWidgetCommand = "fd --type f"; # CTRL-T
       # CTRL-R
@@ -473,10 +500,20 @@ with lib; {
       enable = true;
       dotDir = ".config/zsh";
       zprof.enable = false;
+      enableCompletion = false;
+      enableVteIntegration = true;
+      # defaultKeymap = "vicmd";
+      initExtraBeforeCompInit = ''
+        ${builtins.readFile ./conf.d/zsh/completion.zsh}
+      '';
       antidote = {
         enable = true;
         useFriendlyNames = true;
         plugins = [
+          # oh-my-zsh plugins
+          "getantidote/use-omz" # handle OMZ dependencies
+          "ohmyzsh/ohmyzsh path:lib" # load OMZ's library
+          "ohmyzsh/ohmyzsh path:plugins/colored-man-pages kind:defer" # load OMZ plugins
           # lazy-loading `kind:defer`
           "QuarticCat/zsh-smartcache" # better mroth/evalcache
           "zsh-users/zsh-completions kind:fpath"
@@ -490,10 +527,6 @@ with lib; {
           "zsh-users/zsh-history-substring-search kind:defer"
           "MichaelAquilina/zsh-you-should-use kind:defer"
           # "MichaelAquilina/zsh-autoswitch-virtualenv kind:defer" # Auto-switch python venv, pipenv, poetry
-          # oh-my-zsh plugins
-          "getantidote/use-omz" # handle OMZ dependencies
-          "ohmyzsh/ohmyzsh path:lib" # load OMZ's library
-          "ohmyzsh/ohmyzsh path:plugins/colored-man-pages kind:defer" # load OMZ plugins
         ];
       };
       initExtra = ''
@@ -506,7 +539,6 @@ with lib; {
         ${builtins.readFile ./conf.d/zsh/plugins.zsh}
         ${builtins.readFile ./conf.d/zsh/aliases.zsh}
         ${builtins.readFile ./conf.d/zsh/macos.zsh}
-        ${builtins.readFile ./conf.d/zsh/completion.zsh}
         ${builtins.readFile ./conf.d/zsh/hashdirs.zsh}
       '';
     };

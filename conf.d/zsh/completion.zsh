@@ -3,30 +3,37 @@ zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}'
 # error correction
 zstyle ':completion:*' completer _complete _match _approximate
 zstyle ':completion:*:match:*' original only
-zstyle ':completion:*:approximate:*' max-errors 1 numeric compinit -d "$ZSH_COMPDUMP"
+zstyle ':completion:*:approximate:*' max-errors 2 numeric
 
-# fzf-tab
+# fzf-tab configs
 
 # set descriptions format to enable group support
-# NOTE: don't use escape sequences here, fzf-tab will ignore them
+# NOTE: don't use escape sequences (like '%F{red}%d%f') here, fzf-tab will ignore them
 zstyle ':completion:*:descriptions' format '[%d]'
 # set list-colors to enable filename colorizing
 zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+# force zsh not to show completion menu, which allows fzf-tab to capture the unambiguous prefix
+zstyle ':completion:*' menu no
+# To make fzf-tab follow FZF_DEFAULT_OPTS.
+# NOTE: This may lead to unexpected behavior since some flags break this plugin. See Aloxaf/fzf-tab#455.
+zstyle ':fzf-tab:*' use-fzf-default-opts no
+zstyle ':fzf-tab:*' fzf-flags --height 60% --reverse --margin=3% --style=full \
+  --border=rounded --border-label=' fzf-tab ' \
+  --prompt='$ > ' --input-border --input-label=' Input ' \
+  --list-border --highlight-line --gap --pointer='>' \
+  --preview-border --preview-label=' Previewing ' \
+  --color 'border:#ca9ee6,label:#cba6f7' \
+  --color 'input-border:#ea999c,input-label:#eba0ac' \
+  --color 'list-border:#81c8be,list-label:#94e2d5' \
+  --color 'preview-border:#f2d5cf,preview-label:#f5e0dc' \
+  --color 'info:#cba6f7,pointer:#f5e0dc,spinner:#f5e0dc,hl:#f38ba8' \
+  --color 'marker:#b4befe,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8' \
+  --color 'selected-bg:#45475a'
+
+zstyle ':fzf-tab:*' fzf-preview 'pistol ${(Q)realpath}'
 # switch group using `<` and `>`
 zstyle ':fzf-tab:*' switch-group '<' '>'
-
-# pistol mime preview
-zstyle ':fzf-tab:*' fzf-preview 'pistol ${(Q)realpath}'
-zstyle ':fzf-tab:*' fzf-flags --height 60%
-zstyle ':fzf-tab:*' fzf-pad 4
-zstyle ':fzf-tab:*' fzf-bindings 'space:accept'
 zstyle ':fzf-tab:*' accept-line enter
-
-# give a preview of commandline arguments when completing `kill`
-zstyle ':completion:*:*:*:*:processes' command "ps -u $USER -o pid,user,comm -w -w"
-zstyle ':fzf-tab:complete:(kill|ps):argument-rest' fzf-preview \
-	'[[ $group == "[process ID]" ]] && ps --pid=$word -o cmd --no-headers -w -w'
-zstyle ':fzf-tab:complete:(kill|ps):argument-rest' fzf-flags --header="[process ID]" --preview-window=down:3:wrap
 
 # show systemd unit status
 zstyle ':fzf-tab:complete:systemctl-*:*' fzf-preview 'SYSTEMD_COLORS=1 systemctl status $word'
@@ -38,16 +45,16 @@ zstyle ':fzf-tab:complete:(-command-|-parameter-|-brace-parameter-|export|unset|
 # show alias
 zstyle ':fzf-tab:complete:alias:*' fzf-preview 'alias $word'
 
-# show command manual
-zstyle ':fzf-tab:complete:-command-:*' fzf-preview \
-	'(out=$(tldr --color always "$word") 2>/dev/null && echo $out) || (out=$(MANWIDTH=$FZF_PREVIEW_COLUMNS man "$word") 2>/dev/null && echo $out) || (out=$(which "$word") && echo $out) || echo "${(P)word}"'
-
 # man or help
 zstyle ':fzf-tab:complete:(\\|)run-help:*' fzf-preview 'run-help $word'
 zstyle ':fzf-tab:complete:(\\|*/|)man:*' fzf-preview 'man $word'
 
 # disable sort when completing `git checkout`
 zstyle ':completion:*:git-checkout:*' sort false
+
+
+# NOTE: Completions should be configured before compinit
+autoload -U compinit; compinit
 
 # ssh
 ## remove all previous ssh hosts
