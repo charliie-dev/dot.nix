@@ -365,17 +365,32 @@ with lib; {
         ninja
         pkg-config
         yarn
-        lua51Packages.luarocks
+        lua5_1
+        luajitPackages.luarocks-nix
       ];
-      extraPython3Packages =
-        pyPkgs: with pyPkgs; [
+      extraWrapperArgs = [
+        "--suffix"
+        "PKG_CONFIG_PATH"
+        ":"
+        "${lib.makeSearchPathOutput "dev" "lib/pkgconfig" [
+          pkgs.stdenv.cc.cc
+          pkgs.zlib
+          pkgs.openssl
+        ]}"
+      ];
+      extraPython3Packages = pyPkgs:
+        with pyPkgs; [
           docformatter
           pynvim
         ];
-
-      # extraLuaPackages = luaPkgs: with luaPkgs; [
-      # luarocks # doesn't work, put in extraPackages
-      # ];
+      extraLuaPackages = luajitPackages:
+        with luajitPackages; [
+          sqlite
+          luv
+          luasnip
+          fzf-lua
+          fzy
+        ];
     };
 
     skim = {
