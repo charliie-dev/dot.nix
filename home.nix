@@ -137,10 +137,10 @@ with lib; {
       source = ./conf.d/git;
     };
     # lang-vms
-    "mise" = {
-      recursive = true;
-      source = ./conf.d/mise;
-    };
+    # "mise" = {
+    #   recursive = true;
+    #   source = ./conf.d/mise;
+    # };
     "conda" = {
       recursive = true;
       source = ./conf.d/conda;
