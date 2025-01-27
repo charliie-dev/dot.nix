@@ -4,8 +4,7 @@
   lib,
   ...
 }:
-with lib;
-{
+with lib; {
   imports = [
     # If you want to use modules your own flake exports (from modules/home-manager):
     # outputs.homeManagerModules.example
@@ -42,7 +41,7 @@ with lib;
   };
 
   nixpkgs = {
-    overlays = [ ];
+    overlays = [];
     # Configure your nixpkgs instance
     config = {
       # Disable if you don't want unfree packages
@@ -237,7 +236,7 @@ with lib;
     };
   };
 
-  home.activation.nvimdotsActivatioinAction = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+  home.activation.nvimdotsActivatioinAction = lib.hm.dag.entryAfter ["writeBoundary"] ''
     if [ ! -d ~/.config/nvim ]; then
       ${pkgs.git}/bin/git clone https://github.com/CharlesChiuGit/nvimdots.lua.git ~/.config/nvim
     fi
@@ -310,7 +309,7 @@ with lib;
       ];
       tmux = {
         enableShellIntegration = true;
-        shellIntegrationOptions = [ "-d 60%" ];
+        shellIntegrationOptions = ["-d 60%"];
       };
     };
 
