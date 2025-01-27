@@ -100,7 +100,7 @@ no_self_update = true
 "home-manager cleanup" = "nix-collect-garbage -d && nix-env --delete-generations old && nix-store --gc && nix-store --optimise"
 "antidote" = "~/.local/state/nix/profile/share/antidote/antidote update"
 "micromamba" = "micromamba self-update"
-"zsh_recompile" = "source ~/.config/home-manager/conf.d/zsh/functions.zsh && zsh_recompile"
+# "zsh_recompile" = "source ~/.config/home-manager/conf.d/zsh/functions.zsh && zsh_recompile"
 
 
 # Custom commands

@@ -3,20 +3,20 @@ zsh_recompile() {
 	rm -rf ${ZDOTDIR}/.zcompdump
 	for zfile in ${ZDOTDIR}/(.zshenv|.zshrc); do
 		rm -rf ${zfile}.zwc
-		zcompile -UR ${zfile} && echo "${zfile}.zwc compiled!"
+		# zcompile -UR ${zfile} && echo "${zfile}.zwc compiled!"
 	done
 	unset zfile
 
 	# antidote plugins
 	for zfile in ${XDG_CACHE_HOME}/antidote/**/**/*.zsh; do
 		rm -rf ${zfile}.zwc
-		zcompile -UR ${zfile} # && echo "${zfile}.zwc compiled!"
+		# zcompile -UR ${zfile} # && echo "${zfile}.zwc compiled!"
 	done
 	unset zfile
 
 	for zfile in ${XDG_CACHE_HOME}/antidote/**/**/**/*.zsh; do
 		rm -rf ${zfile}.zwc
-		zcompile -UR ${zfile} # && echo "${zfile}.zwc compiled!"
+		# zcompile -UR ${zfile} # && echo "${zfile}.zwc compiled!"
 	done
 	unset zfile
 
