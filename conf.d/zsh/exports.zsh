@@ -35,13 +35,6 @@ export CONDARC="$XDG_CONFIG_HOME"/conda/condarc
 export IPYTHONDIR="$XDG_CONFIG_HOME"/ipython
 export JUPYTER_CONFIG_DIR="$XDG_CONFIG_HOME"/jupyter
 export PYTHONSTARTUP="$XDG_CONFIG_HOME"/python/pythonrc
-# export FZF_DEFAULT_OPTS="\
-#     --ansi --height 40% --layout=reverse --border --separator='╸' --header='E to edit' \
-#     --preview-label='┓ ⟪Preview⟫ ┏' --preview-window=border-bold --scrollbar '▌▐'\
-#     --color=border:#cba6f7,label:#cba6f7,separator:#a6e3a1 \
-#     --color=bg+:#313244,bg:,spinner:#f5e0dc,hl:#f38ba8 \
-#     --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
-#     --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8"
 
 # zsh plugins options
 export ANTIDOTE_HOME="$XDG_CACHE_HOME"/antidote

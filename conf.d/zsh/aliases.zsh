@@ -14,7 +14,6 @@ alias .....='cd ../../../..'
 alias bd='cd "$OLDPWD"' # cd to the previous directory
 alias nv='nvim'
 alias vim='vim -i NONE'
-alias ips="ifconfig -a | grep -o 'inet6\? \(addr:\)\?\s\?\(\(\([0-9]\+\.\)\{3\}[0-9]\+\)\|[a-fA-F0-9:]\+\)' | awk '{ sub(/inet6? (addr:)? ?/, \"\"); print }'"
 alias wget='wget2'
 
 # Extanded Aliases
@@ -31,7 +30,6 @@ alias fzz='zoxide query | fzf'
 alias fzp='cat /etc/services | fzf'
 alias tree='tree -CAF --dirsfirst'
 alias treed='tree -CAFd'
-alias cargobin='cargo binstall --no-discover-github-token -y'
 alias z='zi' # map z to zoxide interactive selection
 alias yz='yazi'
 
@@ -45,7 +43,6 @@ alias docker_restart='docker compose down --remove-orphans && docker compose up 
 
 # Network Aliases
 alias openports='netstat -nape --inet' # show open ports
-alias lsof4="lsof -Pni4 | awk '{printf \"%10s %6s %5s %4s %-20s\n\", \$1, \$2, \$3, \$8, \$9}' | fzf --header-lines=1 --cycle"
 
 # Archive Aliases
 alias mktar='tar -cvf'
