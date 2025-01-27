@@ -28,6 +28,7 @@ export GTK_RC_FILES="$XDG_CONFIG_HOME"/gtk-1.0/gtkrc
 export GTK2_RC_FILES="$XDG_CONFIG_HOME"/gtk-2.0/gtkrc
 export ZELLIJ_CONFIG_DIR="$XDG_CONFIG_HOME"/zellij
 export GNUPGHOME="$XDG_DATA_HOME"/gnupg
+[ -d "$GNUPGHOME" ] || mkdir -p "$GNUPGHOME"
 export DOTNET_CLI_HOME="$XDG_DATA_HOME"/dotnet
 export CUDA_CACHE_PATH="$XDG_CACHE_HOME"/nv
 export CONDARC="$XDG_CONFIG_HOME"/conda/condarc
