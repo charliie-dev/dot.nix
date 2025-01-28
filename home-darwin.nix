@@ -90,7 +90,6 @@ with lib; {
     nix-search-cli
     pistol
     yq-go # jq but for YAML, JSON, XML, CSV, TOML
-    snyk
     # vfox ## TODO: https://github.com/version-fox/vfox/issues/53
     # rust cli
     alejandra
