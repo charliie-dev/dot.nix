@@ -75,6 +75,14 @@ with lib; {
     wget2
     xdg-ninja
     # xpdf # xpdf_4.05 is not secure, with lots of CVE
+    # TOPs
+    htop
+    s-tui
+    iftop
+    iotop-c
+    asitop
+    wavemon
+
     # c/c++ cli
     fzy
     jq
@@ -339,10 +347,6 @@ with lib; {
         enableShellIntegration = true;
         shellIntegrationOptions = ["-d 60%"];
       };
-    };
-
-    htop = {
-      enable = true;
     };
 
     lazygit = {
