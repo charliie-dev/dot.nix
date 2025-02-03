@@ -3,7 +3,7 @@
 > [!IMPORTANT]  
 > Make sure `curl` and `openssl` is already installed.
 
-## create `~/.condig/nix/nix.conf`
+## create `~/.config/nix/nix.conf`
 
 ```sh
 mkdir -p ~/.config/nix
@@ -63,6 +63,7 @@ git clone https://github.com/CharlesChiuGit/nix-hm-config.git ~/.config/home-man
 nix-env -e git
 cd ~/.config/home-manager && nix build
 # add `trusted-users `: trusted-users = charles in `/etc/nix/nix.conf`
+rm ~/.config/nix/nix.conf
 ~/.config/home-manager/result/bin/home-manager switch --flake ~/.config/home-manager --impure
 home-manager switch --impure # this will prevent current generations get clean up w/ gc`
 ```
@@ -98,3 +99,4 @@ ref: https://github.com/the-argus/spicetify-nix/blob/master/home-manager-install
 - [Nix Pills](https://nixos.org/guides/nix-pills/)
 - [nix-tutorial](https://nix-tutorial.gitlabpages.inria.fr/nix-tutorial/getting-started.html)
 - [LnL7/nix-darwin](https://github.com/LnL7/nix-darwin)
+- [nix-versions](https://lazamar.co.uk/nix-versions/)
