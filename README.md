@@ -1,6 +1,6 @@
 # Nix Home-Manager dotfiles
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > Make sure `curl` and `openssl` is already installed.
 
 ## create `~/.config/nix/nix.conf`
@@ -32,24 +32,26 @@ and open another shell.
 
 <details>
   <summary>Expand here</summary>
-    
-    ```bash
-    nix_state_home=${XDG_STATE_HOME-$HOME/.local/state}/nix
 
-    if [[! -d $nix_state_home]]; then
-    mkdir -p $nix_state_home
-    fi
+````
+```bash
+nix_state_home=${XDG_STATE_HOME-$HOME/.local/state}/nix
 
-    if [[-f $HOME/.nix-profile]]; then
-    mv $HOME/.nix-profile $nix_state_home/profile
-    fi
-    if [[-f $HOME/.nix-defexpr]]; then
-    mv $HOME/.nix-defexpr $nix_state_home/defexpr
-    fi
-    if [[-f $HOME/.nix-channels]]; then
-    mv $HOME/.nix-channels $nix_state_home/channels
-    fi
-    ```
+if [[! -d $nix_state_home]]; then
+mkdir -p $nix_state_home
+fi
+
+if [[-f $HOME/.nix-profile]]; then
+mv $HOME/.nix-profile $nix_state_home/profile
+fi
+if [[-f $HOME/.nix-defexpr]]; then
+mv $HOME/.nix-defexpr $nix_state_home/defexpr
+fi
+if [[-f $HOME/.nix-channels]]; then
+mv $HOME/.nix-channels $nix_state_home/channels
+fi
+```
+````
 
 </details>
 
@@ -100,3 +102,4 @@ ref: https://github.com/the-argus/spicetify-nix/blob/master/home-manager-install
 - [nix-tutorial](https://nix-tutorial.gitlabpages.inria.fr/nix-tutorial/getting-started.html)
 - [LnL7/nix-darwin](https://github.com/LnL7/nix-darwin)
 - [nix-versions](https://lazamar.co.uk/nix-versions/)
+- [nix.catppuccin.com](https://nix.catppuccin.com/)
