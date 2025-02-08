@@ -1,5 +1,5 @@
 {
-  inputs,
+  # inputs,
   pkgs,
   lib,
   ...
@@ -14,7 +14,7 @@ with lib; {
 
     # You can also split up your configuration and import pieces of it here:
     # ./nvim.nix
-    inputs.catppuccin.homeManagerModules.catppuccin
+    # inputs.catppuccin.homeManagerModules.catppuccin
   ];
 
   nix = {

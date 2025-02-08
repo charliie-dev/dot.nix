@@ -55,35 +55,50 @@
         extraSpecialArgs = {
           inherit inputs outputs;
         };
-        modules = [./home-darwin.nix];
+        modules = [
+          ./home-darwin.nix
+          catppuccin.homeManagerModules.catppuccin
+        ];
       };
       "charles@bot" = hm.lib.homeManagerConfiguration {
         pkgs = nixpkgs.legacyPackages.aarch64-linux;
         extraSpecialArgs = {
           inherit inputs outputs;
         };
-        modules = [./home.nix];
+        modules = [
+          ./home.nix
+          catppuccin.homeManagerModules.catppuccin
+        ];
       };
       "charles@gemini" = hm.lib.homeManagerConfiguration {
         pkgs = nixpkgs.legacyPackages.x86_64-linux;
         extraSpecialArgs = {
           inherit inputs outputs;
         };
-        modules = [./home.nix];
+        modules = [
+          ./home.nix
+          catppuccin.homeManagerModules.catppuccin
+        ];
       };
       "charles@RDSrv01" = hm.lib.homeManagerConfiguration {
         pkgs = nixpkgs.legacyPackages.x86_64-linux;
         extraSpecialArgs = {
           inherit inputs outputs;
         };
-        modules = [./home.nix];
+        modules = [
+          ./home.nix
+          catppuccin.homeManagerModules.catppuccin
+        ];
       };
       "charles@callisto" = hm.lib.homeManagerConfiguration {
         pkgs = nixpkgs.legacyPackages.x86_64-linux;
         extraSpecialArgs = {
           inherit inputs outputs;
         };
-        modules = [./home.nix];
+        modules = [
+          ./home.nix
+          catppuccin.homeManagerModules.catppuccin
+        ];
       };
     };
   };
