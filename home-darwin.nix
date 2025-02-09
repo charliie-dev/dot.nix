@@ -36,7 +36,12 @@ with lib; {
     };
     gc = {
       automatic = true;
-      options = "--max-freed $((64 * 1024**3))";
+      dates = "weekly";
+      options = "--delete-older-than 7d --max-freed $((64 * 1024**3))";
+    };
+    optimise = {
+      automatic = true;
+      dates = ["weekly"];
     };
   };
 
