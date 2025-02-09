@@ -55,7 +55,7 @@ with lib; {
     # home.username = lib.strings.removeSuffix "\n" (builtins.readFile /etc/hostname);
     username = "charles";
     homeDirectory = "/home/charles";
-    stateVersion = "24.11";
+    stateVersion = "25.05";
   };
 
   # https://search.nixos.org/packages?query=
