@@ -77,11 +77,9 @@ with lib; {
     # xpdf # xpdf_4.05 is not secure, with lots of CVE
     # TOPs
     htop
-    s-tui
+    # s-tui # marked as broken
     iftop
-    iotop-c
     asitop
-    wavemon
 
     # c/c++ cli
     fzy
