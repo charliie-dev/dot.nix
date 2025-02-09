@@ -96,8 +96,9 @@ no_self_update = true
 # Commands to run after anything
 [post_commands]
 # "Emacs Snapshot" = "rm -rf ~/.emacs.d/elpa.bak && cp -rl ~/.emacs.d/elpa ~/.emacs.d/elpa.bak"
+# "nix-env" = "nix-env --upgrade"
 "home-manager" = "home-manager switch"
-"home-manager cleanup" = "nix-collect-garbage -d && nix-env --delete-generations old && nix-store --gc && nix-store --optimise"
+# "home-manager cleanup" = "nix-collect-garbage -d && nix-env --delete-generations old && nix-store --gc && nix-store --optimise"
 "antidote" = "~/.local/state/nix/profile/share/antidote/antidote update"
 "micromamba" = "micromamba self-update"
 # "zsh_recompile" = "source ~/.config/home-manager/conf.d/zsh/functions.zsh && zsh_recompile"
