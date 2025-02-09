@@ -30,11 +30,14 @@ export ZELLIJ_CONFIG_DIR="$XDG_CONFIG_HOME"/zellij
 export GNUPGHOME="$XDG_DATA_HOME"/gnupg
 [ -d "$GNUPGHOME" ] || mkdir -p "$GNUPGHOME"
 export DOTNET_CLI_HOME="$XDG_DATA_HOME"/dotnet
+[ -d "$DOTNET_CLI_HOME" ] || mkdir -p "$DOTNET_CLI_HOME"
 export CUDA_CACHE_PATH="$XDG_CACHE_HOME"/nv
 export CONDARC="$XDG_CONFIG_HOME"/conda/condarc
 export IPYTHONDIR="$XDG_CONFIG_HOME"/ipython
 export JUPYTER_CONFIG_DIR="$XDG_CONFIG_HOME"/jupyter
 export PYTHONSTARTUP="$XDG_CONFIG_HOME"/python/pythonrc
+export TERMINFO="$XDG_DATA_HOME"/terminfo
+export TERMINFO_DIRS="$XDG_DATA_HOME"/terminfo:/usr/share/terminfo
 
 # zsh plugins options
 export ANTIDOTE_HOME="$XDG_CACHE_HOME"/antidote
