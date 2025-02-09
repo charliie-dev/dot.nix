@@ -40,7 +40,7 @@ zstyle ':fzf-tab:complete:systemctl-*:*' fzf-preview 'SYSTEMD_COLORS=1 systemctl
 
 # show environment variable
 zstyle ':fzf-tab:complete:(-command-|-parameter-|-brace-parameter-|export|unset|expand):*' \
-	fzf-preview 'echo ${(P)word}'
+  fzf-preview 'echo ${(P)word}'
 
 # show alias
 zstyle ':fzf-tab:complete:alias:*' fzf-preview 'alias $word'
@@ -52,16 +52,11 @@ zstyle ':fzf-tab:complete:(\\|*/|)man:*' fzf-preview 'man $word'
 # disable sort when completing `git checkout`
 zstyle ':completion:*:git-checkout:*' sort false
 
+# Better --SSH--/Rsync/SCP Autocomplete, use `sunlei/zsh-ssh` for ssh
+zstyle ':completion:*:(scp|rsync):*' tag-order ' hosts:-ipaddr:ip\ address hosts:-host:host files'
+zstyle ':completion:*:(scp|rsync):*:hosts-host' ignored-patterns '*(.|:)*' loopback ip6-loopback localhost ip6-localhost broadcasthost
+zstyle ':completion:*:(scp|rsync):*:hosts-ipaddr' ignored-patterns '^(<->.<->.<->.<->|(|::)([[:xdigit:].]##:(#c,2))##(|%*))' '127.0.0.<->' '255.255.255.255' '::1' 'fe80::*'
+
 
 # NOTE: Completions should be configured before compinit
 autoload -U compinit; compinit
-
-# ssh
-## remove all previous ssh hosts
-compdef -d ssh
-## define new ssh hosts
-function _ssh_hosts() {
-	compadd $(rg -x --no-line-number 'Host\ .*' ~/.ssh/config | sed -E 's/Host\ //' | cat)
-}
-compdef _ssh_hosts ssh
-zstyle ':fzf-tab:complete:ssh:*' fzf-preview 'sshconfig_preview $word'

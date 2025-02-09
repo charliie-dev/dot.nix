@@ -311,12 +311,12 @@ with lib; {
         "--input-border"
         "--input-label=' Input '"
         "--header-border"
-        "--header-label=' File Type '"
+        # "--header-label=' File Type '"
         "--list-border --multi --highlight-line --gap --pointer='>'"
         "--preview-border"
         "--preview='pistol {}'"
         "--bind 'focus:transform-preview-label:[ -n {} ] && printf \\\" Previewing [{}] \\\"'"
-        "--bind 'focus:+transform-header:file --brief {} || echo \\\" No file selected \\\"'"
+        # "--bind 'focus:+transform-header:file --brief {} || echo \\\" No file selected \\\"'"
       ];
       colors = {
         border = "#ca9ee6";
@@ -565,6 +565,7 @@ with lib; {
           "zsh-users/zsh-history-substring-search kind:defer"
           "MichaelAquilina/zsh-you-should-use kind:defer"
           # "MichaelAquilina/zsh-autoswitch-virtualenv kind:defer" # Auto-switch python venv, pipenv, poetry
+          "sunlei/zsh-ssh kind:defer"
         ];
       };
       initExtra = ''
