@@ -8,21 +8,26 @@ def is_vanilla() -> bool:
 
 def setup_history():
     """read and write history from state file"""
-    import os
-    import atexit
     import readline
-    from pathlib import Path
 
-    # https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html#variables
-    if state_home := os.environ.get("XDG_STATE_HOME"):
-        state_home = Path(state_home)
-    else:
-        state_home = Path.home() / ".local" / "state"
+    # import atexit
+    # import os
+    # from pathlib import Path
 
-    history: Path = state_home / "python_history"
+    # if state_home := os.environ.get("XDG_CACHE_HOME"):
+    #     state_home = Path(state_home)
+    # else:
+    #     state_home = Path.home() / ".cache"
 
-    readline.read_history_file(str(history))
-    atexit.register(readline.write_history_file, str(history))
+    # historyPath = os.path.join(state_home, "python_history")
+    # print(historyPath)
+
+    # if not os.path.exists(historyPath):
+    #     file = open(historyPath, "w")
+    #     file.close()
+    # readline.read_history_file(historyPath)
+    # atexit.register(readline.write_history_file, historyPath)
+    readline.set_auto_history(False)
 
 
 if is_vanilla():
