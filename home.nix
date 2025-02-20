@@ -100,6 +100,7 @@ with lib; {
     pistol
     yq-go # jq but for YAML, JSON, XML, CSV, TOML
     # vfox ## TODO: https://github.com/version-fox/vfox/issues/53
+    syft # sbom tool
     # rust cli
     alejandra
     delta
@@ -182,6 +183,10 @@ with lib; {
     "starship" = {
       recursive = true;
       source = ./conf.d/starship;
+    };
+    "syft" = {
+      recursive = true;
+      source = ./conf.d/syft;
     };
     "wget" = {
       recursive = true;
