@@ -101,6 +101,7 @@ with lib; {
     yq-go # jq but for YAML, JSON, XML, CSV, TOML
     # vfox ## TODO: https://github.com/version-fox/vfox/issues/53
     syft # sbom tool
+    trivy # security scanner
     # rust cli
     alejandra
     delta
@@ -187,6 +188,10 @@ with lib; {
     "syft" = {
       recursive = true;
       source = ./conf.d/syft;
+    };
+    "trivy" = {
+      recursive = true;
+      source = ./conf.d/trivy;
     };
     "wget" = {
       recursive = true;
