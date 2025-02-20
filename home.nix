@@ -93,6 +93,7 @@ with lib; {
     git-fame
     git-filter-repo
     speedtest-cli
+    osv-scanner # open-source vulnerability scanner
     # golang cli
     glow
     lazydocker
