@@ -57,6 +57,7 @@ with lib; {
     username = "charles";
     homeDirectory = "/home/charles";
     stateVersion = "25.05";
+    shell.enableZshIntegration = true;
   };
 
   # https://search.nixos.org/packages?query=
@@ -310,7 +311,7 @@ with lib; {
 
     fzf = {
       enable = true;
-      enableZshIntegration = true;
+      # enableZshIntegration = true;
       # defaultCommand = ""
       defaultOptions = [
         "--reverse --margin=3% --style=full"
@@ -527,7 +528,7 @@ with lib; {
 
     yazi = {
       enable = true;
-      enableZshIntegration = true;
+      # enableZshIntegration = true;
       settings = {
         manager = {
           ratio = [
