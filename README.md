@@ -103,3 +103,4 @@ ref: https://github.com/the-argus/spicetify-nix/blob/master/home-manager-install
 - [LnL7/nix-darwin](https://github.com/LnL7/nix-darwin)
 - [nix-versions](https://lazamar.co.uk/nix-versions/)
 - [nix.catppuccin.com](https://nix.catppuccin.com/)
+- [noogle.dev/](https://noogle.dev/)
