@@ -447,6 +447,7 @@ with lib; {
       clock24 = true;
       mouse = true;
       secureSocket = true;
+      terminal = "tmux-256-color";
       plugins = with pkgs; [
         tmuxPlugins.better-mouse-mode
         tmuxPlugins.tmux-fzf # prefix + F
