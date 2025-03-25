@@ -33,6 +33,7 @@ alias treed='tree -CAFd'
 alias z='zi' # map z to zoxide interactive selection
 alias yz='yazi'
 alias trivy='trivy --config ~/.config/trivy/config.yaml'
+alias jqp='jqp -t catppuccin-mocha'
 
 # Nix Aliases
 alias nixup='cd $HOME/.config/home-manager && nix flake update && home-manager switch --impure && cd "$OLDPWD"'
