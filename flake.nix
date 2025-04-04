@@ -58,7 +58,7 @@
         };
         modules = [
           ./home-darwin.nix
-          catppuccin.homeManagerModules.catppuccin
+          catppuccin.homeModules.catppuccin
         ];
       };
       "charles@bot" = hm.lib.homeManagerConfiguration {
@@ -68,7 +68,7 @@
         };
         modules = [
           ./home.nix
-          catppuccin.homeManagerModules.catppuccin
+          catppuccin.homeModules.catppuccin
         ];
       };
       "charles@gemini" = hm.lib.homeManagerConfiguration {
@@ -78,7 +78,7 @@
         };
         modules = [
           ./home.nix
-          catppuccin.homeManagerModules.catppuccin
+          catppuccin.homeModules.catppuccin
         ];
       };
       "charles@RDSrv01" = hm.lib.homeManagerConfiguration {
@@ -88,7 +88,7 @@
         };
         modules = [
           ./home.nix
-          catppuccin.homeManagerModules.catppuccin
+          catppuccin.homeModules.catppuccin
         ];
       };
       "charles@callisto" = hm.lib.homeManagerConfiguration {
@@ -98,7 +98,7 @@
         };
         modules = [
           ./home.nix
-          catppuccin.homeManagerModules.catppuccin
+          catppuccin.homeModules.catppuccin
         ];
       };
     };
