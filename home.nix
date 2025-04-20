@@ -108,6 +108,7 @@ with lib; {
     # rust cli
     alejandra
     delta
+    difftastic
     dua
     git-lfs
     git-ignore # sondr3/git-ignore
@@ -399,26 +400,36 @@ with lib; {
       settings = {
         gui = {
           mouseEvents = true;
-          language = "en"; # one of 'auto' | 'en' | 'zh' | 'pl' | 'nl' | 'ja' | 'ko'
+          language = "en";
           timeFormat = "2022-11-03 15:04"; # https://pkg.go.dev/time#Time.Format
           shortTimeFormat = "15:04";
           showRandomTip = false;
-          showBottomLine = false;
           nerdFontsVersion = "3";
         };
         git = {
           paging = {
             pager = "delta --dark --paging=never";
+            externalDiffCommand = "difft --color=always";
+          };
+          commit = {
+            signoff = false;
+            autoWrapCommitMessage = true;
+            autoWrapWidth = 72;
           };
           parseEmoji = true;
         };
         update = {
           method = "never";
         };
+        refresher = {
+          fetchInterval = 600;
+        };
         os = {
+          openDirInEditor = "nvim";
           editPreset = "nvim";
         };
         notARepository = "skip"; # one of: 'prompt' | 'create' | 'skip' | 'quit'
+        promptToReturnFromSubprocess = false;
       };
     };
 
