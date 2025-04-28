@@ -76,6 +76,7 @@ with lib; {
     wget
     wget2
     xdg-ninja
+    tree
     # xpdf # xpdf_4.05 is not secure, with lots of CVE
     # TOPs
     htop
@@ -566,9 +567,6 @@ with lib; {
       enableCompletion = false;
       enableVteIntegration = true;
       # defaultKeymap = "vicmd";
-      initExtraBeforeCompInit = ''
-        ${builtins.readFile ./conf.d/zsh/completion.zsh}
-      '';
       antidote = {
         enable = true;
         useFriendlyNames = true;
@@ -593,7 +591,8 @@ with lib; {
           "sunlei/zsh-ssh kind:defer"
         ];
       };
-      initExtra = ''
+      initContent = ''
+        ${builtins.readFile ./conf.d/zsh/completion.zsh}
         ${builtins.readFile ./conf.d/zsh/setopt.zsh}
         ${builtins.readFile ./conf.d/zsh/exports.zsh}
         ${builtins.readFile ./conf.d/zsh/history.zsh}
