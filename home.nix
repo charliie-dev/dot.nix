@@ -189,14 +189,6 @@ with lib; {
       recursive = true;
       source = ./conf.d/starship;
     };
-    "syft" = {
-      recursive = true;
-      source = ./conf.d/syft;
-    };
-    "trivy" = {
-      recursive = true;
-      source = ./conf.d/trivy;
-    };
     "wget" = {
       recursive = true;
       source = ./conf.d/wget;
