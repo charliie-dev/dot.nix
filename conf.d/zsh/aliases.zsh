@@ -13,7 +13,6 @@ alias ....='cd ../../..'
 alias .....='cd ../../../..'
 alias bd='cd "$OLDPWD"' # cd to the previous directory
 alias nv='nvim'
-alias vim='vim -i NONE'
 alias wget='wget2'
 
 # Extanded Aliases
@@ -32,7 +31,6 @@ alias tree='tree -CAF --dirsfirst'
 alias treed='tree -CAFd'
 alias z='zi' # map z to zoxide interactive selection
 alias yz='yazi'
-alias trivy='trivy --config ~/.config/trivy/config.yaml'
 alias jqp='jqp -t catppuccin-mocha'
 
 # Nix Aliases

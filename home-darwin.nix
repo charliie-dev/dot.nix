@@ -103,8 +103,6 @@ with lib; {
     yq-go # jq but for YAML, JSON, XML, CSV, TOML
     jqp # TUI plaground to experiment with jq
     # vfox ## TODO: https://github.com/version-fox/vfox/issues/53
-    syft # sbom tool
-    trivy # security scanner
     # rust cli
     alejandra
     delta
