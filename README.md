@@ -74,6 +74,22 @@ ref: https://github.com/ryantm/home-manager-template/blob/master/README.md
 
 ref: https://github.com/the-argus/spicetify-nix/blob/master/home-manager-install.md
 
+## Upgrade Nix
+
+- On nacOS:
+
+```sh
+sudo nix upgrade-nix
+```
+
+- On Ubuntu:
+
+```sh
+sudo visudo
+# add `/nix/var/nix/profiles/default/bin` to `Defaults secure_path=`
+sudo nix upgrade-nix
+```
+
 ## Uninstall Nix
 
 - DeterminateSystems/nix-installer:
