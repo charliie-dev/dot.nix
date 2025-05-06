@@ -108,7 +108,7 @@ deleted_style = 'red'
 format = ' [+$added]($added_style)/[-$deleted]($deleted_style)'
 
 [package]
-disabled = false
+disabled = true
 style = "text"
 symbol = "󰏗 "
 format = '\[[$symbol$version]($style)\]'
@@ -230,3 +230,6 @@ symbol = ' '
 [golang]
 disabled = false
 symbol = ' '
+[mise]
+disabled = false
+symbol = "mise "
