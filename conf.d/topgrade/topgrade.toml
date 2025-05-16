@@ -13,16 +13,32 @@ pre_sudo = true
 # Sudo command to be used
 sudo_command = "sudo"
 
-# Disable specific steps - same options as the command line flag
 disable = [
-	"containers",
-	"vim",
-	"nix",
-	"rye",
-	"shell",
-	"home_manager",
+	"bun",
+	"bun_packages",
+	"cargo",
 	"clam_av_db",
-]
+	"containers",
+	"gem",
+	"github_cli_extensions",
+	"go",
+	"home_manager",
+	"mamba",
+	"nix",
+	"node",
+	"poetry",
+	"pip3",
+	"pipx",
+	"pipxu",
+	"pnpm",
+	"pyenv",
+	"rye",
+	"self_update",
+	"shell",
+	"uv",
+	"vim",
+	"yarn",
+] # Disable specific steps - same options as the command line flag
 
 # Ignore failures for these steps
 # ignore_failures = ["powershell"]
