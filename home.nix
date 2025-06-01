@@ -88,6 +88,7 @@ with lib; {
     fzy
     jq
     lnav
+    snyk
     # https://wiki.nixos.org/wiki/Python#Using_micromamba
     # micromamba # conda replacement, don't install via nix, install directly
     # python cli
@@ -125,9 +126,7 @@ with lib; {
     tokei
     topgrade
     tree-sitter
-    # uv # pip in rust
     xh
-    # zellij
     zoxide
     vivid
   ];
@@ -197,10 +196,6 @@ with lib; {
     # "yazi" = {
     #   recursive = true;
     #   source = ./conf.d/yazi;
-    # };
-    # "zellij" = {
-    #   recursive = true;
-    #   source = ./conf.d/zellij;
     # };
   };
 
