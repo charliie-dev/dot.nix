@@ -129,6 +129,7 @@ with lib; {
     xh
     zoxide
     vivid
+    hwatch
   ];
 
   home.file = {
@@ -197,10 +198,6 @@ with lib; {
       recursive = true;
       source = ./conf.d/yarn;
     };
-    # "yazi" = {
-    #   recursive = true;
-    #   source = ./conf.d/yazi;
-    # };
   };
 
   catppuccin = {
