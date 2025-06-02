@@ -117,7 +117,6 @@ with lib; {
     ripgrep
     ripgrep-all
     ripsecrets
-    rye # like cargo but for python
     sd
     starship
     statix # lints and suggestions for the nix
