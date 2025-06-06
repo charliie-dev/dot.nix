@@ -30,10 +30,10 @@ zstyle ':fzf-tab:*' fzf-flags --height 60% --reverse --margin=3% --style=full \
   --color 'marker:#b4befe,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8' \
   --color 'selected-bg:#45475a'
 
-zstyle ':fzf-tab:*' fzf-preview 'pistol ${(Q)realpath}'
+# zstyle ':fzf-tab:*' fzf-preview 'pistol ${(Q)realpath}'
 # switch group using `<` and `>`
 zstyle ':fzf-tab:*' switch-group '<' '>'
-zstyle ':fzf-tab:*' accept-line enter
+# zstyle ':fzf-tab:*' accept-line enter # don't trigger enter after selected
 
 # show systemd unit status
 zstyle ':fzf-tab:complete:systemctl-*:*' fzf-preview 'SYSTEMD_COLORS=1 systemctl status $word'

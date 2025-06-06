@@ -308,9 +308,9 @@ with lib; {
         "--header-border"
         # "--header-label=' File Type '"
         "--list-border --multi --highlight-line --gap --pointer='>'"
-        "--preview-border"
-        "--preview='pistol {}'"
-        "--bind 'focus:transform-preview-label:[ -n {} ] && printf \\\" Previewing [{}] \\\"'"
+        # "--preview-border"
+        # "--preview='pistol {}'"
+        # "--bind 'focus:transform-preview-label:[ -n {} ] && printf \\\" Previewing [{}] \\\"'"
         # "--bind 'focus:+transform-header:file --brief {} || echo \\\" No file selected \\\"'"
       ];
       colors = {
