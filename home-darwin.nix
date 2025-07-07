@@ -357,6 +357,7 @@ with lib; {
           shortTimeFormat = "15:04";
           showRandomTip = false;
           nerdFontsVersion = "3";
+          useHunkModeInStagingView = true;
         };
         git = {
           paging = {
