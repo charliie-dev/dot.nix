@@ -67,7 +67,7 @@ alias dpss='docker ps -a --format "table {{.Names}}\t{{.State}}\t{{.Status}}\t{{
 alias ddf='docker system df' # docker data usage (/var/lib/docker)
 alias dlogs='docker logs -tf --tail="50" ' # usage: dlogs container_name
 
-alias dcrun='docker compose -f ./docker-compose.yml'
+alias dcrun='docker compose'
 alias dclogs='dcrun logs -tf --tail="50" ' # usage: dclogs container_name
 alias dcup='dcrun up -d --build --remove-orphans' # up the stack
 alias dcdown='dcrun down --remove-orphans' # down the stack
