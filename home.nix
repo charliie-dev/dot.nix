@@ -2,6 +2,7 @@
   # inputs,
   pkgs,
   lib,
+  config,
   ...
 }:
 with lib; {
@@ -572,7 +573,7 @@ with lib; {
 
     zsh = {
       enable = true;
-      dotDir = ".config/zsh";
+      dotDir = "${config.xdg.configHome}/zsh";
       zprof.enable = false;
       enableCompletion = false;
       enableVteIntegration = true;
