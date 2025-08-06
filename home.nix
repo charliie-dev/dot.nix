@@ -53,6 +53,12 @@ with lib; {
   # Nicely reload system units when changing configs
   # systemd.user.startServices = "sd-switch";
 
+  # services = {
+  #   ssh-tpm-agent = {
+  #     enable = true;
+  #   };
+  # };
+
   home = {
     # home.username = lib.strings.removeSuffix "\n" (builtins.readFile /etc/hostname);
     username = "charles";
