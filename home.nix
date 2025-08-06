@@ -186,6 +186,10 @@ with lib; {
       recursive = true;
       source = ./conf.d/starship;
     };
+    "television" = {
+      recursive = true;
+      source = ./conf.d/television;
+    };
     "wget" = {
       recursive = true;
       source = ./conf.d/wget;
@@ -490,6 +494,23 @@ with lib; {
           fzf-lua
           fzy
         ];
+    };
+
+    nix-search-tv = {
+      enable = true;
+      enableTelevisionIntegration = false; # somehow not working
+      settings = {
+        experimental = {
+          render_docs_indexes = {
+            nvf = "https://notashelf.github.io/nvf/options.html";
+          };
+        };
+      };
+    };
+
+    television = {
+      enable = true;
+      enableZshIntegration = true;
     };
 
     tmux = {
