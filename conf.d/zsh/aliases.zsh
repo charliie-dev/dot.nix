@@ -36,10 +36,6 @@ alias jqp='jqp -t catppuccin-mocha'
 # Nix Aliases
 alias nixup='cd $HOME/.config/home-manager && nix flake update && home-manager switch --impure && cd "$OLDPWD"'
 alias nixclean='nix-collect-garbage -d && nix-env --delete-generations old && nix-store --gc && nix-store --optimise'
-alias nixsearch='nix search nixpkgs'
-
-# Docker Aliases
-alias docker_restart='docker compose down --remove-orphans && docker compose up -d'
 
 # Network Aliases
 alias openports='netstat -nape --inet' # show open ports
