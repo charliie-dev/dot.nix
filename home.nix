@@ -217,9 +217,6 @@ with lib; {
     lsd = {
       enable = true;
     };
-    skim = {
-      enable = true;
-    };
     tmux = {
       enable = true;
       flavor = "macchiato"; # or frappe, macchiato, mocha
@@ -493,9 +490,6 @@ with lib; {
           fzf-lua
           fzy
         ];
-    };
-    skim = {
-      enable = true;
     };
 
     tmux = {
