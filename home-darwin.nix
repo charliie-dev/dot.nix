@@ -84,6 +84,8 @@ with lib; {
     # s-tui # marked as broken
     iftop
     asitop
+    # VPSs
+    awscli2
 
     # c/c++ cli
     fzy
@@ -97,6 +99,7 @@ with lib; {
     git-filter-repo
     speedtest-cli
     # golang cli
+    crush
     glow
     lazydocker
     nix-search-cli

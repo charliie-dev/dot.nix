@@ -40,6 +40,11 @@ export BUNDLE_USER_CONFIG="$XDG_CONFIG_HOME"/bundle
 export BUNDLE_USER_CACHE="$XDG_CACHE_HOME"/bundle
 export BUNDLE_USER_PLUGIN="$XDG_DATA_HOME"/bundle
 
+# VPS
+export AWS_SHARED_CREDENTIALS_FILE="$XDG_CONFIG_HOME"/aws/credentials
+export AWS_CONFIG_FILE="$XDG_CONFIG_HOME"/aws/config
+export AWS_PROFILE="default"
+
 # zsh plugins options
 export ANTIDOTE_HOME="$XDG_CACHE_HOME"/antidote
 export ZSH_SMARTCACHE_DIR="$XDG_CACHE_HOME"/zsh/smartcache
