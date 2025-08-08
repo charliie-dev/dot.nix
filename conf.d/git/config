@@ -12,6 +12,7 @@
     cm = commit -m
     co = checkout
     br = branch
+    sw = switch
     lo = log --oneline --graph
     ls = log --graph --pretty=slog
     l1 = log -1 --pretty=slog
