@@ -38,6 +38,7 @@ disable = [
     "uv",
     "vim",
     "yarn",
+    "yazi",
 ] # Disable specific steps - same options as the command line flag
 
 # Ignore failures for these steps
