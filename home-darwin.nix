@@ -580,7 +580,7 @@ with lib; {
       enable = true;
       # enableZshIntegration = true;
       settings = {
-        manager = {
+        mgr = {
           ratio = [
             2
             4
