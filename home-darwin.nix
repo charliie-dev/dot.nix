@@ -189,10 +189,6 @@ with lib; {
       recursive = true;
       source = ./conf.d/starship;
     };
-    "television" = {
-      recursive = true;
-      source = ./conf.d/television;
-    };
     "wezterm" = {
       recursive = true;
       source = ./conf.d/wezterm;
@@ -473,7 +469,7 @@ with lib; {
 
     nix-search-tv = {
       enable = true;
-      enableTelevisionIntegration = false; # somehow not working
+      enableTelevisionIntegration = true;
       settings = {
         experimental = {
           render_docs_indexes = {

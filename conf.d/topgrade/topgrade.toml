@@ -14,30 +14,30 @@ pre_sudo = true
 sudo_command = "sudo"
 
 disable = [
-	"bun",
-	"bun_packages",
-	"cargo",
-	"clam_av_db",
-	"containers",
-	"gem",
-	"github_cli_extensions",
-	"go",
-	"home_manager",
-	"mamba",
-	"nix",
-	"node",
-	"poetry",
-	"pip3",
-	"pipx",
-	"pipxu",
-	"pnpm",
-	"pyenv",
-	"rye",
-	"self_update",
-	"shell",
-	"uv",
-	"vim",
-	"yarn",
+    "bun",
+    "bun_packages",
+    "cargo",
+    "clam_av_db",
+    "containers",
+    "gem",
+    "github_cli_extensions",
+    "go",
+    "home_manager",
+    "mamba",
+    "nix",
+    "node",
+    "poetry",
+    "pip3",
+    "pipx",
+    "pipxu",
+    "pnpm",
+    "pyenv",
+    "rye",
+    "self_update",
+    "shell",
+    "uv",
+    "vim",
+    "yarn",
 ] # Disable specific steps - same options as the command line flag
 
 # Ignore failures for these steps
@@ -118,6 +118,7 @@ no_self_update = true
 "antidote" = "~/.local/state/nix/profile/share/antidote/antidote update"
 # "micromamba" = "micromamba self-update"
 # "zsh_recompile" = "source ~/.config/home-manager/conf.d/zsh/functions.zsh && zsh_recompile"
+"television cabels" = "tv update-channels"
 
 
 # Custom commands
