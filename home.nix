@@ -81,8 +81,9 @@ with lib; {
     vim
     wget
     wget2
-    nitch
+    fastfetch
     xdg-ninja
+    mermaid-cli
     # xpdf # xpdf_4.05 is not secure, with lots of CVE
     # TOPs
     htop
