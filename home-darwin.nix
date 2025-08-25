@@ -93,7 +93,7 @@ with lib; {
     fzy
     jq
     lnav
-    snyk
+    # snyk
     # https://wiki.nixos.org/wiki/Python#Using_micromamba
     # micromamba # conda replacement, don't install via nix, install directly
     # python cli
@@ -121,9 +121,9 @@ with lib; {
     lsd
     mise
     ripgrep
-    ripgrep-all
-    ripsecrets
-    sd
+    # ripgrep-all
+    # ripsecrets
+    # sd
     starship
     statix # lints and suggestions for the nix
     deadnix # Scan Nix files for dead code
