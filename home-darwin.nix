@@ -37,7 +37,7 @@ with lib; {
     };
     gc = {
       automatic = true;
-      frequency = "weekly";
+      dates = "weekly";
       options = "--delete-older-than 7d --max-freed $((64 * 1024**3))";
     };
   };
