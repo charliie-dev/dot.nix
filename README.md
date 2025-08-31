@@ -59,6 +59,8 @@ fi
 
 ```sh
 nix run home-manager/master -- init --switch
+exit
+ssh xxx
 # nix-channel --add https://nixos.org/channels/nixpkgs-unstable unstable
 # nix-channel --update
 # nix-env -iA unstable.git
