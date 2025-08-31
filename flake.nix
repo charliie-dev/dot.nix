@@ -101,6 +101,16 @@
           catppuccin.homeModules.catppuccin
         ];
       };
+      "charles@nics-demo-lab" = hm.lib.homeManagerConfiguration {
+        pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        extraSpecialArgs = {
+          inherit inputs outputs;
+        };
+        modules = [
+          ./home.nix
+          catppuccin.homeModules.catppuccin
+        ];
+      };
     };
   };
 }
