@@ -58,9 +58,10 @@ fi
 ## Install `home-manager`
 
 ```sh
-nix-channel --add https://nixos.org/channels/nixpkgs-unstable unstable
-nix-channel --update
-nix-env -iA unstable.git
+nix run home-manager/master -- init --switch
+# nix-channel --add https://nixos.org/channels/nixpkgs-unstable unstable
+# nix-channel --update
+# nix-env -iA unstable.git
 git clone https://github.com/CharlesChiuGit/nix-hm-config.git ~/.config/home-manager
 nix-env -e git
 cd ~/.config/home-manager && nix build
