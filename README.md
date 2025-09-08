@@ -26,6 +26,26 @@ EOF
 curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
 ```
 
+### add `trusted-users`
+
+edit `/etc/nix/nix.custom.conf`:
+```conf
+trusted-users = charles
+```
+
+restart daemon:
+
+on macOS:
+```sh
+sudo launchctl unload /Library/LaunchDaemons/systems.determinate.nix-daemon.plist
+sudo launchctl load /Library/LaunchDaemons/systems.determinate.nix-daemon.plist
+```
+
+on Ubuntu:
+```sh
+sudo systemctl restart nix-daemon
+```
+
 and open another shell.
 
 ## Check Nix XDG Location
@@ -60,7 +80,6 @@ fi
 ```sh
 nix run home-manager/master -- init --switch
 exit
-ssh xxx
 # nix-channel --add https://nixos.org/channels/nixpkgs-unstable unstable
 # nix-channel --update
 # nix-env -iA unstable.git
@@ -71,6 +90,7 @@ cd ~/.config/home-manager && nix build
 rm ~/.config/nix/nix.conf
 ~/.config/home-manager/result/bin/home-manager switch --flake ~/.config/home-manager --impure
 home-manager switch --impure # this will prevent current generations get clean up w/ gc`
+determinate-nixd version
 ```
 
 ref: https://github.com/ryantm/home-manager-template/blob/master/README.md
@@ -79,10 +99,10 @@ ref: https://github.com/the-argus/spicetify-nix/blob/master/home-manager-install
 
 ## Upgrade Nix
 
-- On nacOS:
+- On macOS:
 
 ```sh
-sudo nix upgrade-nix
+sudo determinate-nixd upgrade
 ```
 
 - On Ubuntu:
