@@ -37,7 +37,7 @@ with lib; {
     gc = {
       automatic = true;
       dates = "weekly";
-      options = "--delete-older-than 7d --max-freed $((64 * 1024**3))";
+      options = "--delete-older-than 7d --max-freed $((1 * 1024**3))"; # 1 GB
     };
   };
 
