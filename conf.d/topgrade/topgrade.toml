@@ -119,7 +119,7 @@ no_self_update = true
 "antidote" = "~/.local/state/nix/profile/share/antidote/antidote update"
 # "micromamba" = "micromamba self-update"
 # "zsh_recompile" = "source ~/.config/home-manager/conf.d/zsh/functions.zsh && zsh_recompile"
-"television cabels" = "setopt extendedglob && rm -- ^nix-search-tv.toml && tv update-channels"
+"television cabels" = "setopt extendedglob && cd ~/.config/television/cable && rm -- ^nix-search-tv.toml && tv update-channels"
 
 
 # Custom commands
