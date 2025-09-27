@@ -99,7 +99,6 @@ with lib; {
     # python cli
     git-fame
     git-filter-repo
-    speedtest-cli
     # golang cli
     crush
     glow

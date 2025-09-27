@@ -102,7 +102,6 @@ with lib; {
     # python cli
     git-fame
     git-filter-repo
-    speedtest-cli
     # golang cli
     glow
     lazydocker
