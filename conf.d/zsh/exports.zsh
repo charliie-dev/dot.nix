@@ -90,4 +90,9 @@ if (( $+commands[nvidia-smi] )); then
 		export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 fi
 
+# set DOCKER_HOST for lazydocker if podman exists
+if (( $+commands[podman] )); then
+  export DOCKER_HOST=unix://$(podman machine inspect --format '{{.ConnectionInfo.PodmanSocket.Path}}')
+fi
+
 # vim: set ft=sh :
