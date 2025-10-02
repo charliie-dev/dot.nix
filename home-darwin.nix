@@ -88,6 +88,7 @@ with lib; {
     asitop
     # VPSs
     awscli2
+    google-cloud-sdk
 
     # c/c++ cli
     fzy
@@ -103,6 +104,7 @@ with lib; {
     crush
     glow
     lazydocker
+    lazyssh
     nix-search-cli
     pistol
     yq-go # jq but for YAML, JSON, XML, CSV, TOML
