@@ -92,7 +92,15 @@ fi
 
 # set DOCKER_HOST for lazydocker if podman exists
 if (( $+commands[podman] )); then
-  export DOCKER_HOST=unix://$(podman machine inspect --format '{{.ConnectionInfo.PodmanSocket.Path}}')
+	if (( $OSTYPE[(I)darwin] )); then
+		export DOCKER_HOST=unix://$(podman machine inspect --format '{{.ConnectionInfo.PodmanSocket.Path}}')
+	elif (( $OSTYPE[(I)linux-gnu] )); then
+    # systemctl --user enable --now podman.socket
+    export DOCKER_HOST=unix:///run/user/1000/podman/podman.sock
+	else
+		echo 'Unknown OS for lazypodman!'
+	fi
+  alias docker='podman'
 fi
 
 # vim: set ft=sh :
