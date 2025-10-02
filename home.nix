@@ -105,6 +105,7 @@ with lib; {
     # golang cli
     glow
     lazydocker
+    lazyssh
     nix-search-cli
     pistol
     yq-go # jq but for YAML, JSON, XML, CSV, TOML
