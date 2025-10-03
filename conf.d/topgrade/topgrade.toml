@@ -19,6 +19,7 @@ disable = [
     "cargo",
     "clam_av_db",
     "containers",
+    "gcloud",
     "gem",
     "github_cli_extensions",
     "go",
@@ -108,18 +109,18 @@ no_self_update = true
 # Commands to run before anything
 [pre_commands]
 # "Emacs Snapshot" = "rm -rf ~/.emacs.d/elpa.bak && cp -rl ~/.emacs.d/elpa ~/.emacs.d/elpa.bak"
+"television cabels" = "setopt extendedglob && cd ~/.config/television/cable && rm -- ^nix-search-tv.toml && ~/.local/state/nix/profile/bin/tv update-channels"
+"antidote" = "~/.local/state/nix/profile/share/antidote/antidote update"
 
 
 # Commands to run after anything
 [post_commands]
 # "Emacs Snapshot" = "rm -rf ~/.emacs.d/elpa.bak && cp -rl ~/.emacs.d/elpa ~/.emacs.d/elpa.bak"
 # "nix-env" = "nix-env --upgrade"
-"home-manager" = "home-manager switch"
+"home-manager" = "~/.local/state/nix/profile/bin/home-manager switch"
 # "home-manager cleanup" = "nix-collect-garbage -d && nix-env --delete-generations old && nix-store --gc && nix-store --optimise"
-"antidote" = "~/.local/state/nix/profile/share/antidote/antidote update"
 # "micromamba" = "micromamba self-update"
 # "zsh_recompile" = "source ~/.config/home-manager/conf.d/zsh/functions.zsh && zsh_recompile"
-"television cabels" = "setopt extendedglob && cd ~/.config/television/cable && rm -- ^nix-search-tv.toml && tv update-channels"
 
 
 # Custom commands
@@ -213,7 +214,7 @@ fetch_head = true
 
 [git]
 # How many repos to pull at max in parallel
-# max_concurrency = 5
+max_concurrency = 5
 
 # Additional git repositories to pull
 repos = ["~/.config/nvim", "~/.config/home-manager"]
