@@ -89,6 +89,7 @@ with lib; {
     # VPSs
     awscli2
     google-cloud-sdk
+    azure-cli
 
     # c/c++ cli
     fzy
