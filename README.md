@@ -23,12 +23,13 @@ EOF
 ## Install nix(DeterminateSystems/nix-installer)
 
 ```sh
-curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
+curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install --determinate
 ```
 
 ### add `trusted-users`
 
 edit `/etc/nix/nix.custom.conf`:
+
 ```conf
 trusted-users = charles
 ```
@@ -36,12 +37,14 @@ trusted-users = charles
 restart daemon:
 
 on macOS:
+
 ```sh
 sudo launchctl unload /Library/LaunchDaemons/systems.determinate.nix-daemon.plist
 sudo launchctl load /Library/LaunchDaemons/systems.determinate.nix-daemon.plist
 ```
 
 on Ubuntu:
+
 ```sh
 sudo systemctl restart nix-daemon
 ```
