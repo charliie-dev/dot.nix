@@ -100,6 +100,13 @@ ref: https://github.com/ryantm/home-manager-template/blob/master/README.md
 
 ref: https://github.com/the-argus/spicetify-nix/blob/master/home-manager-install.md
 
+## Update Flakes
+
+```sh
+nix flake update
+home-manager switch --flake .
+```
+
 ## Upgrade Nix
 
 - On macOS:
