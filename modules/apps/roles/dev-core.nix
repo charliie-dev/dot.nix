@@ -1,24 +1,6 @@
 { pkgs, ... }:
 {
   packages = with pkgs; [
-    # VPS SDKs
-    awscli2
-    azure-cli
-    google-cloud-sdk
-
-    # Good TUIs
-    crush
-    # lazydocker
-    jqp # TUI plaground to experiment with jq
-    lazyssh # Terminal-based SSH manager
-
-    # nix language server, formatter, linter
-    nil # installed for crush
-    # alejandra
-    statix # lints and suggestions for the nix
-    deadnix # Scan Nix files for dead code
-    nixfmt-rfc-style # nixfmt was renamed to nixfmt-classic. The nixfmt attribute may be used for the new RFC 166-style formatter in the future, which is currently available as nixfmt-rfc-style
-
     # Good CLIs
     difftastic # Syntax-aware diff
 
@@ -35,7 +17,7 @@
 
     # pistol
     hexyl # Command-line hex viewer
-    glow # Render markdown on the CLI, with pizzazz
+    nur.repos.charmbracelet.glow # Render markdown on the CLI, with pizzazz
     lnav # Logfile Navigator
     chafa # terminal image viewer
     poppler-utils # pdftotext
