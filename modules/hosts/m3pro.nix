@@ -1,16 +1,23 @@
 {
-  shorthand,
+  base-attr,
   ...
 }:
 let
-  hm = shorthand.home-manager;
-  inherit (shorthand) nixpkgs;
-  inherit (shorthand) catppuccin;
-  inherit (shorthand) hm_ver;
+  hm = base-attr.home-manager;
+  inherit (base-attr) nixpkgs;
+  inherit (base-attr) catppuccin;
+  inherit (base-attr) hm_ver;
+  inherit (base-attr) nur;
 in
 {
   host = hm.lib.homeManagerConfiguration {
-    pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+    pkgs = import nixpkgs {
+      system = "aarch64-darwin";
+      overlays = [
+        nur.overlays.default
+      ];
+      config.allowUnfree = true;
+    };
     extraSpecialArgs = {
       # inherit inputs;
       roles = [
@@ -21,9 +28,7 @@ in
       ];
     };
     modules = [
-      # determinate.nixosModules.default
       ../core.nix
-      # ./home-darwin.nix
       catppuccin.homeModules.catppuccin
       {
         home = {

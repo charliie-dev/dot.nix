@@ -1,19 +1,28 @@
 {
-  shorthand,
+  gpu-attr,
   ...
 }:
 let
-  hm = shorthand.home-manager;
-  inherit (shorthand) nixpkgs;
-  inherit (shorthand) catppuccin;
-  inherit (shorthand) hm_ver;
+  hm = gpu-attr.home-manager;
+  inherit (gpu-attr) nixpkgs;
+  inherit (gpu-attr) catppuccin;
+  inherit (gpu-attr) hm_ver;
+  inherit (gpu-attr) nur;
+  inherit (gpu-attr) nixgl;
 in
 {
   host = hm.lib.homeManagerConfiguration {
-    pkgs = nixpkgs.legacyPackages.x86_64-linux;
+    pkgs = import nixpkgs {
+      system = "x86_64-linux";
+      overlays = [
+        nur.overlays.default
+        nixgl.overlay
+      ];
+      config.allowUnfree = true;
+    };
     extraSpecialArgs = {
       # inherit inputs;
-      # inherit nixgl;
+      inherit nixgl;
       roles = [
         "dev-core"
         "dev-extra"
@@ -23,7 +32,6 @@ in
       ];
     };
     modules = [
-      # determinate.nixosModules.default
       ../core.nix
       catppuccin.homeModules.catppuccin
       {

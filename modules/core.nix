@@ -18,12 +18,6 @@ in
 {
   inherit (import ./nix-config.nix { inherit pkgs; }) nix;
 
-  nixpkgs = {
-    overlays = [ ];
-    config = {
-      allowUnfree = true;
-    };
-  };
   home = {
     packages = merged_pkgs;
     file = special_config;
