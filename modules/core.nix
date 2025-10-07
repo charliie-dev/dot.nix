@@ -57,6 +57,6 @@ in
     inherit (import ./apps/vivid.nix) vivid;
     inherit (import ./apps/yazi.nix) yazi;
     inherit (import ./apps/zoxide.nix) zoxide;
-    inherit (import ./apps/zsh.nix { inherit config; }) zsh;
+    inherit (import ./apps/zsh.nix { inherit config pkgs; }) zsh;
   };
 }

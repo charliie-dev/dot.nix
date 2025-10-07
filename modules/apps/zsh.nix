@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 {
   zsh = {
     enable = true;
@@ -31,18 +31,27 @@
         "sunlei/zsh-ssh kind:defer"
       ];
     };
-    initContent = ''
-      ${builtins.readFile ../../conf.d/zsh/completion.zsh}
-      ${builtins.readFile ../../conf.d/zsh/setopt.zsh}
-      ${builtins.readFile ../../conf.d/zsh/exports.zsh}
-      ${builtins.readFile ../../conf.d/zsh/history.zsh}
-      ${builtins.readFile ../../conf.d/zsh/functions.zsh}
-      ${builtins.readFile ../../conf.d/zsh/bindkeys.zsh}
-      ${builtins.readFile ../../conf.d/zsh/history.zsh}
-      ${builtins.readFile ../../conf.d/zsh/plugins.zsh}
-      ${builtins.readFile ../../conf.d/zsh/aliases.zsh}
-      ${builtins.readFile ../../conf.d/zsh/macos.zsh}
-      ${builtins.readFile ../../conf.d/zsh/hashdirs.zsh}
-    '';
+    initContent = builtins.concatStringsSep "\n" (
+      [
+        (builtins.readFile ../../conf.d/zsh/completion.zsh)
+        (builtins.readFile ../../conf.d/zsh/setopt.zsh)
+        (builtins.readFile ../../conf.d/zsh/exports.zsh)
+        (builtins.readFile ../../conf.d/zsh/history.zsh)
+        (builtins.readFile ../../conf.d/zsh/functions.zsh)
+        (builtins.readFile ../../conf.d/zsh/bindkeys.zsh)
+        (builtins.readFile ../../conf.d/zsh/history.zsh)
+        (builtins.readFile ../../conf.d/zsh/plugins.zsh)
+        (builtins.readFile ../../conf.d/zsh/aliases.zsh)
+        (builtins.readFile ../../conf.d/zsh/hashdirs.zsh)
+      ]
+      ++ (
+        if pkgs.stdenv.isDarwin then
+          [
+            (builtins.readFile ../../conf.d/zsh/macos.zsh)
+          ]
+        else
+          [ ]
+      )
+    );
   };
 }
