@@ -1,116 +1,72 @@
 {
   description = "Home Manager configuration";
   inputs = {
+    # determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
+    flake-parts.url = "github:hercules-ci/flake-parts";
     # nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    nixpkgs.url = "github:nixos/nixpkgs/master";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     # neovim.url = "github:nix-community/neovim-nightly-overlay";
     catppuccin.url = "github:catppuccin/nix/main";
+    # nixgl.url = "github:nix-community/nixGL/main";
+    nix-formatter-pack.url = "github:Gerschtli/nix-formatter-pack";
   };
 
-  outputs = {
-    self,
-    nixpkgs,
-    home-manager,
-    catppuccin,
-  } @ inputs: let
-    inherit (self) outputs;
-    # Supported systems for your flake packages, shell, etc.
-    systems = [
-      "aarch64-linux"
-      "x86_64-linux"
-      "aarch64-darwin"
-    ];
-    # overlays = [
-    #   inputs.neovim.overlay
-    # ];
-    # This is a function that generates an attribute by calling a function you
-    # pass to it, with each system as an argument
-    forAllSystems = nixpkgs.lib.genAttrs systems;
-    hm = home-manager;
-  in {
-    # Your custom packages
-    # Accessible through 'nix build', 'nix shell', etc
-    packages = forAllSystems (system: import ./pkgs nixpkgs.legacyPackages.${system});
-    # Formatter for your nix files, available through 'nix fmt'
-    # Other options beside 'alejandra' include 'nixpkgs-fmt'
-    formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.alejandra);
+  outputs =
+    {
+      # determinate,
+      nixpkgs,
+      home-manager,
+      catppuccin,
+      # nixgl,
+      nix-formatter-pack,
+      ...
+    }:
+    let
+      # Supported systems for your flake packages, shell, etc.
+      systems = nixpkgs.lib.systems.flakeExposed;
+      forEachSystem = nixpkgs.lib.genAttrs systems;
 
-    # Your custom packages and modifications, exported as overlays
-    overlays = import ./overlays {inherit inputs;};
-    # Reusable home-manager modules you might want to export
-    # These are usually stuff you would upstream into home-manager
-    # homeManagerModules = import ./modules/home-manager;
-    defaultPackage = {
-      "x86_64-linux" = hm.defaultPackage."x86_64-linux";
-      "aarch64-linux" = hm.defaultPackage."aarch64-linux";
-      "aarch64-darwin" = hm.defaultPackage."aarch64-darwin";
-    };
+      formatterPackArgsPerSystem = forEachSystem (system: {
+        inherit nixpkgs system;
+        checkFiles = [ ./. ];
+        config = {
+          tools = {
+            alejandra.enable = false;
+            deadnix.enable = false;
+            nixfmt.enable = true;
+            statix.enable = true;
+          };
+        };
+      });
 
-    homeConfigurations = {
-      "charles@m3pro.local" = hm.lib.homeManagerConfiguration {
-        pkgs = nixpkgs.legacyPackages.aarch64-darwin;
-        extraSpecialArgs = {
-          inherit inputs outputs;
-        };
-        modules = [
-          ./home-darwin.nix
-          catppuccin.homeModules.catppuccin
-        ];
+      # Alias
+      nixfmtpack = nix-formatter-pack;
+      shorthand = {
+        inherit home-manager;
+        hm_ver = "25.11";
+        inherit nixpkgs;
+        inherit catppuccin;
       };
-      "charles@bot" = hm.lib.homeManagerConfiguration {
-        pkgs = nixpkgs.legacyPackages.aarch64-linux;
-        extraSpecialArgs = {
-          inherit inputs outputs;
-        };
-        modules = [
-          ./home.nix
-          catppuccin.homeModules.catppuccin
-        ];
-      };
-      "charles@gemini" = hm.lib.homeManagerConfiguration {
-        pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        extraSpecialArgs = {
-          inherit inputs outputs;
-        };
-        modules = [
-          ./home.nix
-          catppuccin.homeModules.catppuccin
-        ];
-      };
-      "charles@RDSrv01" = hm.lib.homeManagerConfiguration {
-        pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        extraSpecialArgs = {
-          inherit inputs outputs;
-        };
-        modules = [
-          ./home.nix
-          catppuccin.homeModules.catppuccin
-        ];
-      };
-      "charles@callisto" = hm.lib.homeManagerConfiguration {
-        pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        extraSpecialArgs = {
-          inherit inputs outputs;
-        };
-        modules = [
-          ./home.nix
-          catppuccin.homeModules.catppuccin
-        ];
-      };
-      "charles@nics-demo-lab" = hm.lib.homeManagerConfiguration {
-        pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        extraSpecialArgs = {
-          inherit inputs outputs;
-        };
-        modules = [
-          ./home.nix
-          catppuccin.homeModules.catppuccin
-        ];
+    in
+    {
+      checks = forEachSystem (system: {
+        nix-formatter-pack-check = nixfmtpack.lib.mkCheck formatterPackArgsPerSystem.${system};
+      });
+
+      formatter = forEachSystem (system: nixfmtpack.lib.mkFormatter formatterPackArgsPerSystem.${system});
+
+      # Define `homeModules`, `homeConfigurations`,
+      # `nixosConfigurations`, etc here
+      homeConfigurations = {
+        "charles@m3pro.local" = (import ./modules/hosts/m3pro.nix { inherit shorthand; }).host;
+        "charles@callisto" = (import ./modules/hosts/callisto.nix { inherit shorthand; }).host;
+        "charles@RDSrv01" = (import ./modules/hosts/rdsrv01.nix { inherit shorthand; }).host;
+        "charles@bot" = (import ./modules/hosts/oc_bot.nix { inherit shorthand; }).host;
+        "charles@nics-demo-lab" = (import ./modules/hosts/nics-demo-lab.nix { inherit shorthand; }).host;
       };
     };
-  };
 }
