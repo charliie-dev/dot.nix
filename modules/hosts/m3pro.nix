@@ -1,7 +1,4 @@
-{
-  base-attr,
-  ...
-}:
+{ base-attr, ... }:
 let
   hm = base-attr.home-manager;
   inherit (base-attr) nixpkgs;

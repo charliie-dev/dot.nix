@@ -1,7 +1,4 @@
-{
-  base-attr,
-  ...
-}:
+{ base-attr, ... }:
 let
   hm = base-attr.home-manager;
   inherit (base-attr) nixpkgs;
@@ -10,7 +7,7 @@ let
   inherit (base-attr) nur;
 in
 {
-  host = hm.lib.homemanagerconfiguration {
+  host = hm.lib.homeManagerConfiguration {
     pkgs = import nixpkgs {
       system = "aarch64-linux";
       overlays = [

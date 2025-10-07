@@ -1,7 +1,4 @@
-{
-  gpu-attr,
-  ...
-}:
+{ gpu-attr, ... }:
 let
   hm = gpu-attr.home-manager;
   inherit (gpu-attr) nixpkgs;
