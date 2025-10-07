@@ -13,7 +13,7 @@ in
       overlays = [
         nur.overlays.default
       ];
-      config.allowunfree = true;
+      config.allowUnfree = true;
     };
     extraSpecialArgs = {
       # inherit inputs;
