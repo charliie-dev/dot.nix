@@ -1,11 +1,11 @@
-{ gpu-attr, ... }:
+{ nixgl-attr, ... }:
 let
-  hm = gpu-attr.home-manager;
-  inherit (gpu-attr) nixpkgs;
-  inherit (gpu-attr) catppuccin;
-  inherit (gpu-attr) hm_ver;
-  inherit (gpu-attr) nur;
-  inherit (gpu-attr) nixgl;
+  hm = nixgl-attr.home-manager;
+  inherit (nixgl-attr) nixpkgs;
+  inherit (nixgl-attr) catppuccin;
+  inherit (nixgl-attr) hm_ver;
+  inherit (nixgl-attr) nur;
+  inherit (nixgl-attr) nixgl;
 in
 {
   host = hm.lib.homeManagerConfiguration {
