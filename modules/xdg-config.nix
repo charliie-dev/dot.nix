@@ -3,10 +3,6 @@
     enable = true;
     configFile = {
       # core-utils
-      "git" = {
-        recursive = true;
-        source = ../conf.d/git;
-      };
       "conda" = {
         recursive = true;
         source = ../conf.d/conda;

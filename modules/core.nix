@@ -75,6 +75,7 @@ in
     inherit (import ./apps/fzf.nix) fzf;
     inherit (import ./apps/gh-dash.nix) gh-dash;
     inherit (import ./apps/gh.nix { inherit pkgs; }) gh;
+    inherit (import ./apps/git.nix) git;
     inherit (import ./apps/hwatch.nix) hwatch;
     inherit (import ./apps/lazydocker.nix) lazydocker;
     inherit (import ./apps/lazygit.nix) lazygit;
