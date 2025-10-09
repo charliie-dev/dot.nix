@@ -23,7 +23,9 @@ in
         enable = true;
         recursive = true;
         executable = true;
-        source = "${config.xdg.configHome}/home-manager/conf.d/Usercommand";
+        # 1. don't quote "../conf.d/Usercommand" for `source` needs to be `absolute path`
+        # 2. use "${config.xdg.configHome}/home-manager/conf.d/Usercommand" will need to use `home-manager switch --impure`
+        source = ../conf.d/Usercommand;
         target = ".local/bin";
       };
     };
