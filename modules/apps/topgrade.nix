@@ -128,9 +128,6 @@
       # Commands to run before anything
       pre_commands = {
         # "Emacs Snapshot" = "rm -rf ~/.emacs.d/elpa.bak && cp -rl ~/.emacs.d/elpa ~/.emacs.d/elpa.bak"
-        "television cabels" =
-          "setopt extendedglob && cd ~/.config/television/cable && rm -- ^nix-search-tv.toml && ~/.local/state/nix/profile/bin/tv update-channels";
-        "antidote" = "~/.local/state/nix/profile/share/antidote/antidote update";
         # "nix flake update" = "nix flake update";
       };
 
@@ -138,10 +135,13 @@
       post_commands = {
         # "Emacs Snapshot" = "rm -rf ~/.emacs.d/elpa.bak && cp -rl ~/.emacs.d/elpa ~/.emacs.d/elpa.bak"
         "home-manager" = "~/.local/state/nix/profile/bin/home-manager switch";
+        # "television cabels" = " ~/.local/state/nix/profile/bin/tv update-channels --force";
+        "antidote" = "~/.local/state/nix/profile/share/antidote/antidote update";
         # "home-manager cleanup" =
         #   "nix-collect-garbage -d && nix-env --delete-generations old && nix-store --gc && nix-store --optimise";
         # "micromamba" = "micromamba self-update";
         # "zsh_recompile" = "source ~/.config/home-manager/conf.d/zsh/functions.zsh && zsh_recompile";
+        "determinate-nixd upgrade" = "sudo determinate-nixd upgrade";
       };
 
       # Custom commands
