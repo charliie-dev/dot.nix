@@ -1,12 +1,4 @@
 {
-  home.file = {
-    # ".ssh/config".source = ../conf.d/ssh/config;
-    ".local/bin" = {
-      recursive = true;
-      source = ../conf.d/Usercommand;
-    };
-  };
-
   xdg = {
     enable = true;
     configFile = {

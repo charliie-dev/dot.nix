@@ -8,9 +8,6 @@
 let
   nvimdots_url = "CharlesChiuGit/nvimdots.lua.git";
   inherit (import ./apps/_common.nix { inherit pkgs; }) common_apps;
-  inherit (import ./catppuccin.nix) catppuccin;
-  special_config = (import ./xdg-config.nix).home.file;
-  xdg_config = (import ./xdg-config.nix).xdg;
   role_pkgs = lib.concatMap (
     r: (import ./apps/roles/${r}.nix { inherit config pkgs; }).packages
   ) roles;
@@ -21,8 +18,15 @@ in
 
   home = {
     packages = merged_pkgs;
-    file = special_config;
-
+    file = {
+      "self-made commands" = {
+        enable = true;
+        recursive = true;
+        executable = true;
+        source = "${config.xdg.configHome}/home-manager/conf.d/Usercommand";
+        target = ".local/bin";
+      };
+    };
     activation = {
       nvimdotsClone = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         if [ ! -d ${config.xdg.configHome}/nvim ]; then
@@ -45,15 +49,21 @@ in
       '';
       topgradeCopy = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         if [ ! -f ${config.xdg.configHome}/topgrade.d/disable.toml ]; then
-          cd ${config.xdg.configHome}/home-manager
-          cp ./conf.d/topgrade/disable.toml ${config.xdg.configHome}/topgrade.d/disable.toml
+          cd ${config.xdg.configHome}/home-manager/conf.d/
+          cp ./topgrade/disable.toml ${config.xdg.configHome}/topgrade.d/disable.toml
+        fi
+      '';
+      sshCopy = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        if [ ! -f ${config.home.homeDirectory}/.ssh/config ]; then
+          cd ${config.xdg.configHome}/home-manager/conf.d/
+          cp ./ssh/config ${config.home.homeDirectory}/.ssh/config
         fi
       '';
     };
   };
-  xdg = xdg_config;
 
-  inherit catppuccin;
+  inherit (import ./xdg-config.nix) xdg;
+  inherit (import ./catppuccin.nix) catppuccin;
 
   programs = {
     inherit (import ./apps/home-manager.nix) home-manager;
