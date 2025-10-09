@@ -5,7 +5,7 @@
     dotDir = "${config.xdg.configHome}/zsh";
     zprof.enable = false;
     enableCompletion = false;
-    enableVteIntegration = true;
+    enableVteIntegration = if pkgs.stdenv.isDarwin then false else true;
     # defaultKeymap = "vicmd";
     antidote = {
       enable = true;
