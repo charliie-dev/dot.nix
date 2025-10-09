@@ -6,6 +6,7 @@
   ...
 }:
 let
+  nvimdots_url = "CharlesChiuGit/nvimdots.lua.git";
   inherit (import ./apps/_common.nix { inherit pkgs; }) common_apps;
   inherit (import ./catppuccin.nix) catppuccin;
   special_config = (import ./xdg-config.nix).home.file;
@@ -22,11 +23,33 @@ in
     packages = merged_pkgs;
     file = special_config;
 
-    activation.nvimdotsActivatioinAction = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      if [ ! -d ~/.config/nvim ]; then
-        ${pkgs.git}/bin/git clone https://github.com/CharlesChiuGit/nvimdots.lua.git ~/.config/nvim
-      fi
-    '';
+    activation = {
+      nvimdotsClone = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        if [ ! -d ${config.xdg.configHome}/nvim ]; then
+          ${pkgs.git}/bin/git clone https://github.com/${nvimdots_url} ${config.xdg.configHome}/nvim
+        fi
+        cd ${config.xdg.configHome}/nvim
+        ${pkgs.git}/bin/git remote set-url origin git@github.com:${nvimdots_url}
+      '';
+      gpgFixup = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        if [ ! -d ${config.xdg.dataHome}/gnupg ]; then
+          mkdir -p ${config.xdg.dataHome}/gnupg
+        fi
+        chmod 600 ${config.xdg.dataHome}/gnupg/*
+        chmod 700 ${config.xdg.dataHome}/gnupg
+      '';
+      dotnetFixup = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        if [ ! -d ${config.xdg.dataHome}/dotnet ]; then
+          mkdir -p ${config.xdg.dataHome}/dotnet
+        fi
+      '';
+      topgradeCopy = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        if [ ! -f ${config.xdg.configHome}/topgrade.d/disable.toml ]; then
+          cd ${config.xdg.configHome}/home-manager
+          cp ./conf.d/topgrade/disable.toml ${config.xdg.configHome}/topgrade.d/disable.toml
+        fi
+      '';
+    };
   };
   xdg = xdg_config;
 
