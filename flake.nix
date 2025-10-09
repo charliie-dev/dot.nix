@@ -22,16 +22,18 @@
 
     catppuccin.url = "github:catppuccin/nix/main";
     nix-formatter-pack.url = "github:Gerschtli/nix-formatter-pack";
+    nix-filter.url = "github:numtide/nix-filter";
   };
 
   outputs =
     {
       nixpkgs,
       home-manager,
+      nur,
       nixgl,
       catppuccin,
       nix-formatter-pack,
-      nur,
+      nix-filter,
       ...
     }:
     let
@@ -54,12 +56,23 @@
 
       # Alias
       nixfmtpack = nix-formatter-pack;
+      src = nix-filter.lib.filter {
+        root = ./.;
+        include = [
+          "conf.d"
+          "modules"
+          "flake.nix"
+        ];
+      };
       base-attr = {
-        inherit home-manager;
         hm_ver = "25.11";
-        inherit nixpkgs;
-        inherit nur;
-        inherit catppuccin;
+        inherit
+          home-manager
+          nixpkgs
+          nur
+          catppuccin
+          src
+          ;
       };
       nixgl-attr = base-attr // {
         inherit nixgl;
@@ -71,6 +84,9 @@
       });
 
       formatter = forEachSystem (system: nixfmtpack.lib.mkFormatter formatterPackArgsPerSystem.${system});
+
+      filter = nix-filter.lib;
+      source = src;
 
       # Define `homeModules`, `homeConfigurations`,
       # `nixosConfigurations`, etc here

@@ -1,11 +1,11 @@
-{ pkgs, ... }:
+{ pkgs, src, ... }:
 {
   tmux = {
     enable = true;
     clock24 = true;
     mouse = true;
     secureSocket = true;
-    terminal = "tmux-256-color";
+    terminal = "tmux-256color";
     plugins = with pkgs; [
       tmuxPlugins.better-mouse-mode
       tmuxPlugins.tmux-fzf # prefix + F
@@ -45,14 +45,12 @@
       {
         plugin = tmuxPlugins.yank;
         extraConfig = ''
-          set -g @yank_selection 'chipboard'
+          set -g @yank_selection 'clipboard'
           set -g @yank_selection_mouse 'clipboard'
           set -g @custom_copy_command 'yank > #{pane_tty}'
         '';
       }
     ];
-    extraConfig = ''
-      ${builtins.readFile ../../conf.d/tmux/tmux.conf}
-    '';
+    extraConfig = builtins.readFile "${src}/conf.d/tmux/tmux.conf";
   };
 }

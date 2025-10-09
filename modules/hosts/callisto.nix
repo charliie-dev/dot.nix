@@ -1,11 +1,14 @@
 { nixgl-attr, ... }:
 let
   hm = nixgl-attr.home-manager;
-  inherit (nixgl-attr) nixpkgs;
-  inherit (nixgl-attr) catppuccin;
-  inherit (nixgl-attr) hm_ver;
-  inherit (nixgl-attr) nur;
-  inherit (nixgl-attr) nixgl;
+  inherit (nixgl-attr)
+    nixpkgs
+    catppuccin
+    hm_ver
+    nur
+    src
+    nixgl
+    ;
 in
 {
   host = hm.lib.homeManagerConfiguration {
@@ -18,8 +21,7 @@ in
       config.allowUnfree = true;
     };
     extraSpecialArgs = {
-      # inherit inputs;
-      inherit nixgl;
+      inherit src nixgl;
       roles = [
         "dev-core"
         "dev-extra"
@@ -29,7 +31,7 @@ in
       ];
     };
     modules = [
-      ../core.nix
+      "${src}/modules/core.nix"
       catppuccin.homeModules.catppuccin
       {
         home = {

@@ -1,10 +1,13 @@
 { base-attr, ... }:
 let
   hm = base-attr.home-manager;
-  inherit (base-attr) nixpkgs;
-  inherit (base-attr) catppuccin;
-  inherit (base-attr) hm_ver;
-  inherit (base-attr) nur;
+  inherit (base-attr)
+    nixpkgs
+    catppuccin
+    hm_ver
+    nur
+    src
+    ;
 in
 {
   host = hm.lib.homeManagerConfiguration {
@@ -16,7 +19,7 @@ in
       config.allowUnfree = true;
     };
     extraSpecialArgs = {
-      # inherit inputs;
+      inherit src;
       roles = [
         "dev-core"
         "dev-extra"
@@ -25,7 +28,7 @@ in
       ];
     };
     modules = [
-      ../core.nix
+      "${src}/modules/core.nix"
       catppuccin.homeModules.catppuccin
       {
         home = {

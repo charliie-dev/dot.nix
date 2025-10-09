@@ -1,4 +1,9 @@
-{ config, pkgs, ... }:
+{
+  config,
+  pkgs,
+  src,
+  ...
+}:
 {
   zsh = {
     enable = true;
@@ -31,27 +36,23 @@
         "sunlei/zsh-ssh kind:defer"
       ];
     };
-    initContent = builtins.concatStringsSep "\n" (
-      [
-        (builtins.readFile ../../conf.d/zsh/completion.zsh)
-        (builtins.readFile ../../conf.d/zsh/setopt.zsh)
-        (builtins.readFile ../../conf.d/zsh/exports.zsh)
-        (builtins.readFile ../../conf.d/zsh/history.zsh)
-        (builtins.readFile ../../conf.d/zsh/functions.zsh)
-        (builtins.readFile ../../conf.d/zsh/bindkeys.zsh)
-        (builtins.readFile ../../conf.d/zsh/history.zsh)
-        (builtins.readFile ../../conf.d/zsh/plugins.zsh)
-        (builtins.readFile ../../conf.d/zsh/aliases.zsh)
-        (builtins.readFile ../../conf.d/zsh/hashdirs.zsh)
-      ]
-      ++ (
-        if pkgs.stdenv.isDarwin then
-          [
-            (builtins.readFile ../../conf.d/zsh/macos.zsh)
-          ]
-        else
-          [ ]
-      )
-    );
+    initContent =
+      let
+        zshDir = "${src}/conf.d/zsh";
+        commonFiles = [
+          "completion.zsh"
+          "setopt.zsh"
+          "exports.zsh"
+          "history.zsh"
+          "functions.zsh"
+          "bindkeys.zsh"
+          "plugins.zsh"
+          "aliases.zsh"
+          "hashdirs.zsh"
+        ];
+        darwinFiles = if pkgs.stdenv.isDarwin then [ "macos.zsh" ] else [ ];
+        readAll = files: builtins.map (f: builtins.readFile "${zshDir}/${f}") files;
+      in
+      builtins.concatStringsSep "\n" (readAll (commonFiles ++ darwinFiles));
   };
 }

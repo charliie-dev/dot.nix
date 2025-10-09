@@ -1,31 +1,31 @@
+{ src, ... }:
 {
   xdg = {
     enable = true;
     configFile = {
-      # core-utils
       "conda" = {
         recursive = true;
-        source = ../conf.d/conda;
+        source = "${src}/conf.d/conda";
       };
       "python" = {
         recursive = true;
-        source = ../conf.d/python;
+        source = "${src}/conf.d/python";
       };
       "glow" = {
         recursive = true;
-        source = ../conf.d/glow;
+        source = "${src}/conf.d/glow";
       };
       "npm" = {
         recursive = true;
-        source = ../conf.d/npm;
+        source = "${src}/conf.d/npm";
       };
       "wget" = {
         recursive = true;
-        source = ../conf.d/wget;
+        source = "${src}/conf.d/wget";
       };
       "yarn" = {
         recursive = true;
-        source = ../conf.d/yarn;
+        source = "${src}/conf.d/yarn";
       };
     };
   };
