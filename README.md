@@ -135,21 +135,26 @@ sudo nix upgrade-nix
 
 ## Resources
 
-- [nixos.org](https://nixos.org/)
+### Shorthands
+
+- [Nixpkgs Pull Request Tracker](https://nixpk.gs/pr-tracker.html?pr=)
 - [Home Manager Option Search](https://home-manager-options.extranix.com/)
+- [mynixos.com](https://mynixos.com/) - all-in-one site for search flakes, categories, options and packages
+- [nix-versions](https://lazamar.co.uk/nix-versions/) - search nixpkgs version on different branches
+- [nix.catppuccin.com](https://nix.catppuccin.com/) - catppuccin options for home-manager
+- [noogle.dev/](https://noogle.dev/) - search nix functions
+
+### Documentations
+
+- [nixos.org](https://nixos.org/)
 - [nix.dev](https://nix.dev/)
 - [DeterminateSystems/nix(2.23)](https://github.com/DeterminateSystems/nix-installer)
 - [my-nix-journey-use-nix-with-ubuntu](https://tech.aufomm.com/my-nix-journey-use-nix-with-ubuntu/)
-- [FlakeHub](https://flakehub.com/)
 - [DeterminateSystems/zero-to-nix](https://zero-to-nix.com/)
-- [Home Manager Manual(24.05)](https://nix-community.github.io/home-manager/)
+- [Home Manager Manual](https://nix-community.github.io/home-manager/)
 - [NixOS Wiki](https://wiki.nixos.org/wiki/NixOS_Wiki)
-- [mynixos.com](https://mynixos.com/)
 - [manix](https://github.com/nix-community/manix)
 - [NixOS & Flakes Book - An unofficial book for beginners](https://nixos-and-flakes.thiscute.world/)
 - [Nix Pills](https://nixos.org/guides/nix-pills/)
 - [nix-tutorial](https://nix-tutorial.gitlabpages.inria.fr/nix-tutorial/getting-started.html)
 - [LnL7/nix-darwin](https://github.com/LnL7/nix-darwin)
-- [nix-versions](https://lazamar.co.uk/nix-versions/)
-- [nix.catppuccin.com](https://nix.catppuccin.com/)
-- [noogle.dev/](https://noogle.dev/)
