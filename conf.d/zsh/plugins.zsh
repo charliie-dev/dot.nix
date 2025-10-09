@@ -35,7 +35,6 @@ fi
 # Use QuarticCat/zsh-smartcache to speedup zsh loading time
 smartcache eval zoxide init zsh
 smartcache eval starship init zsh
-smartcache eval direnv hook zsh
 (( $OSTYPE[(I)msys] )) && smartcache eval mise activate zsh
 
 # belak/zsh-utils xdg config
