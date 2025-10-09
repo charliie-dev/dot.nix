@@ -1,5 +1,5 @@
 # Init mise
-[[ $(uname -s) == MSYS_NT* ]] || eval "$(mise activate zsh)"
+# [[ $(uname -s) == MSYS_NT* ]] || eval "$(mise activate zsh)"
 
 # Init vfox
 # eval "$(vfox activate zsh)"
@@ -32,9 +32,10 @@ if (( $+commands[micromamba] )); then
   mkdir -p "$MAMBA_ROOT_PREFIX"/envs/completion
 fi
 
-# Use mroth/evalcache to speedup zsh loading time
+# Use QuarticCat/zsh-smartcache to speedup zsh loading time
 smartcache eval zoxide init zsh
 smartcache eval starship init zsh
+smartcache eval direnv hook zsh
 (( $OSTYPE[(I)msys] )) && smartcache eval mise activate zsh
 
 # belak/zsh-utils xdg config
