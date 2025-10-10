@@ -1,6 +1,7 @@
 { nixgl-attr, ... }:
 let
   hm = nixgl-attr.home-manager;
+  ds-hm-wrapper = nixgl-attr.determinate-hm-wrapper;
   inherit (nixgl-attr)
     nixpkgs
     catppuccin
@@ -17,6 +18,7 @@ in
       overlays = [
         nur.overlays.default
         nixgl.overlay
+        ds-hm-wrapper.overlays.default
       ];
       config.allowUnfree = true;
     };
@@ -39,6 +41,7 @@ in
           homeDirectory = "/home/charles";
           stateVersion = hm_ver;
           shell.enableZshIntegration = true;
+          sessionPath = [ "/nix/var/nix/profiles/default/bin" ];
         };
       }
     ];

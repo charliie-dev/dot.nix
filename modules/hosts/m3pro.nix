@@ -1,6 +1,7 @@
 { base-attr, ... }:
 let
   hm = base-attr.home-manager;
+  ds-hm-wrapper = base-attr.determinate-hm-wrapper;
   inherit (base-attr)
     nixpkgs
     catppuccin
@@ -15,6 +16,7 @@ in
       system = "aarch64-darwin";
       overlays = [
         nur.overlays.default
+        ds-hm-wrapper.overlays.default
       ];
       config.allowUnfree = true;
     };
@@ -36,6 +38,7 @@ in
           homeDirectory = "/Users/charles";
           stateVersion = hm_ver;
           shell.enableZshIntegration = true;
+          sessionPath = [ "/nix/var/nix/profiles/default/bin" ];
         };
       }
     ];
