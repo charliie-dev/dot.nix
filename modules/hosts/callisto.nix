@@ -7,6 +7,7 @@ let
     catppuccin
     hm_ver
     nur
+    nix-index-database
     src
     nixgl
     ;
@@ -35,6 +36,7 @@ in
     modules = [
       "${src}/modules/core.nix"
       catppuccin.homeModules.catppuccin
+      nix-index-database.homeModules.nix-index
       {
         home = {
           username = "charles";

@@ -14,6 +14,12 @@
       # Requires "nur.modules.nixos.default" to be added to the host modules
     };
 
+    # Weekly updated nix-index database
+    nix-index-database = {
+      url = "github:nix-community/nix-index-database";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Fixes OpenGL With Other Distros.
     nixgl = {
       url = "github:guibou/nixGL";
@@ -31,6 +37,7 @@
       nixpkgs,
       home-manager,
       nur,
+      nix-index-database,
       nixgl,
       catppuccin,
       nix-formatter-pack,
@@ -56,8 +63,8 @@
         };
       });
 
-      # Alias
       nixfmtpack = nix-formatter-pack;
+
       src = nix-filter.lib.filter {
         root = ./.;
         include = [
@@ -66,15 +73,17 @@
           "flake.nix"
         ];
       };
+
       base-attr = {
         hm_ver = "25.11";
         inherit
           home-manager
-          nixpkgs
-          nur
-          catppuccin
-          src
           determinate-hm-wrapper
+          nixpkgs
+          catppuccin
+          nur
+          nix-index-database
+          src
           ;
       };
       nixgl-attr = base-attr // {

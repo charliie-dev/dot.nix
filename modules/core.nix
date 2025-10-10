@@ -83,6 +83,7 @@ in
     inherit (import "${src}/modules/apps/lsd.nix") lsd;
     inherit (import "${src}/modules/apps/mise.nix") mise;
     inherit (import "${src}/modules/apps/neovim.nix" { inherit pkgs lib; }) neovim;
+    inherit (import "${src}/modules/apps/nix-index.nix") nix-index;
     inherit (import "${src}/modules/apps/nix-search-tv.nix") nix-search-tv;
     inherit (import "${src}/modules/apps/pistol.nix") pistol;
     inherit (import "${src}/modules/apps/ripgrep-all.nix") ripgrep-all;
