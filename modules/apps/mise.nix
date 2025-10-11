@@ -1,7 +1,7 @@
 {
   mise = {
     enable = true;
-    enableZshIntegration = false; # self-definded smartcache in conf.d/zsh
+    enableZshIntegration = true; # self-definded smartcache in conf.d/zsh
     globalConfig = {
       tools = {
         node = "latest";
