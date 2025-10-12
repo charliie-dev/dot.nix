@@ -19,6 +19,13 @@
     age
     agenix
 
+    # Nix Utils
+    nvd # Nix/NixOS package version diff tool
+    nix-output-monitor # Pipe your nix-build output through the nix-output-monitor to get additional information while building.
+    ### nix-build --log-format internal-json -v |& nom --json
+    nix-tree # Interactively browse dependency graphs of Nix derivations.
+    nh # Yet another Nix CLI helper.(search and clean)
+
     # https://wiki.nixos.org/wiki/Python#Using_micromamba
     # micromamba # conda replacement, don't install via nix, install directly
   ];
