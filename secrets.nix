@@ -4,6 +4,7 @@ let
   # ehco key: age-keygen -y ~/.config/age/keys.txt
   charles = [
     "age1cc2n5xttywv2t86xmtpkg0fptgfkjflvqxzcrwavmpfjmkfrhsuskdh65q"
+    "age1c0rk88eall59su5x4vfqrqtqskkdd3qnj5eyd93ve8wa6jmcx3dsmkzdx2"
   ];
   users = charles;
 
