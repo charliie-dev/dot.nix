@@ -1,7 +1,19 @@
 # Nix Home-Manager dotfiles
 
 > [!IMPORTANT]
-> Make sure `curl` and `openssl` is already installed.
+> Make sure `curl`, `openssl`, `zsh`, `age` is already installed.
+
+## make `age` key
+
+```sh
+mkdir -p ~/.config/age
+## gen age key
+age-keygen -o ~/.config/keys.txt
+## echo age pubkey
+age-keygen -y ~/.config/keys.txt
+## rekey on old machine
+agenix -r -i ~/.config/age/keys.txt
+```
 
 ## create `~/.config/nix/nix.conf`
 
