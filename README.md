@@ -8,9 +8,9 @@
 ```sh
 mkdir -p ~/.config/age
 ## gen age key
-age-keygen -o ~/.config/keys.txt
+age-keygen -o ~/.config/age/keys.txt
 ## echo age pubkey
-age-keygen -y ~/.config/keys.txt
+age-keygen -y ~/.config/age/keys.txt
 ## rekey on old machine
 agenix -r -i ~/.config/age/keys.txt
 ```
