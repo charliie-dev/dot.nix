@@ -40,6 +40,7 @@ export PYTHONSTARTUP="$XDG_CONFIG_HOME"/python/pythonrc
 export BUNDLE_USER_CONFIG="$XDG_CONFIG_HOME"/bundle
 export BUNDLE_USER_CACHE="$XDG_CACHE_HOME"/bundle
 export BUNDLE_USER_PLUGIN="$XDG_DATA_HOME"/bundle
+export EDITOR=nvim
 
 # VPS
 export AWS_SHARED_CREDENTIALS_FILE="$XDG_CONFIG_HOME"/aws/credentials
