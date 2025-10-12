@@ -2,6 +2,7 @@
 hash -d work="$HOME/Work"
 hash -d work="$HOME/Workspace"
 hash -d Work="$HOME/Work"
+hash -d ssh="$HOME/.ssh"
 hash -d music="$HOME/Music"
 hash -d pic="$HOME/Pictures"
 hash -d download="$HOME/Downloads"
