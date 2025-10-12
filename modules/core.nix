@@ -13,12 +13,17 @@ let
     r: (import "${src}/modules/apps/roles/${r}.nix" { inherit config pkgs; }).packages
   ) roles;
   merged_pkgs = lib.unique (common_apps ++ role_pkgs);
+  age_config = import "${src}/modules/agenix.nix" { inherit config src; };
 in
 {
   inherit (import "${src}/modules/nix-config.nix" { inherit pkgs; }) nix;
+  inherit (age_config.age) age;
 
   home = {
     packages = merged_pkgs;
+    shell.enableZshIntegration = true;
+    sessionPath = [ "/nix/var/nix/profiles/default/bin" ];
+    # sessionVariables = age_config.envVariables;
     file = {
       "self-made commands" = {
         enable = true;
@@ -38,6 +43,12 @@ in
         cd ${config.xdg.configHome}/nvim
         ${pkgs.git}/bin/git remote set-url origin git@github.com:${nvimdots_url}
       '';
+      sshDirectory = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        if [ ! -d ${config.home.homeDirectory}/.ssh ]; then
+          mkdir -p ${config.home.homeDirectory}/.ssh
+        fi
+        chmod 700 ${config.home.homeDirectory}/.ssh
+      '';
       gpgFixup = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         if [ ! -d ${config.xdg.dataHome}/gnupg ]; then
           mkdir -p ${config.xdg.dataHome}/gnupg
@@ -54,12 +65,6 @@ in
         if [ ! -f ${config.xdg.configHome}/topgrade.d/disable.toml ]; then
           cd ${config.xdg.configHome}/home-manager/conf.d/
           cp "${src}/conf.d/topgrade/disable.toml" ${config.xdg.configHome}/topgrade.d/disable.toml
-        fi
-      '';
-      sshCopy = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-        if [ ! -f ${config.home.homeDirectory}/.ssh/config ]; then
-          cd ${config.xdg.configHome}/home-manager/conf.d/
-          cp "${src}/conf.d/ssh/config" ${config.home.homeDirectory}/.ssh/config
         fi
       '';
     };
@@ -88,6 +93,7 @@ in
     inherit (import "${src}/modules/apps/pistol.nix") pistol;
     inherit (import "${src}/modules/apps/ripgrep-all.nix") ripgrep-all;
     inherit (import "${src}/modules/apps/ripgrep.nix") ripgrep;
+    inherit (import "${src}/modules/apps/ssh.nix" { inherit config; }) ssh;
     inherit (import "${src}/modules/apps/starship.nix" { inherit config lib; }) starship;
     inherit (import "${src}/modules/apps/television.nix") television;
     inherit (import "${src}/modules/apps/tmux.nix" { inherit pkgs src; }) tmux;

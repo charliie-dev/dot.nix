@@ -26,6 +26,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Secret Management
+    agenix.url = "github:ryantm/agenix";
+
     catppuccin.url = "github:catppuccin/nix/main";
     nix-formatter-pack.url = "github:Gerschtli/nix-formatter-pack";
     nix-filter.url = "github:numtide/nix-filter";
@@ -39,6 +42,7 @@
       nur,
       nix-index-database,
       nixgl,
+      agenix,
       catppuccin,
       nix-formatter-pack,
       nix-filter,
@@ -77,13 +81,14 @@
       base-attr = {
         hm_ver = "25.11";
         inherit
-          home-manager
-          determinate-hm-wrapper
           nixpkgs
-          catppuccin
+          home-manager
           nur
           nix-index-database
+          agenix
+          catppuccin
           src
+          determinate-hm-wrapper
           ;
       };
       nixgl-attr = base-attr // {

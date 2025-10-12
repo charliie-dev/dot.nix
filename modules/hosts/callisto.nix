@@ -4,11 +4,12 @@ let
   ds-hm-wrapper = nixgl-attr.determinate-hm-wrapper;
   inherit (nixgl-attr)
     nixpkgs
-    catppuccin
-    hm_ver
     nur
     nix-index-database
+    agenix
+    catppuccin
     src
+    hm_ver
     nixgl
     ;
 in
@@ -35,15 +36,14 @@ in
     };
     modules = [
       "${src}/modules/core.nix"
-      catppuccin.homeModules.catppuccin
       nix-index-database.homeModules.nix-index
+      agenix.homeManagerModules.default
+      catppuccin.homeModules.catppuccin
       {
         home = {
           username = "charles";
           homeDirectory = "/home/charles";
           stateVersion = hm_ver;
-          shell.enableZshIntegration = true;
-          sessionPath = [ "/nix/var/nix/profiles/default/bin" ];
         };
       }
     ];
