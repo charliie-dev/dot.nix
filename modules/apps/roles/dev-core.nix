@@ -11,10 +11,6 @@
     tree-sitter # Parser generator tool and an incremental parsing library
     xh # Friendly and fast tool for sending HTTP requests
 
-    # Secrets Management
-    age
-    agenix
-
     # pistol
     chafa # terminal image viewer
     hexyl # Command-line hex viewer

@@ -13,17 +13,16 @@ let
     r: (import "${src}/modules/apps/roles/${r}.nix" { inherit config pkgs; }).packages
   ) roles;
   merged_pkgs = lib.unique (common_apps ++ role_pkgs);
-  age_config = import "${src}/modules/agenix.nix" { inherit config src; };
 in
 {
   inherit (import "${src}/modules/nix-config.nix" { inherit pkgs; }) nix;
-  inherit (age_config.age) age;
+  inherit (import "${src}/modules/agenix.nix" { inherit config src; }) age;
 
   home = {
     packages = merged_pkgs;
     shell.enableZshIntegration = true;
     sessionPath = [ "/nix/var/nix/profiles/default/bin" ];
-    # sessionVariables = age_config.envVariables;
+    # sessionVariables = {};
     file = {
       "self-made commands" = {
         enable = true;
@@ -48,6 +47,12 @@ in
           mkdir -p ${config.home.homeDirectory}/.ssh
         fi
         chmod 700 ${config.home.homeDirectory}/.ssh
+      '';
+      ssh = lib.hm.dag.entryAfter [ "reloadSystemd" ] ''
+        if [ ! -f ${config.home.homeDirectory}/.ssh/authorized_keys ]; then
+          touch ${config.home.homeDirectory}/.ssh/authorized_keys
+        fi
+         (cat ${config.home.homeDirectory}/.ssh/id_ed25519.pub) >> ${config.home.homeDirectory}/.ssh/authorized_keys
       '';
       gpgFixup = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         if [ ! -d ${config.xdg.dataHome}/gnupg ]; then

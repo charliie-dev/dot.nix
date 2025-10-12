@@ -18,6 +18,7 @@ in
       system = "x86_64-linux";
       overlays = [
         nur.overlays.default
+        agenix.overlays.default
         ds-hm-wrapper.overlays.default
       ];
       config.allowUnfree = true;

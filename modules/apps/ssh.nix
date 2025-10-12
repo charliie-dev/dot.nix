@@ -1,0 +1,20 @@
+{ config, ... }:
+{
+  ssh = {
+    enable = true;
+    includes = [
+      "~/.ssh/override_config"
+      "${config.age.secrets.ssh_host_config.path}"
+    ];
+    matchBlocks."*" = {
+      addKeysToAgent = "no";
+      compression = true;
+      forwardAgent = false;
+      hashKnownHosts = true;
+      identityFile = "${config.age.secrets.ssh_ed25519.path}";
+      serverAliveInterval = 300;
+      serverAliveCountMax = 10;
+    };
+    enableDefaultConfig = false; # this option will be deprecated, so don't use it.
+  };
+}

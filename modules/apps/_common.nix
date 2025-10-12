@@ -15,6 +15,10 @@
     xdg-ninja
     tree
 
+    # Secrets Management
+    age
+    agenix
+
     # https://wiki.nixos.org/wiki/Python#Using_micromamba
     # micromamba # conda replacement, don't install via nix, install directly
   ];

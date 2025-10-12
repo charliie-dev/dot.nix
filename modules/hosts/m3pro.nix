@@ -18,6 +18,7 @@ in
       system = "aarch64-darwin";
       overlays = [
         nur.overlays.default
+        agenix.overlays.default
         ds-hm-wrapper.overlays.default
       ];
       config.allowUnfree = true;
