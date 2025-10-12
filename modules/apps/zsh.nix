@@ -54,5 +54,30 @@
         readAll = files: builtins.map (f: builtins.readFile "${zshDir}/${f}") files;
       in
       builtins.concatStringsSep "\n" (readAll (commonFiles ++ darwinFiles));
+    envExtra = ''
+      # Azure
+      if [ -r ${config.age.secrets.azure_openai_api_endpoint.path} ]; then
+        export AZURE_OPENAI_API_ENDPOINT="$(tr -d '\r\n' < ${config.age.secrets.azure_openai_api_endpoint.path})"
+      fi
+      if [ -r ${config.age.secrets.azure_openai_api_key.path} ]; then
+        export AZURE_OPENAI_API_KEY="$(tr -d '\r\n' < ${config.age.secrets.azure_openai_api_key.path})"
+      fi
+      if [ -r ${config.age.secrets.azure_openai_api_version.path} ]; then
+        export AZURE_OPENAI_API_VERSION="$(tr -d '\r\n' < ${config.age.secrets.azure_openai_api_version.path})"
+      fi
+
+      # AWS
+      export AWS_DEFAULT_OUTPUT="json"
+      export AWS_DATA_PATH="${config.xdg.dataHome}/aws"
+      if [ -r ${config.age.secrets.aws_region.path} ]; then
+        export AWS_REGION="$(tr -d '\r\n' < ${config.age.secrets.aws_region.path})"
+      fi
+      if [ -r ${config.age.secrets.aws_access_key_id.path} ]; then
+        export AWS_ACCESS_KEY_ID="$(tr -d '\r\n' < ${config.age.secrets.aws_access_key_id.path})"
+      fi
+      if [ -r ${config.age.secrets.aws_secret_access_key.path} ]; then
+        export AWS_SECRET_ACCESS_KEY="$(tr -d '\r\n' < ${config.age.secrets.aws_secret_access_key.path})"
+      fi
+    '';
   };
 }

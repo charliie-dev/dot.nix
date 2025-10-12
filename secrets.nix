@@ -22,4 +22,13 @@ in
   "conf.d/ages/ssh_ed25519_pub.age".publicKeys = users ++ hosts;
   "conf.d/ages/host_configuration.age".publicKeys = users ++ hosts;
 
+  # VPSs
+  # Azure OpenAI
+  "conf.d/ages/azure_openai_api_endpoint.age".publicKeys = users ++ hosts;
+  "conf.d/ages/azure_openai_api_key.age".publicKeys = users ++ hosts;
+  "conf.d/ages/azure_openai_api_version.age".publicKeys = users ++ hosts;
+  # AWS
+  "conf.d/ages/aws_region.age".publicKeys = users ++ hosts;
+  "conf.d/ages/aws_access_key_id.age".publicKeys = users ++ hosts;
+  "conf.d/ages/aws_secret_access_key.age".publicKeys = users ++ hosts;
 }

@@ -22,7 +22,6 @@ in
     packages = merged_pkgs;
     shell.enableZshIntegration = true;
     sessionPath = [ "/nix/var/nix/profiles/default/bin" ];
-    # sessionVariables = {};
     file = {
       "self-made commands" = {
         enable = true;
@@ -64,6 +63,11 @@ in
       dotnetFixup = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         if [ ! -d ${config.xdg.dataHome}/dotnet ]; then
           mkdir -p ${config.xdg.dataHome}/dotnet
+        fi
+      '';
+      awsFixup = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        if [ ! -d ${config.xdg.dataHome}/aws ]; then
+          mkdir -p ${config.xdg.dataHome}/aws
         fi
       '';
       topgradeCopy = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
