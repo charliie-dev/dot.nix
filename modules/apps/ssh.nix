@@ -4,7 +4,8 @@
     enable = true;
     includes = [
       "~/.ssh/override_config"
-      "${config.age.secrets.ssh_host_config.path}"
+      # "${config.age.secrets.ssh_host_config.path}" # `sunlei/zsh-ssh` can't resolve absolute path
+      "$~/.ssh/host_configuration"
     ];
     matchBlocks."*" = {
       addKeysToAgent = "no";
@@ -15,6 +16,6 @@
       serverAliveInterval = 300;
       serverAliveCountMax = 10;
     };
-    enableDefaultConfig = false; # this option will be deprecated, so don't use it.
+    enableDefaultConfig = false; # this option will be deprecated, so set it to false
   };
 }
