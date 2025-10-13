@@ -46,6 +46,7 @@ export EDITOR=nvim
 export AWS_SHARED_CREDENTIALS_FILE="$XDG_CONFIG_HOME"/aws/credentials
 export AWS_CONFIG_FILE="$XDG_CONFIG_HOME"/aws/config
 export AWS_PROFILE="default"
+export AZURE_CONFIG_DIR="$XDG_DATA_HOME"/azure
 
 # zsh plugins options
 export ANTIDOTE_HOME="$XDG_CACHE_HOME"/antidote
