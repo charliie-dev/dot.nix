@@ -1,6 +1,5 @@
 # enter hashdir via `cd ~XXX`
 hash -d work="$HOME/Work"
-hash -d work="$HOME/Workspace"
 hash -d Work="$HOME/Work"
 hash -d ssh="$HOME/.ssh"
 hash -d music="$HOME/Music"
