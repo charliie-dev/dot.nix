@@ -14,7 +14,6 @@
     # Good TUIs
     nur.repos.charmbracelet.crush
     jqp # TUI plaground to experiment with jq
-    lazyssh # Terminal-based SSH manager
 
   ];
 }
