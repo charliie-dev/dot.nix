@@ -15,6 +15,7 @@
 
       format = lib.concatStrings [
         "$username"
+        "$hostname"
         "$directory"
         "$git_branch"
         "$git_metrics"
@@ -122,6 +123,7 @@
       character = {
         success_symbol = "[❯](green)";
         error_symbol = "[❯](red)";
+        vimcmd_symbol = "[❮](green)";
       };
 
       # Shows an icon that should be included by zshrc script based on the distribution or os

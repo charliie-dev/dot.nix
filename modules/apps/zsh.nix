@@ -11,7 +11,7 @@
     zprof.enable = false;
     enableCompletion = false;
     enableVteIntegration = if pkgs.stdenv.isDarwin then false else true;
-    # defaultKeymap = "vicmd";
+    defaultKeymap = "viins";
     antidote = {
       enable = true;
       useFriendlyNames = true;
@@ -24,7 +24,7 @@
         "QuarticCat/zsh-smartcache" # better mroth/evalcache
         "zsh-users/zsh-completions kind:fpath"
         "belak/zsh-utils path:completion"
-        "Aloxaf/fzf-tab kind:defer" # needs to load after `compinit`, but before wrap widgets, such as `zsh-autosuggestions` or `fast-syntax-highlighting`
+        # "Aloxaf/fzf-tab kind:defer" # needs to load after `compinit`, but before wrap widgets, such as `zsh-autosuggestions` or `fast-syntax-highlighting`
         "zsh-users/zsh-autosuggestions kind:defer"
         "zdharma-continuum/fast-syntax-highlighting kind:defer" # add before zsh-history-substring-search to prevent breaking
         "zpm-zsh/colorize kind:defer" # Colorize the output of various programs

@@ -86,6 +86,7 @@ in
     inherit (import "${src}/modules/apps/home-manager.nix") home-manager;
     inherit (import "${src}/modules/apps/bat.nix" { inherit pkgs; }) bat;
     inherit (import "${src}/modules/apps/btop.nix") btop;
+    inherit (import "${src}/modules/apps/carapace.nix") carapace;
     inherit (import "${src}/modules/apps/fd.nix") fd;
     inherit (import "${src}/modules/apps/fzf.nix") fzf;
     inherit (import "${src}/modules/apps/gh-dash.nix") gh-dash;
