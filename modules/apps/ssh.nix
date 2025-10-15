@@ -11,7 +11,7 @@
       addKeysToAgent = "no";
       compression = true;
       forwardAgent = false;
-      hashKnownHosts = true;
+      hashKnownHosts = false;
       identityFile = "${config.age.secrets.ssh_ed25519.path}";
       serverAliveInterval = 300;
       serverAliveCountMax = 10;
