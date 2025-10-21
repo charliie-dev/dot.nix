@@ -30,6 +30,9 @@
       ignorels = "!git ls-files -v | grep \"^S\"";
     };
     extraConfig = {
+      init = {
+        defaultBranch = "main";
+      };
       core = {
         preloadindex = true;
         fscache = true;
