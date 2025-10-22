@@ -1,8 +1,8 @@
 {
   git = {
     enable = true;
-    userName = "CharlesChiuGit";
-    userEmail = "charleschiu2012@gmail.com";
+    userName = "charliie-dev";
+    userEmail = "mail@charliie.dev";
     ignores = [
       "*/.env"
       "./.DS_Store"
