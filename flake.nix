@@ -32,7 +32,7 @@
     catppuccin.url = "github:catppuccin/nix/main";
     nix-formatter-pack.url = "github:Gerschtli/nix-formatter-pack";
     nix-filter.url = "github:numtide/nix-filter";
-    determinate-hm-wrapper.url = "github:CharlesChiuGit/determinate-hm-wrapper";
+    determinate-hm-wrapper.url = "github:charliie-dev/determinate-hm-wrapper";
   };
 
   outputs =
