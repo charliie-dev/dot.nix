@@ -8,7 +8,8 @@
       "~/.ssh/host_configuration"
     ];
     matchBlocks."*" = {
-      addKeysToAgent = "no";
+      addKeysToAgent = "yes";
+      IdentitiesOnly = "yes";
       compression = true;
       forwardAgent = false;
       hashKnownHosts = false;

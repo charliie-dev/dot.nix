@@ -20,6 +20,10 @@ in
         file = "${src}/conf.d/ages/host_configuration.age";
         path = "${config.home.homeDirectory}/.ssh/host_configuration";
       };
+      git_allowed_signers = {
+        file = "${src}/conf.d/ages/allowed_signers.age";
+        path = "${config.xdg.configHome}/git/allowed_signers";
+      };
       # Azure OpenAI
       azure_openai_api_endpoint = {
         file = "${src}/conf.d/ages/azure_openai_api_endpoint.age";

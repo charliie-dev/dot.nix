@@ -17,7 +17,7 @@
           pager = "delta --dark --paging=never";
         };
         commit = {
-          signoff = false;
+          signoff = true;
           autoWrapCommitMessage = true;
           autoWrapWidth = 72;
         };

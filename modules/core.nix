@@ -91,11 +91,13 @@ in
     inherit (import "${src}/modules/apps/bat.nix" { inherit pkgs; }) bat;
     inherit (import "${src}/modules/apps/btop.nix") btop;
     inherit (import "${src}/modules/apps/carapace.nix") carapace;
+    inherit (import "${src}/modules/apps/delta.nix") delta;
+    inherit (import "${src}/modules/apps/difftastic.nix") difftastic;
     inherit (import "${src}/modules/apps/fd.nix") fd;
     inherit (import "${src}/modules/apps/fzf.nix") fzf;
     inherit (import "${src}/modules/apps/gh-dash.nix") gh-dash;
     inherit (import "${src}/modules/apps/gh.nix" { inherit pkgs; }) gh;
-    inherit (import "${src}/modules/apps/git.nix") git;
+    inherit (import "${src}/modules/apps/git.nix" { inherit config; }) git;
     inherit (import "${src}/modules/apps/hwatch.nix") hwatch;
     inherit (import "${src}/modules/apps/lazydocker.nix") lazydocker;
     inherit (import "${src}/modules/apps/lazygit.nix") lazygit;
@@ -117,4 +119,8 @@ in
     inherit (import "${src}/modules/apps/zoxide.nix") zoxide;
     inherit (import "${src}/modules/apps/zsh.nix" { inherit config pkgs src; }) zsh;
   };
+
+  # services = {
+  #   inherit (import "${src}/modules/services/ssh-agent.nix") ssh-agent;
+  # };
 }

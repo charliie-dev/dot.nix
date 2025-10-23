@@ -1,0 +1,5 @@
+{
+  ssh-agent = {
+    enable = true;
+  };
+}

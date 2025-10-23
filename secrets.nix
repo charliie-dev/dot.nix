@@ -21,6 +21,7 @@ in
   "conf.d/ages/ssh_ed25519.age".publicKeys = users ++ hosts;
   "conf.d/ages/ssh_ed25519_pub.age".publicKeys = users ++ hosts;
   "conf.d/ages/host_configuration.age".publicKeys = users ++ hosts;
+  "conf.d/ages/allowed_signers.age".publicKeys = users ++ hosts;
 
   # VPSs
   # Azure OpenAI
