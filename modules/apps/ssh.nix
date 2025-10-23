@@ -9,7 +9,7 @@
     ];
     matchBlocks."*" = {
       addKeysToAgent = "yes";
-      identitiesOnly = "yes";
+      identitiesOnly = true;
       compression = true;
       forwardAgent = false;
       hashKnownHosts = false;
