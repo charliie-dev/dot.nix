@@ -41,7 +41,7 @@
       diff = {
         colorMoved = "default";
       };
-      aliases = {
+      alias = {
         st = "status";
         cm = "commit -m";
         co = "checkout";
