@@ -8,8 +8,8 @@ on:
 env:
   BRANCH: "main"
   COMMIT_MESSAGE: "chore(lockfile): auto update flake.lock"
-  GIT_NAME: "github-actions[bot]"
-  GIT_EMAIL: "41898282+github-actions[bot]@users.noreply.github.com"
+  # GIT_NAME: "github-actions[bot]"
+  # GIT_EMAIL: "41898282+github-actions[bot]@users.noreply.github.com"
 
 jobs:
   nix-flake-update:
