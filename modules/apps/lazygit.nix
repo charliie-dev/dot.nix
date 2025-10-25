@@ -1,6 +1,8 @@
 {
   lazygit = {
     enable = true;
+    enableZshIntegration = false; # it will have parsing error when true
+    # shellWrapperName = "lg";
     settings = {
       gui = {
         mouseEvents = true;
