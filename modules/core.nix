@@ -88,6 +88,7 @@ in
 
   programs = {
     inherit (import "${src}/modules/apps/home-manager.nix") home-manager;
+    inherit (import "${src}/modules/apps/asciinema.nix") asciinema;
     inherit (import "${src}/modules/apps/bat.nix" { inherit pkgs; }) bat;
     inherit (import "${src}/modules/apps/btop.nix") btop;
     inherit (import "${src}/modules/apps/carapace.nix") carapace;
