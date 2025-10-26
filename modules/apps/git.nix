@@ -15,7 +15,7 @@
         defaultBranch = "main";
       };
       core = {
-        fsmonitor = true;
+        fsmonitor = false;
         untrackedcache = true;
         # fscache = true; # speed up git on Windows_NT
         # preloadindex = true; # speed up git on Windows_NT
