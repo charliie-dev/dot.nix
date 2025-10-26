@@ -17,10 +17,10 @@
       core = {
         fsmonitor = true;
         untrackedcache = true;
-        fscache = true; # speed up git on Windows_NT
-        preloadindex = true; # speed up git on Windows_NT
+        # fscache = true; # speed up git on Windows_NT
+        # preloadindex = true; # speed up git on Windows_NT
         tabwidth = 4;
-        autocrlf = true;
+        autocrlf = false; # set to true if on Windows_NT
       };
       gpg.ssh = {
         allowedSignersFile = "${config.age.secrets.git_allowed_signers.path}";
