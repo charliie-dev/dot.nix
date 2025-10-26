@@ -37,6 +37,4 @@ smartcache eval zoxide init zsh
 smartcache eval starship init zsh
 # (( $OSTYPE[(I)msys] )) && smartcache eval mise activate zsh # mise's smartcache won't work if installing mise via home-manager
 
-# belak/zsh-utils xdg config
-zstyle ':zsh-utils:*:*' use-xdg-basedirs 'yes'
 # vim: set ft=zsh :

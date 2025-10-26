@@ -1,10 +1,10 @@
 #!/bin/zsh
 
-# Flush the DNS cache.
-alias flushdns='dscacheutil -flushcache && sudo killall -HUP mDNSResponder'
+# Flush the DNS cache. -> mattmc3/zephyr/tree/main/plugins/macos
+# alias flushdns='dscacheutil -flushcache && sudo killall -HUP mDNSResponder'
 
-# Remove .DS_Store files recursively in a directory.
-alias rmdsstore='find "${@:-.}" -type f -name .DS_Store -delete'
+# Remove .DS_Store files recursively in a directory. -> mattmc3/zephyr/tree/main/plugins/macos
+# alias rmdsstore='find "${@:-.}" -type f -name .DS_Store -delete'
 
 # macOS has no 'md5sum', so use 'md5' as a fallback
 command -v md5sum > /dev/null || alias md5sum="md5"

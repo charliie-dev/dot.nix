@@ -1,3 +1,14 @@
+# Set completion options.
+setopt always_to_end        # Move cursor to the end of a completed word.
+setopt auto_list            # Automatically list choices on ambiguous completion.
+setopt auto_menu            # Show completion menu on a successive tab press.
+setopt auto_param_slash     # If completed parameter is a directory, add a trailing slash.
+setopt complete_in_word     # Complete from both ends of a word.
+setopt path_dirs            # Perform path search even on command names with slashes.
+setopt NO_flow_control      # Disable start/stop characters in shell editor.
+setopt NO_menu_complete     # Do not autoselect the first completion entry.
+
+
 # auto-convert case
 zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}'
 # error correction
@@ -56,11 +67,10 @@ zstyle ':completion:*:git:*' group-order 'main commands' 'alias commands' 'exter
 # disable sort when completing `git checkout`
 zstyle ':completion:*:git-checkout:*' sort false
 
-# Better --SSH--/Rsync/SCP Autocomplete, use `sunlei/zsh-ssh` for ssh
-zstyle ':completion:*:(scp|rsync):*' tag-order ' hosts:-ipaddr:ip\ address hosts:-host:host files'
-zstyle ':completion:*:(scp|rsync):*:hosts-host' ignored-patterns '*(.|:)*' loopback ip6-loopback localhost ip6-localhost broadcasthost
-zstyle ':completion:*:(scp|rsync):*:hosts-ipaddr' ignored-patterns '^(<->.<->.<->.<->|(|::)([[:xdigit:].]##:(#c,2))##(|%*))' '127.0.0.<->' '255.255.255.255' '::1' 'fe80::*'
-
-
-# NOTE: Completions should be configured before compinit
-autoload -U compinit; compinit
+# Better SSH/Rsync/SCP Autocomplete
+zstyle ':completion:*:(ssh|scp|rsync):*' tag-order 'hosts:-host:host hosts:-domain:domain hosts:-ipaddr:ip\ address *'
+zstyle ':completion:*:(scp|rsync):*' group-order users files all-files hosts-domain hosts-host hosts-ipaddr
+zstyle ':completion:*:ssh:*' group-order users hosts-domain hosts-host users hosts-ipaddr
+zstyle ':completion:*:(ssh|scp|rsync):*:hosts-host' ignored-patterns '*(.|:)*' loopback ip6-loopback localhost ip6-localhost broadcasthost
+zstyle ':completion:*:(ssh|scp|rsync):*:hosts-domain' ignored-patterns '<->.<->.<->.<->' '^[-[:alnum:]]##(.[-[:alnum:]]##)##' '*@*'
+zstyle ':completion:*:(ssh|scp|rsync):*:hosts-ipaddr' ignored-patterns '^(<->.<->.<->.<->|(|::)([[:xdigit:].]##:(#c,2))##(|%*))' '127.0.0.<->' '255.255.255.255' '::1' 'fe80::*'
