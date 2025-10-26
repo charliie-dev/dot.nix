@@ -3,13 +3,12 @@
   bat = {
     enable = true;
     extraPackages = with pkgs.bat-extras; [
-      # core
+      # batdiff
+      # batgrep
       batman
-      batdiff
-      batgrep
-      batpipe
-      batwatch
-      prettybat
+      # batpipe
+      # batwatch
+      # prettybat
     ];
     config = {
       # theme = "TwoDark"; # handover by catppuccin

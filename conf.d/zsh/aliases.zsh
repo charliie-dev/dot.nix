@@ -14,6 +14,7 @@ alias .....='cd ../../../..'
 alias bd='cd "$OLDPWD"' # cd to the previous directory
 alias nv='nvim'
 alias wget='wget2'
+alias man='batman'
 
 # Extanded Aliases
 # alias yarn='yarn --use-yarnrc "$XDG_CONFIG_HOME/yarn/config"'

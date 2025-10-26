@@ -16,10 +16,6 @@
       enable = true;
       useFriendlyNames = true;
       plugins = [
-        # oh-my-zsh plugins
-        "getantidote/use-omz" # handle OMZ dependencies
-        "ohmyzsh/ohmyzsh path:lib" # load OMZ's library
-        "ohmyzsh/ohmyzsh path:plugins/colored-man-pages kind:defer" # load OMZ plugins
         # lazy-loading `kind:defer`
         "QuarticCat/zsh-smartcache" # better mroth/evalcache
         "zsh-users/zsh-completions kind:fpath"
