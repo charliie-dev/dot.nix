@@ -33,8 +33,7 @@
     };
     cdpath = [
       # autocompletion after `cd`
-      "${config.xdg.configHome}/nvim"
-      "${config.xdg.configHome}/home-manager"
+      "${config.xdg.configHome}"
     ];
     history = {
       path = "${config.xdg.cacheHome}/zsh/history";
