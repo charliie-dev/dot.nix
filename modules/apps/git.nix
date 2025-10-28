@@ -3,8 +3,8 @@
   git = {
     enable = true;
     ignores = [
-      "*/.env"
-      "./.DS_Store"
+      ".env"
+      ".DS_Store"
     ];
     settings = {
       user = {
