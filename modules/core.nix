@@ -61,7 +61,9 @@ in
         if [ ! -d ${config.xdg.dataHome}/gnupg ]; then
           mkdir -p ${config.xdg.dataHome}/gnupg
         fi
-        chmod 600 ${config.xdg.dataHome}/gnupg/*
+        if [ "$(ls -A ${config.xdg.dataHome}/gnupg/)" ]; then
+          chmod 600 ${config.xdg.dataHome}/gnupg/*
+        fi
         chmod 700 ${config.xdg.dataHome}/gnupg
       '';
       dotnetFixup = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
