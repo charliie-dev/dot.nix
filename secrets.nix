@@ -9,10 +9,12 @@ let
   users = charles;
 
   nics-demo-lab = "age1ma2h46jzrp3ux5gx6ad9l5yap7t60pl2jw0jevd9d6yn7k407yws3ws9sx";
+  dcf-demo = "age12p7ng23relt5rkfp2xkk8nderzgwavfe3pun5e24xy6py2m8nuvsm7wr9q";
   oc_bot = "age1pzwzf6lqjsjgpys0jlwfc957xewhclfr7hxg5wftky0q4cunwsequqyysa";
   rdsrv01 = "age1hwpy5jpkm6kyvr2apppq5scceu5ypsqa8unptmrzry3pu37swygqcc7ca6";
   hosts = [
     nics-demo-lab
+    dcf-demo
     oc_bot
     rdsrv01
   ];
