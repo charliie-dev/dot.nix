@@ -98,8 +98,8 @@ exit
 # nix-channel --add https://nixos.org/channels/nixpkgs-unstable unstable
 # nix-channel --update
 # nix-env -iA unstable.git
-git clone https://github.com/CharlesChiuGit/nix-hm-config.git ~/.config/home-manager
-nix-env -e git
+git clone https://github.com/charliie-dev/dot.nix.git ~/.config/home-manager
+# nix-env -e git
 cd ~/.config/home-manager && nix build
 # add `trusted-users `: trusted-users = charles in `/etc/nix/nix.conf`
 rm ~/.config/nix/nix.conf
