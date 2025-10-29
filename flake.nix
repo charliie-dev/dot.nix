@@ -113,6 +113,7 @@
         "charles@RDSrv01" = (import ./modules/hosts/rdsrv01.nix { inherit base-attr; }).host;
         "charles@bot" = (import ./modules/hosts/oc_bot.nix { inherit base-attr; }).host;
         "charles@nics-demo-lab" = (import ./modules/hosts/nics-demo-lab.nix { inherit base-attr; }).host;
+        "charles@dcf-demo" = (import ./modules/hosts/dcf-demo.nix { inherit base-attr; }).host;
       };
     };
 }
