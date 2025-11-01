@@ -30,11 +30,13 @@
       share = "${config.xdg.dataHome}";
       state = "${config.xdg.stateHome}";
       cache = "${config.xdg.cacheHome}";
+      nvim = "${config.xdg.configHome}/nvim";
+      manager = "${config.xdg.configHome}/home-manager";
     };
-    cdpath = [
-      # autocompletion after `cd`
-      "${config.xdg.configHome}"
-    ];
+    # cdpath = [
+    #   # autocompletion after `cd`
+    #   "${config.xdg.configHome}"
+    # ];
     history = {
       path = "${config.xdg.cacheHome}/zsh/history";
       size = 20000; # Set session history size.
