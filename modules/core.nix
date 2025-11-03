@@ -98,7 +98,7 @@ in
     inherit (import "${src}/modules/apps/difftastic.nix") difftastic;
     inherit (import "${src}/modules/apps/fd.nix") fd;
     inherit (import "${src}/modules/apps/fzf.nix") fzf;
-    inherit (import "${src}/modules/apps/gcc.nix") gcc;
+    # inherit (import "${src}/modules/apps/gcc.nix") gcc;
     inherit (import "${src}/modules/apps/gh-dash.nix") gh-dash;
     inherit (import "${src}/modules/apps/gh.nix" { inherit pkgs; }) gh;
     inherit (import "${src}/modules/apps/git.nix" { inherit config; }) git;
