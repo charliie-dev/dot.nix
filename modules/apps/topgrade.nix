@@ -17,7 +17,7 @@
         # Set this to true to suppress the warning and confirmation
         # prompt if Topgrade detects it is being run as root.
         # (default: false)
-        # allow_root = false;
+        # allow_root = false
 
         # Run `sudo -v` to cache credentials at the start of the run
         # This avoids a blocking password prompt in the middle of an unattended run
@@ -29,32 +29,8 @@
 
         # Disable specific steps - same options as the command line flag
         # disable = [
-        #   "bun"
-        #   "bun_packages"
-        #   "cargo"
-        #   "clam_av_db"
-        #   "containers"
-        #   "gcloud"
-        #   "gem"
-        #   "github_cli_extensions"
-        #   "go"
-        #   "home_manager"
-        #   "mamba"
-        #   "nix"
-        #   "node"
-        #   # "pip3"
-        #   # "pipx"
-        #   # "pipxu"
-        #   "pnpm"
-        #   "poetry"
-        #   "pyenv"
-        #   "rye"
-        #   "self_update"
-        #   "shell"
-        #   "uv"
-        #   "vim"
-        #   "yarn"
-        #   "yazi"
+        #   "system"
+        #   "emacs"
         # ];
 
         # Ignore failures for these steps
@@ -122,7 +98,7 @@
         # Extra tracing filter directives
         # These are prepended to the `--log-filter` argument
         # See: https://docs.rs/tracing-subscriber/latest/tracing_subscriber/filter/struct.EnvFilter.html#directives
-        # log_filters = ["topgrade::command=debug", "warn"]
+        # log_filters = ["topgrade::command=debug" "warn"]
       };
 
       # Commands to run before anything
@@ -258,12 +234,12 @@
         # home_manager_arguments = ["--flake", "file"]
       };
 
-      # mandb = {
-      # Enable the mandb step (to update manual entries).
-      # Mandb is updated in the background by a service on most systems by default.
-      # (default: false)
-      # enable = true
-      # };
+      mandb = {
+        # Enable the mandb step (to update manual entries).
+        # Mandb is updated in the background by a service on most systems by default.
+        # (default: false)
+        enable = true;
+      };
 
       git = {
         # How many repos to pull at max in parallel
@@ -288,17 +264,17 @@
 
         # Controls whether to automatically reboot the computer when updates are
         # installed that request it. (default: "no", allowed values: "yes", "no", "ask")
-        # updates_auto_reboot = "no";
+        updates_auto_reboot = "no";
 
-        # open_remotes_in_new_terminal = true
+        # open_remotes_in_new_terminal = true;
 
-        # wsl_update_pre_release = true
+        # wsl_update_pre_release = true;
 
-        # wsl_update_use_web_download = true
+        wsl_update_use_web_download = true;
 
         # The default for winget_install_silently is true,
         # this example turns off silent install.
-        # winget_install_silently = false
+        winget_install_silently = true;
 
         # Causes Topgrade to rename itself during the run to allow package managers
         # to upgrade it. Use this only if you installed Topgrade by using a package
@@ -313,7 +289,7 @@
         # If any problems occur, please try running Topgrade without this option first
         # before reporting an issue.
         # (default: false)
-        # winget_use_sudo = true;
+        winget_use_sudo = true;
       };
 
       npm = {
@@ -387,45 +363,45 @@
         # startup_file = true
       };
 
-      # zigup = {
-      # Version strings passed to zigup.
-      # These may be pinned versions such as "0.13.0" or branches such as "master".
-      # Each one will be updated in its own zigup invocation.
-      # (default: ["master"])
-      # target_versions = ["master", "0.13.0"]
+      zigup = {
+        # Version strings passed to zigup.
+        # These may be pinned versions such as "0.13.0" or branches such as "master".
+        # Each one will be updated in its own zigup invocation.
+        # (default: ["master"])
+        # target_versions = ["master", "0.13.0"]
 
-      # Specifies the directory that the zig files will be installed to.
-      # If defined, passed with the --install-dir command line flag.
-      # If not defined, zigup will use its default behaviour.
-      # (default: not defined)
-      # install_dir = "~/.zig"
+        # Specifies the directory that the zig files will be installed to.
+        # If defined, passed with the --install-dir command line flag.
+        # If not defined, zigup will use its default behaviour.
+        # (default: not defined)
+        # install_dir = "~/.zig"
 
-      # Specifies the path of the symlink which will be set to point at the default compiler version.
-      # If defined, passed with the --path-link command line flag.
-      # If not defined, zigup will use its default behaviour.
-      # This is not meaningful if set_default is not enabled.
-      # (default: not defined)
-      # path_link = "~/.bin/zig"
+        # Specifies the path of the symlink which will be set to point at the default compiler version.
+        # If defined, passed with the --path-link command line flag.
+        # If not defined, zigup will use its default behaviour.
+        # This is not meaningful if set_default is not enabled.
+        # (default: not defined)
+        # path_link = "~/.bin/zig"
 
-      # If enabled, run `zigup clean` after updating all versions.
-      # If enabled, each updated version above will be marked with `zigup keep`.
-      # (default: false)
-      # cleanup = false
-      # };
+        # If enabled, run `zigup clean` after updating all versions.
+        # If enabled, each updated version above will be marked with `zigup keep`.
+        # (default: false)
+        # cleanup = false
+      };
 
-      # vscode = {
-      # If this is set and is a non-empty string, it specifies the profile the
-      # extensions should be updated for.
-      # (default: this won't be set by default)
-      # profile = ""
-      # };
+      vscode = {
+        # If this is set and is a non-empty string, it specifies the profile the
+        # extensions should be updated for.
+        # (default: this won't be set by default)
+        # profile = ""
+      };
 
-      # pixi = {
-      # Show the release notes of the latest pixi release
-      # during the pixi step
-      # (default: false)
-      # include_release_notes = false
-      # };
+      pixi = {
+        # Show the release notes of the latest pixi release
+        # during the pixi step
+        # (default: false)
+        # include_release_notes = false
+      };
 
     };
   };
