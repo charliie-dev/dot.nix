@@ -14,10 +14,12 @@
         useHunkModeInStagingView = true;
       };
       git = {
-        paging = {
-          colorArg = "always";
-          pager = "delta --dark --paging=never";
-        };
+        pagers = [
+          {
+            pager = "delta --dark --paging=never";
+            colorArg = "always";
+          }
+        ];
         commit = {
           signoff = true;
           autoWrapCommitMessage = true;
