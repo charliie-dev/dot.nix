@@ -32,6 +32,7 @@ alias treed='tree -CAFd'
 alias z='zi' # map z to zoxide interactive selection
 alias yz='yazi'
 alias jqp='jqp -t catppuccin-mocha'
+alias lj=lazyjournal
 
 # Nix Aliases
 alias nixup='cd $HOME/.config/home-manager && nix flake update && home-manager switch --impure && cd "$OLDPWD"'

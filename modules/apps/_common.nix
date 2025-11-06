@@ -14,6 +14,7 @@
     fastfetch
     xdg-ninja
     tree
+    lazyjournal
 
     # Secrets Management
     age
@@ -26,7 +27,5 @@
     nix-tree # Interactively browse dependency graphs of Nix derivations.
     nh # Yet another Nix CLI helper.(search and clean)
 
-    # https://wiki.nixos.org/wiki/Python#Using_micromamba
-    # micromamba # conda replacement, don't install via nix, install directly
   ];
 }
