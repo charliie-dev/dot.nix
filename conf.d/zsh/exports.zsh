@@ -97,8 +97,9 @@ if (( $+commands[podman] )); then
 	if (( $OSTYPE[(I)darwin] )); then
 		export DOCKER_HOST=unix://$(podman machine inspect --format '{{.ConnectionInfo.PodmanSocket.Path}}')
 	elif (( $OSTYPE[(I)linux-gnu] )); then
+    # rootless mode
     # systemctl --user enable --now podman.socket
-    export DOCKER_HOST=unix:///run/user/1000/podman/podman.sock
+    export DOCKER_HOST=unix://"$XDG_RUNTIME_DIR"/podman/podman.sock
 	else
 		echo 'Unknown OS for lazypodman!'
 	fi
