@@ -124,7 +124,8 @@ in
     inherit (import "${src}/modules/apps/zsh.nix" { inherit config pkgs src; }) zsh;
   };
 
-  # services = {
-  #   inherit (import "${src}/modules/services/ssh-agent.nix") ssh-agent;
-  # };
+  services = {
+    # inherit (import "${src}/modules/services/ssh-agent.nix") ssh-agent;
+    inherit (import "${src}/modules/services/home-manager.nix") home-manager;
+  };
 }
