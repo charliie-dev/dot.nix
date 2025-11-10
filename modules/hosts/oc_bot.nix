@@ -40,7 +40,7 @@ in
           homeDirectory = "/home/charles";
           stateVersion = hm_ver;
         };
-        target = {
+        targets = {
           inherit (import "${src}/modules/targets/genericLinux.nix") genericLinux;
         };
       }
