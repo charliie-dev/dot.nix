@@ -11,9 +11,9 @@
       store = {
         cleanup = true;
         options = "--delete-older-than 7d";
-        timestamp = "-7 days";
       };
       frequency = "weekly";
+      timestamp = "-7 days";
     };
   };
 }
