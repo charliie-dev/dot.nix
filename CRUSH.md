@@ -157,3 +157,4 @@ When you see code, immediately perform a three-tier judgment:
 
 - nix flake check
 - nix eval .#homeConfigurations.$USER@$(hostname).activationPackage --show-trace
+- zsh -c 'home-manager build -v --show-trace --option eval-cache false'
