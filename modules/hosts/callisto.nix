@@ -46,6 +46,9 @@ in
           homeDirectory = "/home/charles";
           stateVersion = hm_ver;
         };
+        target = {
+          inherit (import "${src}/modules/target/genericLinux-gpu.nix") genericLinux;
+        };
       }
     ];
   };

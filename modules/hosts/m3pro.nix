@@ -43,6 +43,9 @@ in
           homeDirectory = "/Users/charles";
           stateVersion = hm_ver;
         };
+        target = {
+          inherit (import "${src}/modules/target/darwin.nix") darwin;
+        };
       }
     ];
   };
