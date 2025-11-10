@@ -44,7 +44,7 @@ in
           stateVersion = hm_ver;
         };
         target = {
-          inherit (import "${src}/modules/target/darwin.nix") darwin;
+          inherit (import "${src}/modules/targets/darwin.nix") darwin;
         };
       }
     ];

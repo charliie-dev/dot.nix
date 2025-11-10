@@ -47,7 +47,7 @@ in
           stateVersion = hm_ver;
         };
         target = {
-          inherit (import "${src}/modules/target/genericLinux-gpu.nix") genericLinux;
+          inherit (import "${src}/modules/targets/genericLinux-gpu.nix") genericLinux;
         };
       }
     ];
