@@ -1,0 +1,22 @@
+[tools]
+node = "latest"
+
+# ------------------------------------------------------------------------------
+
+# ref: https://mise.jdx.dev/environments/
+# redactions = ["SECRET_*", "*_TOKEN", "*_KEY", "PASSWORD"]
+[env]
+## MCPs
+# Context7: Get free API key from https://context7.com/
+CONTEXT7_API_KEY = ""
+
+# ------------------------------------------------------------------------------
+
+# ref: https://mise.jdx.dev/tasks/
+
+# ==============================================================================
+#  Compile Ruler
+# ==============================================================================
+[tasks.ruler] # command: mise run ruler
+description = "Compile ruler to AGENTS.md"
+run = "npx @intellectronica/ruler apply"
