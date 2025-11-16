@@ -20,3 +20,113 @@ CONTEXT7_API_KEY = ""
 [tasks.ruler] # command: mise run ruler
 description = "Compile ruler to AGENTS.md"
 run = "npx @intellectronica/ruler apply"
+
+[tasks.apt-pkg-check]
+hide = true
+usage = '''
+arg "<pkg_name>" help="apt pkage name"
+'''
+run = '''
+if dpkg -s ${usage_pkg_name?} >/dev/null 2>&1; then
+    echo "[OK] ${usage_pkg_name?} is already installed."
+else
+    echo "[INFO] ${usage_pkg_name?} not found. Installing..."
+    sudo DEBIAN_FRONTEND=noninteractive apt install -y ${usage_pkg_name?}
+    echo "[DONE] Installed ${usage_pkg_name?}."
+fi
+'''
+
+[tasks.remote-url-update]
+hide = true
+description = "Change remote repo url"
+run = "git remote set-url origin git@github.com:charliie-dev/dot.nix.git"
+
+
+[tasks.mise-install]
+hide = true
+description = "Install langs set via mise"
+depends = "apt-pkg-check libatomic1"       # for node@v25
+run = "mise install"
+
+[tasks.trusted-user-add]
+hide = true
+description = "Add trusted-user to nix.custom.conf"
+run = '''
+TARGET_FILE="/etc/nix/nix.custom.conf"
+LINE="trusted-users = charles"
+
+if [ ! -f "$TARGET_FILE" ]; then
+    sudo touch "$TARGET_FILE"
+fi
+
+if sudo grep -Fxq "$LINE" "$TARGET_FILE"; then
+    echo "[INFO] line already exists, nothing to do"
+else
+    echo "[INFO] appending line..."
+    echo "$LINE" | sudo tee -a "$TARGET_FILE" >/dev/null
+    echo "[INFO] done"
+fi
+'''
+
+[tasks.nix-daemon-restart]
+description = "Restart nix-daemon"
+shell = "bash -lc"
+run = '''
+{% raw %}
+if [[ "$(uname)" == "Darwin" ]]; then
+    echo "[info] Detected macOS, restarting Determinate Nix daemon..."
+    plist="/Library/LaunchDaemons/systems.determinate.nix-daemon.plist"
+
+    if [[ ! -f "$plist" ]]; then
+        echo "[error] plist not found: $plist" >&2
+        exit 1
+    fi
+
+    sudo launchctl unload "$plist"
+    sudo launchctl load "$plist"
+
+    echo "[info] macOS Nix daemon restarted."
+else
+    echo "[info] Detected Linux, restarting nix-daemon via systemd..."
+    if ! command -v systemctl >/dev/null 2>&1; then
+        echo "[error] systemctl not found. This Linux system may not use systemd." >&2
+        exit 1
+    fi
+
+    sudo systemctl restart nix-daemon
+    echo "[info] Linux nix-daemon restarted."
+fi
+{% endraw %}
+'''
+
+
+[tasks.init]
+run = [
+    "echo [INFO] Checking necessary pakcgges",
+    { tasks = [
+        "apt-pkg-check curl",
+        "apt-pkg-check openssl",
+        "apt-pkg-check zsh",
+        "apt-pkg-check git",
+        "apt-pkg-check age",
+    ] },
+    { tasks = [
+        "remote-url-update",
+        "trusted-user-add",
+    ] },
+    { task = "nix-daemon-restart" },
+    { task = "mise-install" },
+]
+
+[tasks.nv-sha256]
+description = "Get sha256 for nvidia driver"
+quiet = true
+# outputs = "Grepping sha256 for nvidia driver run file..."
+outputs = { auto = true }
+usage = '''
+arg "<nv_version>" help="nvidia driver version from https://download.nvidia.com/XFree86/Linux-x86_64/"
+'''
+run = '''
+nix store prefetch-file https://download.nvidia.com/XFree86/Linux-x86_64/${usage_nv_version?}/NVIDIA-Linux-x86_64-${usage_nv_version?}.run 2>&1 \
+  | grep -o "sha256-[A-Za-z0-9+/=]\+"
+'''
