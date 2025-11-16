@@ -2,14 +2,13 @@
   genericLinux = {
     enable = true;
     gpu = {
-      # nixStateDirectory = "/nix/var/nix";
       enable = true;
       # https://home-manager-options.extranix.com/?query=targets.genericLinux.gpu.nvidia&release=master
       nvidia = {
         enable = true;
-        version = "580.105.08"; # This version **must** match the version of the driver used by the host OS.
+        version = "580.95.05"; # This version **must** match the version of the driver used by the host OS.
         # get sha256: nix store prefetch-file https://download.nvidia.com/XFree86/Linux-x86_64/@VERSION@/NVIDIA-Linux-x86_64-@VERSION@.run
-        sha256 = "sha256-2cboGIZy8+t03QTPpp3VhHn6HQFiyMKMjRdiV2MpNHU=";
+        sha256 = "sha256-gJ7w746EK5gGss3p8RwTA9VPGpp2lGfk5dlhsv4Rgqc=";
       };
     };
     # https://home-manager-options.extranix.com/?query=targets.genericLinux.nixGL&release=master
