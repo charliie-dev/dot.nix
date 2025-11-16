@@ -1,8 +1,8 @@
-{ nixgl-attr, ... }:
+{ base-attr, ... }:
 let
-  hm = nixgl-attr.home-manager;
-  ds-hm-wrapper = nixgl-attr.determinate-hm-wrapper;
-  inherit (nixgl-attr)
+  hm = base-attr.home-manager;
+  ds-hm-wrapper = base-attr.determinate-hm-wrapper;
+  inherit (base-attr)
     nixpkgs
     nur
     nix-index-database
@@ -10,7 +10,6 @@ let
     catppuccin
     src
     hm_ver
-    nixgl
     ;
 in
 {
@@ -20,22 +19,19 @@ in
       overlays = [
         nur.overlays.default
         agenix.overlays.default
-        nixgl.overlay
         ds-hm-wrapper.overlays.default
       ];
       config = {
         allowUnfree = true;
-        nvidia.acceptLicense = true;
       };
     };
     extraSpecialArgs = {
-      inherit src nixgl;
+      inherit src;
       roles = [
         "dev-core"
         "dev-extra"
         "top"
         "linux-top"
-        "nvidia-gpu"
       ];
     };
     modules = [
@@ -50,7 +46,7 @@ in
           stateVersion = hm_ver;
         };
         targets = {
-          inherit (import "${src}/modules/targets/genericLinux-gpu.nix") genericLinux;
+          inherit (import "${src}/modules/targets/genericLinug.nix") genericLinux;
         };
       }
     ];
