@@ -15,7 +15,7 @@
       warn-dirty = false;
       http-connections = 50;
       trusted-users = "charles";
-      download-buffer-size = 4194304000; # 4 GB
+      download-buffer-size = 16777216000; # 16 GB
     };
     gc = {
       automatic = true;
