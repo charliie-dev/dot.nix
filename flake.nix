@@ -20,12 +20,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Fixes OpenGL With Other Distros.
-    nixgl = {
-      url = "github:guibou/nixGL";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     # Secret Management
     agenix.url = "github:ryantm/agenix";
 
@@ -41,7 +35,6 @@
       home-manager,
       nur,
       nix-index-database,
-      nixgl,
       agenix,
       catppuccin,
       nix-formatter-pack,
@@ -91,9 +84,6 @@
           determinate-hm-wrapper
           ;
       };
-      nixgl-attr = base-attr // {
-        inherit nixgl;
-      };
     in
     {
       checks = forEachSystem (system: {
@@ -109,7 +99,8 @@
       # `nixosConfigurations`, etc here
       homeConfigurations = {
         "charles@m3pro.local" = (import ./modules/hosts/m3pro.nix { inherit base-attr; }).host;
-        "charles@callisto" = (import ./modules/hosts/callisto.nix { inherit nixgl-attr; }).host;
+        "charles@callisto" = (import ./modules/hosts/callisto.nix { inherit base-attr; }).host;
+        "charles@nics-gpu" = (import ./modules/hosts/nics-gpu.nix { inherit base-attr; }).host;
         "charles@RDSrv01" = (import ./modules/hosts/rdsrv01.nix { inherit base-attr; }).host;
         "charles@bot" = (import ./modules/hosts/oc_bot.nix { inherit base-attr; }).host;
         "charles@nics-demo-lab" = (import ./modules/hosts/nics-demo-lab.nix { inherit base-attr; }).host;
