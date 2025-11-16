@@ -1,7 +1,6 @@
 { base-attr, ... }:
 let
   hm = base-attr.home-manager;
-  ds-hm-wrapper = base-attr.determinate-hm-wrapper;
   inherit (base-attr)
     nixpkgs
     nur
@@ -19,7 +18,6 @@ in
       overlays = [
         nur.overlays.default
         agenix.overlays.default
-        ds-hm-wrapper.overlays.default
       ];
       config = {
         allowUnfree = true;
