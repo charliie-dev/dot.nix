@@ -35,7 +35,7 @@ EOF
 ## Install nix(DeterminateSystems/nix-installer)
 
 ```sh
-curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install --determinate
+curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install --no-confirm
 ```
 
 ### add `trusted-users`

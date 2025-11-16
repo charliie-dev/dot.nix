@@ -1,7 +1,7 @@
 { pkgs, ... }:
 {
   nix = {
-    package = pkgs.nix-ds;
+    package = pkgs.nix;
     checkConfig = true;
     settings = {
       experimental-features = [
