@@ -23,7 +23,10 @@ in
         nixgl.overlay
         ds-hm-wrapper.overlays.default
       ];
-      config.allowUnfree = true;
+      config = {
+        allowUnfree = true;
+        nvidia.acceptLicense = true;
+      };
     };
     extraSpecialArgs = {
       inherit src nixgl;

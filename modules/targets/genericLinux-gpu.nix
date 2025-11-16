@@ -7,7 +7,9 @@
       # https://home-manager-options.extranix.com/?query=targets.genericLinux.gpu.nvidia&release=master
       nvidia = {
         enable = true;
-        # version = ""; # This version **must** match the version of the driver used by the host OS.
+        version = "580.105.08"; # This version **must** match the version of the driver used by the host OS.
+        # get sha256: nix store prefetch-file https://download.nvidia.com/XFree86/Linux-x86_64/@VERSION@/NVIDIA-Linux-x86_64-@VERSION@.run
+        sha256 = "sha256-2cboGIZy8+t03QTPpp3VhHn6HQFiyMKMjRdiV2MpNHU=";
       };
     };
     # https://home-manager-options.extranix.com/?query=targets.genericLinux.nixGL&release=master
