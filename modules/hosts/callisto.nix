@@ -44,7 +44,7 @@ in
           stateVersion = hm_ver;
         };
         targets = {
-          inherit (import "${src}/modules/targets/genericLinug.nix") genericLinux;
+          inherit (import "${src}/modules/targets/genericLinux.nix") genericLinux;
         };
       }
     ];
