@@ -38,9 +38,6 @@ in
           homeDirectory = "/home/charles";
           stateVersion = hm_ver;
         };
-        targets = {
-          inherit (import "${src}/modules/targets/genericLinux.nix") genericLinux;
-        };
       }
     ];
   };
