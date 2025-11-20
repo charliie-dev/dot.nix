@@ -22,6 +22,11 @@
         tabwidth = 4;
         autocrlf = false; # set to true if on Windows_NT
       };
+      url = {
+        "ssh://git@github.com/" = {
+          insteadOf = "https://github.com/";
+        };
+      };
       gpg.ssh = {
         allowedSignersFile = "${config.age.secrets.git_allowed_signers.path}";
       };
