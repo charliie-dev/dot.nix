@@ -130,3 +130,33 @@ run = '''
 nix store prefetch-file https://download.nvidia.com/XFree86/Linux-x86_64/${usage_nv_version?}/NVIDIA-Linux-x86_64-${usage_nv_version?}.run 2>&1 \
   | grep -o "sha256-[A-Za-z0-9+/=]\+"
 '''
+
+[tasks.nh-clean-fix]
+description = "Fix nix not being found in sudo $PATH"
+run = '''
+sudo touch /etc/sudoers.d/nix-path
+Defaults:charles secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/nix/var/nix/profiles/default/bin" >> /etc/sudoers.d/nix-path
+'''
+
+[tasks.nh-clean]
+description = "Do nix gc"
+run = "nh clean all --ask"
+
+[tasks.nhsw]
+description = "home-manager switch but nh"
+run = "nh home switch"
+
+[tasks.og-clean]
+description = "Use native command to do nix gc"
+run = '''
+home-manager expire-generations '0s'
+nix profile wipe-history --older-than '4d'
+nix store gc
+sudo nix store gc
+nix-store --optimise
+sudo nix-store --optimise
+'''
+
+[tasks.check-dead-path]
+description = "Check dead nix path, should be none after gc"
+run = "nix-store --gc --print-dead"
