@@ -17,9 +17,10 @@
       trusted-users = "charles";
       download-buffer-size = 16777216000; # 16 GB
     };
-    gc = {
-      automatic = true;
-      options = "--delete-older-than 7d --max-freed $((1 * 1024**3))";
-    };
+    # use nh to clean
+    # gc = {
+    #   automatic = false;
+    #   options = "--delete-older-than 7d --max-freed $((1 * 1024**3))";
+    # };
   };
 }
