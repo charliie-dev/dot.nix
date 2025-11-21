@@ -25,7 +25,7 @@
     nix-output-monitor # Pipe your nix-build output through the nix-output-monitor to get additional information while building.
     ### nix-build --log-format internal-json -v |& nom --json
     nix-tree # Interactively browse dependency graphs of Nix derivations.
-    nh # Yet another Nix CLI helper.(search and clean)
+    dix # A blazingly fast tool to diff Nix related things.
 
   ];
 }
