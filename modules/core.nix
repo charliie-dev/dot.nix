@@ -120,7 +120,7 @@ in
     inherit (import "${src}/modules/apps/tmux.nix" { inherit pkgs src; }) tmux;
     inherit (import "${src}/modules/apps/topgrade.nix") topgrade;
     inherit (import "${src}/modules/apps/vivid.nix") vivid;
-    inherit (import "${src}/modules/apps/yazi.nix") yazi;
+    inherit (import "${src}/modules/apps/yazi.nix" { inherit pkgs; }) yazi;
     inherit (import "${src}/modules/apps/zoxide.nix") zoxide;
     inherit (import "${src}/modules/apps/zsh.nix" { inherit config pkgs src; }) zsh;
   };

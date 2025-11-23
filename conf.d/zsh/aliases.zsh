@@ -30,7 +30,7 @@ alias fzp='cat /etc/services | fzf'
 alias tree='tree -CAF --dirsfirst'
 alias treed='tree -CAFd'
 alias z='zi' # map z to zoxide interactive selection
-alias yz='yazi'
+# alias yz='yazi'
 alias jqp='jqp -t catppuccin-mocha'
 alias lj=lazyjournal
 

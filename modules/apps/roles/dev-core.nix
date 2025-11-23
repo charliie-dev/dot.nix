@@ -11,12 +11,13 @@
     tree-sitter # Parser generator tool and an incremental parsing library
     xh # Friendly and fast tool for sending HTTP requests
 
-    # pistol
-    chafa # terminal image viewer
+    # yazi
+    # ffmpeg # for video thumbnails
+    poppler # for PDF preview
+    resvg # for SVG preview
+    perl540Packages.ImageMagick # for Font, HEIC, and JPEG XL preview, >= 7.1.1
     hexyl # Command-line hex viewer
-    lnav # Logfile Navigator
     nur.repos.charmbracelet.glow # Render markdown on the CLI, with pizzazz
-    poppler-utils # pdftotext
     yq-go # jq but for YAML, JSON, XML, CSV, TOML
 
     # nix language server, formatter, linter
