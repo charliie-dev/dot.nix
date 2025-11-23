@@ -41,12 +41,6 @@
       plugin = {
         prepend_fetchers = [
           {
-            id = "mime";
-            name = "*";
-            run = "mime-ext";
-            prio = "high";
-          }
-          {
             id = "git";
             name = "*";
             run = "git";
@@ -89,19 +83,7 @@
             '';
           }
           {
-            name = "*.parquet";
-            run = "duckdb";
-          }
-          {
-            name = "*.xlsx";
-            run = "duckdb";
-          }
-          {
-            name = "*.db";
-            run = "duckdb";
-          }
-          {
-            name = "*.duckdb";
+            name = "*.{parquet,xlsx,db,duckdb}";
             run = "duckdb";
           }
         ];
@@ -111,23 +93,22 @@
     plugins = with pkgs.yaziPlugins; {
       inherit
         chmod
+        duckdb
         full-border
-        toggle-pane
-        smart-enter
         git
+        ouch
         piper
         starship
-        duckdb
-        ouch
         sudo
+        toggle-pane
         ;
     };
 
     initLua = ''
+      require("duckdb"):setup()
       require("full-border"):setup()
       require("git"):setup()
       require("starship"):setup()
-      require("duckdb"):setup()
     '';
 
     keymap = {
