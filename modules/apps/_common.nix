@@ -4,11 +4,9 @@
     curl
     git
     gnupg
-    gnutar
-    gzip
     hstr
-    unzip
     vim
+    ouch # Painless compression and decompression in the terminal
     wget
     wget2
     fastfetch
