@@ -49,6 +49,7 @@ in
         targets = {
           inherit (import "${src}/modules/targets/genericLinux-gpu.nix") genericLinux;
         };
+        news.display = "silent";
       }
     ];
   };
