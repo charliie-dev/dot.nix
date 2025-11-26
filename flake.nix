@@ -97,7 +97,6 @@
       homeConfigurations = {
         "charles@m3pro" = (import ./modules/hosts/m3pro.nix { inherit base-attr; }).host;
         "charles@callisto" = (import ./modules/hosts/callisto.nix { inherit base-attr; }).host;
-        "charles@nics-gpu" = (import ./modules/hosts/nics-gpu.nix { inherit base-attr; }).host;
         "charles@RDSrv01" = (import ./modules/hosts/rdsrv01.nix { inherit base-attr; }).host;
         "charles@bot" = (import ./modules/hosts/oc_bot.nix { inherit base-attr; }).host;
         "charles@nics-demo-lab" = (import ./modules/hosts/nics-demo-lab.nix { inherit base-attr; }).host;

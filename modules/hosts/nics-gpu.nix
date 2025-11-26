@@ -39,6 +39,7 @@ in
       nix-index-database.homeModules.nix-index
       agenix.homeManagerModules.default
       catppuccin.homeModules.catppuccin
+      nur.modules.homeManager.default
       {
         home = {
           username = "charles";
