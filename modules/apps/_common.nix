@@ -2,9 +2,7 @@
 {
   common_apps = with pkgs; [
     curl
-    git
     gnupg
-    hstr
     vim
     ouch # Painless compression and decompression in the terminal
     wget

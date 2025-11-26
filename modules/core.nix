@@ -18,6 +18,12 @@ in
   inherit (import "${src}/modules/nix-config.nix" { inherit pkgs; }) nix;
   inherit (import "${src}/modules/agenix.nix" { inherit config src; }) age;
 
+  manual = {
+    manpages.enable = false;
+    json.enable = false;
+    html.enable = false;
+  };
+
   home = {
     packages = merged_pkgs;
     shell.enableZshIntegration = true;
@@ -102,10 +108,12 @@ in
     inherit (import "${src}/modules/apps/gh-dash.nix") gh-dash;
     inherit (import "${src}/modules/apps/gh.nix" { inherit pkgs; }) gh;
     inherit (import "${src}/modules/apps/git.nix" { inherit config; }) git;
+    inherit (import "${src}/modules/apps/hstr.nix") hstr;
     inherit (import "${src}/modules/apps/hwatch.nix") hwatch;
     inherit (import "${src}/modules/apps/lazydocker.nix") lazydocker;
     inherit (import "${src}/modules/apps/lazygit.nix") lazygit;
     inherit (import "${src}/modules/apps/lsd.nix") lsd;
+    inherit (import "${src}/modules/apps/man.nix") man;
     inherit (import "${src}/modules/apps/mise.nix") mise;
     inherit (import "${src}/modules/apps/neovim.nix" { inherit pkgs lib; }) neovim;
     inherit (import "${src}/modules/apps/nh.nix" { inherit config; }) nh;

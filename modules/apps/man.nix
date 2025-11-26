@@ -1,0 +1,5 @@
+{
+  man = {
+    enable = true;
+  };
+}
