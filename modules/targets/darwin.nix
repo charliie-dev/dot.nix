@@ -5,6 +5,7 @@
       enableChecks = true;
       directory = "Applications/Home Manager Apps";
     };
+    linkApps.enable = false;
     # null or one of "Bing", "DuckDuckGo", "Ecosia", "Google", "Yahoo"
     search = null;
     defaults = {
