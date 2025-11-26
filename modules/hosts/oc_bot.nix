@@ -39,6 +39,7 @@ in
           homeDirectory = "/home/charles";
           stateVersion = hm_ver;
         };
+        news.display = "silent";
       }
     ];
   };

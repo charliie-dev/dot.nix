@@ -42,6 +42,7 @@ in
         targets = {
           inherit (import "${src}/modules/targets/genericLinux.nix") genericLinux;
         };
+        news.display = "silent";
       }
     ];
   };
