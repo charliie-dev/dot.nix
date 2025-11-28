@@ -70,7 +70,7 @@
       };
 
       base-attr = {
-        hm_ver = "25.11";
+        hm_ver = "26.05";
         inherit
           nixpkgs
           home-manager
