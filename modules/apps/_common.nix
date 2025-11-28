@@ -4,6 +4,7 @@
     curl
     gnupg
     vim
+    unzip
     ouch # Painless compression and decompression in the terminal
     wget
     wget2
