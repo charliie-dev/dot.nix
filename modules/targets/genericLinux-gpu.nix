@@ -1,3 +1,4 @@
+{ nixgl, ... }:
 {
   genericLinux = {
     enable = true;
@@ -13,6 +14,7 @@
     };
     # https://home-manager-options.extranix.com/?query=targets.genericLinux.nixGL&release=master
     nixGL = {
+      inherit (nixgl) packages;
       # null or (list of (one of "mesa", "mesaPrime", "nvidia", "nvidiaPrime"))
       installScripts = [
         "nvidia"

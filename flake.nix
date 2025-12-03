@@ -24,8 +24,9 @@
     agenix.url = "github:ryantm/agenix";
 
     catppuccin.url = "github:catppuccin/nix/main";
-    nix-formatter-pack.url = "github:Gerschtli/nix-formatter-pack";
     nix-filter.url = "github:numtide/nix-filter";
+    nix-formatter-pack.url = "github:Gerschtli/nix-formatter-pack";
+    nixgl.url = "github:nix-community/nixGL";
   };
 
   outputs =
@@ -36,8 +37,9 @@
       nix-index-database,
       agenix,
       catppuccin,
-      nix-formatter-pack,
       nix-filter,
+      nix-formatter-pack,
+      nixgl,
       ...
     }:
     let
@@ -72,12 +74,26 @@
       base-attr = {
         hm_ver = "26.05";
         inherit
-          nixpkgs
-          home-manager
-          nur
-          nix-index-database
           agenix
           catppuccin
+          home-manager
+          nix-index-database
+          nixpkgs
+          nur
+          src
+          ;
+      };
+
+      gpu-attr = {
+        hm_ver = "26.05";
+        inherit
+          agenix
+          catppuccin
+          home-manager
+          nix-index-database
+          nixgl
+          nixpkgs
+          nur
           src
           ;
       };
@@ -101,6 +117,7 @@
         "charles@bot" = (import ./modules/hosts/oc_bot.nix { inherit base-attr; }).host;
         "charles@nics-demo-lab" = (import ./modules/hosts/nics-demo-lab.nix { inherit base-attr; }).host;
         "charles@dcf-demo" = (import ./modules/hosts/dcf-demo.nix { inherit base-attr; }).host;
+        "charles@dcf-gpu" = (import ./modules/hosts/dcf-gpu.nix { inherit gpu-attr; }).host;
       };
     };
 }
