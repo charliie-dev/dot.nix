@@ -1,14 +1,15 @@
-{ base-attr, ... }:
+{ gpu-attr, ... }:
 let
-  hm = base-attr.home-manager;
-  inherit (base-attr)
-    nixpkgs
-    nur
-    nix-index-database
+  hm = gpu-attr.home-manager;
+  inherit (gpu-attr)
     agenix
     catppuccin
-    src
     hm_ver
+    nix-index-database
+    nixpkgs
+    nur
+    src
+    nixgl
     ;
 in
 {
@@ -18,6 +19,7 @@ in
       overlays = [
         nur.overlays.default
         agenix.overlays.default
+        nixgl.overlay
       ];
       config = {
         allowUnfree = true;
@@ -47,7 +49,7 @@ in
           stateVersion = hm_ver;
         };
         targets = {
-          inherit (import "${src}/modules/targets/genericLinux-gpu.nix") genericLinux;
+          inherit (import "${src}/modules/targets/genericLinux-gpu.nix" { inherit nixgl; }) genericLinux;
         };
         news.display = "silent";
       }
