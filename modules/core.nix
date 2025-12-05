@@ -119,6 +119,7 @@ in
     inherit (import "${src}/modules/apps/nh.nix" { inherit config; }) nh;
     inherit (import "${src}/modules/apps/nix-index.nix") nix-index;
     inherit (import "${src}/modules/apps/nix-search-tv.nix") nix-search-tv;
+    inherit (import "${src}/modules/apps/parallel.nix") parallel;
     # inherit (import "${src}/modules/apps/pistol.nix") pistol;
     inherit (import "${src}/modules/apps/ripgrep-all.nix") ripgrep-all;
     inherit (import "${src}/modules/apps/ripgrep.nix") ripgrep;
