@@ -110,7 +110,7 @@
       # Commands to run after anything
       post_commands = {
         # "Emacs Snapshot" = "rm -rf ~/.emacs.d/elpa.bak && cp -rl ~/.emacs.d/elpa ~/.emacs.d/elpa.bak"
-        # "home-manager" = "~/.local/state/nix/profile/bin/home-manager switch";
+        "home-manager" = "~/.local/state/nix/profile/bin/home-manager switch";
         # "television cabels" = " ~/.local/state/nix/profile/bin/tv update-channels --force";
         "antidote" = "~/.local/state/nix/profile/share/antidote/antidote update";
         # "home-manager cleanup" =
@@ -231,10 +231,10 @@
         # nix_env_arguments = "--prebuilt-only"
 
         # Extra Home Manager arguments
-        home_manager_arguments = [
-          "--flake"
-          "~/.config/home-manager/flake.nix"
-        ];
+        # home_manager_arguments = [
+        #   "--flake"
+        #   "~/.config/home-manager/flake.nix"
+        # ];
       };
 
       mandb = {
@@ -440,7 +440,7 @@
         # aot = true
       };
 
-      rustip = {
+      rustup = {
         # If set, updates only these channels.
         # (default: [] (all channels))
         # channels = ["stable"]
