@@ -50,6 +50,10 @@ in
         file = "${src}/conf.d/ages/aws_secret_access_key.age";
         path = "${secretDir}/aws/aws_secret_access_key";
       };
+      d2_token = {
+        file = "${src}/conf.d/ages/d2_token.age";
+        path = "${secretDir}/d2/d2_token";
+      };
     };
   };
 }
