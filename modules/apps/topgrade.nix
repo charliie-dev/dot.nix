@@ -110,7 +110,7 @@
       # Commands to run after anything
       post_commands = {
         # "Emacs Snapshot" = "rm -rf ~/.emacs.d/elpa.bak && cp -rl ~/.emacs.d/elpa ~/.emacs.d/elpa.bak"
-        "home-manager" = "~/.local/state/nix/profile/bin/home-manager switch";
+        # "home-manager" = "~/.local/state/nix/profile/bin/home-manager switch";
         # "television cabels" = " ~/.local/state/nix/profile/bin/tv update-channels --force";
         "antidote" = "~/.local/state/nix/profile/share/antidote/antidote update";
         # "home-manager cleanup" =
@@ -231,7 +231,10 @@
         # nix_env_arguments = "--prebuilt-only"
 
         # Extra Home Manager arguments
-        # home_manager_arguments = ["--flake", "file"]
+        home_manager_arguments = [
+          "--flake"
+          "~/.config/home-manager/flake.nix"
+        ];
       };
 
       mandb = {
@@ -256,6 +259,9 @@
 
         # Arguments to pass Git when pulling Repositories
         arguments = "--rebase --autostash";
+
+        # Whether to perform a `git fetch` instead of `git pull`
+        fetch_only = false;
       };
 
       windows = {
@@ -290,6 +296,26 @@
         # before reporting an issue.
         # (default: false)
         winget_use_sudo = true;
+      };
+
+      chezmoi = {
+        # Exclude encrypted files from update
+        # (default: false)
+        # exclude_encrypted = false
+      };
+
+      mise = {
+        # Upgrades to the latest version available, bumping the version in mise.toml
+        # (default: false)
+        bump = false;
+
+        # Number of jobs to run in parallel
+        # (default: 4)
+        jobs = 4;
+
+        # Run interactively
+        # (default: false)
+        interactive = false;
       };
 
       npm = {
@@ -344,6 +370,10 @@
         # ignored_containers = ["ghcr.io/rancher-sandbox/rancher-desktop/rdx-proxy:latest", "docker.io*"]
         # Specify the runtime to use for containers (default: "docker", allowed values: "docker", "podman")
         # runtime = "podman"
+
+        # Run 'docker system prune' to clean up unused containers, networks, and build cache
+        # (default: false)
+        system_prune = true;
       };
 
       lensfun = {
@@ -401,6 +431,19 @@
         # during the pixi step
         # (default: false)
         # include_release_notes = false
+      };
+
+      doom = {
+        # If this is set to true, the `--aot` flag is added to `doom upgrade`,
+        # which enables ahead-of-time native compilation of packages.
+        # (default: false)
+        # aot = true
+      };
+
+      rustip = {
+        # If set, updates only these channels.
+        # (default: [] (all channels))
+        # channels = ["stable"]
       };
 
     };
