@@ -34,4 +34,7 @@ in
   "conf.d/ages/aws_region.age".publicKeys = users ++ hosts;
   "conf.d/ages/aws_access_key_id.age".publicKeys = users ++ hosts;
   "conf.d/ages/aws_secret_access_key.age".publicKeys = users ++ hosts;
+
+  # D2 Studio
+  "conf.d/ages/d2_token.age".publicKeys = users ++ hosts;
 }

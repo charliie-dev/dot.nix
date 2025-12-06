@@ -143,6 +143,11 @@
       if [ -r ${config.age.secrets.aws_secret_access_key.path} ]; then
         export AWS_SECRET_ACCESS_KEY="$(tr -d '\r\n' < ${config.age.secrets.aws_secret_access_key.path})"
       fi
+
+      # D2 Studio
+      if [ -r ${config.age.secrets.d2_token.path} ]; then
+        export TSTRUCT_TOKEN="$(tr -d '\r\n' < ${config.age.secrets.d2_token.path})"
+      fi
     '';
   };
 }

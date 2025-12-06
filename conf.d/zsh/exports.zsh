@@ -48,6 +48,9 @@ export AWS_CONFIG_FILE="$XDG_CONFIG_HOME"/aws/config
 export AWS_PROFILE="default"
 export AZURE_CONFIG_DIR="$XDG_DATA_HOME"/azure
 
+# D2 ENV
+export D2_LAYOUT=tala
+
 # zsh plugins options
 export ANTIDOTE_HOME="$XDG_CACHE_HOME"/antidote
 export ZSH_SMARTCACHE_DIR="$XDG_CACHE_HOME"/zsh/smartcache
