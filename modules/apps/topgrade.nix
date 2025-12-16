@@ -140,18 +140,18 @@
         # poetry_force_self_update = true
       };
 
-      # conda = {
-      # # Additional named conda environments to update (`conda env update -n env_name`)
-      # env_names = [
-      #   "Toolbox"
-      #   "PyTorch"
-      # ];
-      # # Additional conda environment paths to update (`conda env update -p env_path`)
-      # env_paths = [
-      #   "~/webserver/.conda/"
-      #   "~/experiments/.conda/"
-      # ];
-      # };
+      conda = {
+        # # Additional named conda environments to update (`conda env update -n env_name`)
+        # env_names = [
+        #   "Toolbox"
+        #   "PyTorch"
+        # ];
+        # # Additional conda environment paths to update (`conda env update -p env_path`)
+        # env_paths = [
+        #   "~/webserver/.conda/"
+        #   "~/experiments/.conda/"
+        # ];
+      };
 
       composer = {
         # self_update = true
@@ -242,6 +242,13 @@
         # Mandb is updated in the background by a service on most systems by default.
         # (default: false)
         enable = true;
+      };
+
+      pkgfile = {
+        # Enable the pkgfile step (to update the pkgfile database).
+        # Pkgfile is sometimes installed by default, but often not used and heavy to update.
+        # (default: false)
+        # enable = true
       };
 
       git = {
