@@ -18,6 +18,9 @@ export STARSHIP_CONFIG="$XDG_CONFIG_HOME"/starship/starship.toml
 export STARSHIP_CACHE="$XDG_CACHE_HOME"/starship
 export DVDCSS_CACHE="$XDG_CACHE_HOME"/dvdcss
 export NODE_REPL_HISTORY=""
+export NPM_CONFIG_INIT_MODULE="$XDG_CONFIG_HOME"/npm/config/npm-init.js
+export NPM_CONFIG_CACHE="$XDG_CACHE_HOME"/npm
+export NPM_CONFIG_TMP="$XDG_RUNTIME_DIR"/npm
 export NPM_CONFIG_USERCONFIG="$XDG_CONFIG_HOME"/npm/npmrc
 export PNPM_HOME="$XDG_DATA_HOME"/pnpm
 export DISCORD_USER_DATA_DIR="$XDG_DATA_HOME"
@@ -40,6 +43,7 @@ export PYTHONSTARTUP="$XDG_CONFIG_HOME"/python/pythonrc
 export BUNDLE_USER_CONFIG="$XDG_CONFIG_HOME"/bundle
 export BUNDLE_USER_CACHE="$XDG_CACHE_HOME"/bundle
 export BUNDLE_USER_PLUGIN="$XDG_DATA_HOME"/bundle
+export PARALLEL_HOME="$XDG_CONFIG_HOME"/parallel
 export EDITOR=nvim
 
 # VPS
