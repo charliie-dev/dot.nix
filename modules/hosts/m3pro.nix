@@ -2,13 +2,14 @@
 let
   hm = base-attr.home-manager;
   inherit (base-attr)
-    nixpkgs
-    nur
-    nix-index-database
     agenix
     catppuccin
-    src
     hm_ver
+    nix-index-database
+    nixpkgs
+    nur
+    snitch
+    src
     ;
 in
 {
@@ -32,10 +33,12 @@ in
     };
     modules = [
       "${src}/modules/core.nix"
-      nix-index-database.homeModules.nix-index
       agenix.homeManagerModules.default
       catppuccin.homeModules.catppuccin
+      nix-index-database.homeModules.nix-index
       nur.modules.homeManager.default
+      snitch.homeManagerModules.default
+
       {
         home = {
           username = "charles";

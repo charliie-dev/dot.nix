@@ -6,10 +6,11 @@ let
     catppuccin
     hm_ver
     nix-index-database
+    nixgl
     nixpkgs
     nur
+    snitch
     src
-    nixgl
     ;
 in
 {
@@ -38,10 +39,11 @@ in
     };
     modules = [
       "${src}/modules/core.nix"
-      nix-index-database.homeModules.nix-index
       agenix.homeManagerModules.default
       catppuccin.homeModules.catppuccin
+      nix-index-database.homeModules.nix-index
       nur.modules.homeManager.default
+      snitch.homeManagerModules.default
       {
         home = {
           username = "charles";

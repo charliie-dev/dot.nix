@@ -27,6 +27,7 @@
     nix-filter.url = "github:numtide/nix-filter";
     nix-formatter-pack.url = "github:Gerschtli/nix-formatter-pack";
     nixgl.url = "github:nix-community/nixGL";
+    snitch.url = "github:karol-broda/snitch";
   };
 
   outputs =
@@ -40,6 +41,7 @@
       nix-filter,
       nix-formatter-pack,
       nixgl,
+      snitch,
       ...
     }:
     let
@@ -80,6 +82,7 @@
           nix-index-database
           nixpkgs
           nur
+          snitch
           src
           ;
       };
