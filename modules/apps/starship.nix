@@ -113,7 +113,7 @@
       docker_context = {
         disabled = false;
         symbol = " ";
-        format = "[$symbol$context]($style)";
+        format = "[$symbol$context]($style)";
       };
       container = {
         disabled = false;
