@@ -10,6 +10,8 @@
     # sd # Intuitive find & replace CLI (sed alternative)
     tree-sitter # Parser generator tool and an incremental parsing library
     # xh # Friendly and fast tool for sending HTTP requests
+    jless # JSON viewer designed for reading, exploring, and searching through JSON data
+    witr # Why is this running?
 
     # yazi
     # ffmpeg # for video thumbnails
