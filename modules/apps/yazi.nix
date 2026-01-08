@@ -11,7 +11,7 @@
       ouch # # ouch stands for Obvious Unified Compression Helper
       poppler # for PDF preview
       resvg # for SVG preview
-      perl540Packages.ImageMagick # for Font, HEIC, and JPEG XL preview, >= 7.1.1
+      imagemagick # for Font, HEIC, and JPEG XL preview
       nur.repos.charmbracelet.glow # Render markdown on the CLI, with pizzazz
       yq-go # jq but for YAML, JSON, XML, CSV, TOML
       duckdb
