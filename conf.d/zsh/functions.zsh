@@ -8,6 +8,11 @@ help() {
 alias -g -- --help='--help 2>&1 | bathelp'
 alias -g -- -h='-h 2>&1 | bathelp'
 
+# List directory contents on cd
+chpwd() {
+  ls
+}
+
 # use `ouch decompress` instead
 # extract() {
 #   echo Extracting "$1" ...
