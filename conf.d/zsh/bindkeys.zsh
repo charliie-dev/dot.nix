@@ -17,4 +17,13 @@ bindkey '^[[b' history-substring-search-down
 bindkey ',' autosuggest-accept
 bindkey '^j' jq-complete
 
+# Open the current command in your $EDITOR (e.g., neovim)
+# Press Ctrl+X followed by Ctrl+E to trigger
+autoload -Uz edit-command-line
+zle -N edit-command-line
+bindkey '^X^E' edit-command-line
+
+# Expands history expressions like !! or !$ when you press space
+bindkey ' ' magic-space
+
 # vim: set ft=zsh :
