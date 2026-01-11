@@ -26,7 +26,7 @@
     # alejandra # The Uncompromising Nix Code Formatter
     deadnix # Scan Nix files for dead code
     nil # installed for crush
-    nixfmt-rfc-style # nixfmt was renamed to nixfmt-classic. The nixfmt attribute may be used for the new RFC 166-style formatter in the future, which is currently available as nixfmt-rfc-style
+    nixfmt # Official formatter for Nix code
     statix # lints and suggestions for the nix
 
   ];
