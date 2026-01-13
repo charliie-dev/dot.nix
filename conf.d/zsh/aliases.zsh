@@ -64,6 +64,7 @@ alias z='zi' # map z to zoxide interactive selection
 # alias yz='yazi'
 alias jqp='jqp -t catppuccin-mocha'
 alias lj=lazyjournal
+alias ttyd='ttyd -p 9999 -i 0.0.0.0 -W zsh' # share terminal over web
 
 # Nix Aliases
 alias nixup='cd $HOME/.config/home-manager && nix flake update && home-manager switch --impure && cd "$OLDPWD"'
