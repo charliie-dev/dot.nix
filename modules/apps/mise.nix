@@ -46,6 +46,8 @@
           "~/.config/mise"
           "~/.config/nvim"
           "~/.config/home-manager"
+          "~/Workspace"
+          "~/Work"
         ];
 
         # configure messages displayed when entering directories with config files
