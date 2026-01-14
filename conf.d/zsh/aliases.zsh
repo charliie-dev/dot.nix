@@ -49,6 +49,7 @@ alias wget='wget2'
 # Extanded Aliases
 # alias yarn='yarn --use-yarnrc "$XDG_CONFIG_HOME/yarn/config"'
 alias py='TERM=xterm-256color python3'
+alias npm='bun'
 alias ls='lsd -lAh'
 alias lg='lazygit'
 alias lzd='lazydocker'
