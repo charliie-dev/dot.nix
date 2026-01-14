@@ -7,13 +7,12 @@
     tokei # Count your code, quickly
     act # Run your GitHub Actions locally
 
-    # VPS SDKs
-    awscli2
-    azure-cli
-    google-cloud-sdk
+    # VPS SDKs (better use mise to install in certain repo)
+    # awscli2
+    # azure-cli
+    # google-cloud-sdk
 
     # Good TUIs
-    nur.repos.charmbracelet.crush
     jqp # TUI plaground to experiment with jq
 
   ];
