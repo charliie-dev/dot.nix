@@ -1,5 +1,5 @@
 [tools]
-node = "latest"
+bun = "latest"
 
 # ------------------------------------------------------------------------------
 
@@ -8,7 +8,7 @@ node = "latest"
 [env]
 ## MCPs
 # Context7: Get free API key from https://context7.com/
-CONTEXT7_API_KEY = ""
+# CONTEXT7_API_KEY = ""
 
 # ------------------------------------------------------------------------------
 
@@ -19,7 +19,7 @@ CONTEXT7_API_KEY = ""
 # ==============================================================================
 [tasks.ruler] # command: mise run ruler
 description = "Compile ruler to AGENTS.md"
-run = "npx @intellectronica/ruler apply"
+run = "bunx @intellectronica/ruler apply"
 
 [tasks.apt-pkg-check]
 hide = true
