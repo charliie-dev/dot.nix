@@ -120,6 +120,7 @@
         "charles@bot" = (import ./modules/hosts/oc_bot.nix { inherit base-attr; }).host;
         "charles@nics-demo-lab" = (import ./modules/hosts/nics-demo-lab.nix { inherit base-attr; }).host;
         "charles@dcf-demo" = (import ./modules/hosts/dcf-demo.nix { inherit base-attr; }).host;
+        "charles@pg-cluster" = (import ./modules/hosts/dcf-demo.nix { inherit base-attr; }).host;
         "charles@dcf-gpu" = (import ./modules/hosts/dcf-gpu.nix { inherit gpu-attr; }).host;
       };
     };
