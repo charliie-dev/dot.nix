@@ -22,11 +22,13 @@
         tabwidth = 4;
         autocrlf = false; # set to true if on Windows_NT
       };
-      url = {
-        "ssh://git@github.com/" = {
-          insteadOf = "https://github.com/";
-        };
-      };
+      # dont use this, this will cause some cli use ssh over https, but those
+      # cli cant communicate w/ ssh-agent, so git ssh auth will fail.
+      # url = {
+      #   "ssh://git@github.com/" = {
+      #     insteadOf = "https://github.com/";
+      #   };
+      # };
       gpg.ssh = {
         allowedSignersFile = "${config.age.secrets.git_allowed_signers.path}";
       };

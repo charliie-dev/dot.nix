@@ -7,7 +7,7 @@
   ...
 }:
 let
-  nvimdots_url = "CharlesChiuGit/nvimdots.lua.git";
+  nvimdots_url = "charliie-dev/nvimdots.lua.git";
   inherit (import "${src}/modules/apps/_common.nix" { inherit pkgs; }) common_apps;
   role_pkgs = lib.concatMap (
     r: (import "${src}/modules/apps/roles/${r}.nix" { inherit config pkgs; }).packages
