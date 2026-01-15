@@ -1,7 +1,7 @@
 # Nix Home-Manager dotfiles
 
 > [!IMPORTANT]
-> Make sure `curl`, `openssl`, `zsh`, `age` is already installed.
+> Make sure `curl`, `openssl`, `zsh`, `age`, `python3-venv` is already installed.
 
 ## make `age` key
 
