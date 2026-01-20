@@ -11,12 +11,14 @@ let
   nics-demo-lab = "age1ma2h46jzrp3ux5gx6ad9l5yap7t60pl2jw0jevd9d6yn7k407yws3ws9sx";
   dcf-demo = "age12p7ng23relt5rkfp2xkk8nderzgwavfe3pun5e24xy6py2m8nuvsm7wr9q";
   pg-cluster = "age1s39em9vgexe2zgkntfdr0xpvnyunf6stwgy4ch2sd5ltdt25hu2q6x8rnx";
+  nate-test = "age10yxsamlz7rtc2lq4g5wtjdhktrycz4hlsyj7hrv86lrqaasumprsaskk0r";
   oc_bot = "age1pzwzf6lqjsjgpys0jlwfc957xewhclfr7hxg5wftky0q4cunwsequqyysa";
   rdsrv01 = "age1hwpy5jpkm6kyvr2apppq5scceu5ypsqa8unptmrzry3pu37swygqcc7ca6";
   hosts = [
     nics-demo-lab
     dcf-demo
     pg-cluster
+    nate-test
     oc_bot
     rdsrv01
   ];
