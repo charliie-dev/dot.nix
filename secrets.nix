@@ -12,7 +12,7 @@ let
   dcf-demo = "age12p7ng23relt5rkfp2xkk8nderzgwavfe3pun5e24xy6py2m8nuvsm7wr9q";
   pg-cluster = "age1s39em9vgexe2zgkntfdr0xpvnyunf6stwgy4ch2sd5ltdt25hu2q6x8rnx";
   nate-test = "age10yxsamlz7rtc2lq4g5wtjdhktrycz4hlsyj7hrv86lrqaasumprsaskk0r";
-  nats-dev = "age1rv9c0d7kmu60j7v40l57uvlvr5p4jp8f6ym7tpvvh5wfwd4d5gfq4jged3";
+  nats-dev = "age1t3uxkrvkrtequwj0deg784jjv7xfpjhjfdy5t8hkx34wd8f3xd9sl6n5ma";
   oc_bot = "age1pzwzf6lqjsjgpys0jlwfc957xewhclfr7hxg5wftky0q4cunwsequqyysa";
   rdsrv01 = "age1hwpy5jpkm6kyvr2apppq5scceu5ypsqa8unptmrzry3pu37swygqcc7ca6";
   hosts = [
