@@ -8,19 +8,39 @@ let
   ];
   users = charles;
 
-  nics-demo-lab = "age1ma2h46jzrp3ux5gx6ad9l5yap7t60pl2jw0jevd9d6yn7k407yws3ws9sx";
-  dcf-demo = "age12p7ng23relt5rkfp2xkk8nderzgwavfe3pun5e24xy6py2m8nuvsm7wr9q";
-  pg-cluster = "age1s39em9vgexe2zgkntfdr0xpvnyunf6stwgy4ch2sd5ltdt25hu2q6x8rnx";
-  nate-test = "age10yxsamlz7rtc2lq4g5wtjdhktrycz4hlsyj7hrv86lrqaasumprsaskk0r";
-  nats-dev = "age1t3uxkrvkrtequwj0deg784jjv7xfpjhjfdy5t8hkx34wd8f3xd9sl6n5ma";
   oc_bot = "age1pzwzf6lqjsjgpys0jlwfc957xewhclfr7hxg5wftky0q4cunwsequqyysa";
   rdsrv01 = "age1hwpy5jpkm6kyvr2apppq5scceu5ypsqa8unptmrzry3pu37swygqcc7ca6";
+
+  nics-demo-lab = "age1ma2h46jzrp3ux5gx6ad9l5yap7t60pl2jw0jevd9d6yn7k407yws3ws9sx";
+  nate-test = "age10yxsamlz7rtc2lq4g5wtjdhktrycz4hlsyj7hrv86lrqaasumprsaskk0r";
+
+  dcf-demo = "age12p7ng23relt5rkfp2xkk8nderzgwavfe3pun5e24xy6py2m8nuvsm7wr9q";
+  pg-cluster = "age1s39em9vgexe2zgkntfdr0xpvnyunf6stwgy4ch2sd5ltdt25hu2q6x8rnx";
+  nats-dev = "age1t3uxkrvkrtequwj0deg784jjv7xfpjhjfdy5t8hkx34wd8f3xd9sl6n5ma";
+  etcd-dev = "age184apecyns0ymv35tmczx0azclea75fvkkjsrnjrxjjnj9a6fheaqmmrcv9";
+  haproxy-dev = "age1vh3eqwah8dw59g23sutrqya6ek7hpn2s4wrhzd950qsrx8we55tq6w687r";
+  pg-primary-dev = "age1t3uxkrvkrtequwj0deg784jjv7xfpjhjfdy5t8hkx34wd8f3xd9sl6n5ma";
+  pg-replica1-dev = "age1t3uxkrvkrtequwj0deg784jjv7xfpjhjfdy5t8hkx34wd8f3xd9sl6n5ma";
+  pg-replica2-dev = "age1t3uxkrvkrtequwj0deg784jjv7xfpjhjfdy5t8hkx34wd8f3xd9sl6n5ma";
+  agent1-dev = "age1t3uxkrvkrtequwj0deg784jjv7xfpjhjfdy5t8hkx34wd8f3xd9sl6n5ma";
+  agent2-dev = "age1t3uxkrvkrtequwj0deg784jjv7xfpjhjfdy5t8hkx34wd8f3xd9sl6n5ma";
+  platform-dev = "age1t3uxkrvkrtequwj0deg784jjv7xfpjhjfdy5t8hkx34wd8f3xd9sl6n5ma";
   hosts = [
-    nics-demo-lab
     dcf-demo
     pg-cluster
     nats-dev
+    etcd-dev
+    haproxy-dev
+    pg-primary-dev
+    pg-replica1-dev
+    pg-replica2-dev
+    agent1-dev
+    agent2-dev
+    platform-dev
+
+    nics-demo-lab
     nate-test
+
     oc_bot
     rdsrv01
   ];
