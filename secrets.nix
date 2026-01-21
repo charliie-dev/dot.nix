@@ -19,12 +19,12 @@ let
   nats-dev = "age1t3uxkrvkrtequwj0deg784jjv7xfpjhjfdy5t8hkx34wd8f3xd9sl6n5ma";
   etcd-dev = "age184apecyns0ymv35tmczx0azclea75fvkkjsrnjrxjjnj9a6fheaqmmrcv9";
   haproxy-dev = "age1vh3eqwah8dw59g23sutrqya6ek7hpn2s4wrhzd950qsrx8we55tq6w687r";
-  pg-primary-dev = "age1t3uxkrvkrtequwj0deg784jjv7xfpjhjfdy5t8hkx34wd8f3xd9sl6n5ma";
-  pg-replica1-dev = "age1t3uxkrvkrtequwj0deg784jjv7xfpjhjfdy5t8hkx34wd8f3xd9sl6n5ma";
-  pg-replica2-dev = "age1t3uxkrvkrtequwj0deg784jjv7xfpjhjfdy5t8hkx34wd8f3xd9sl6n5ma";
-  agent1-dev = "age1t3uxkrvkrtequwj0deg784jjv7xfpjhjfdy5t8hkx34wd8f3xd9sl6n5ma";
-  agent2-dev = "age1t3uxkrvkrtequwj0deg784jjv7xfpjhjfdy5t8hkx34wd8f3xd9sl6n5ma";
-  platform-dev = "age1t3uxkrvkrtequwj0deg784jjv7xfpjhjfdy5t8hkx34wd8f3xd9sl6n5ma";
+  pg-primary-dev = "age1yg990z9hj74z6ypr55rv6tldw3jqw78lrrlvv2kels58j0pcdsjsh4n7xl";
+  pg-replica1-dev = "age1z49hypwluaw4j2j5ljnlh508mutk0jpznkf0e57a3clnsvm6astsjyu87l";
+  pg-replica2-dev = "age1enna5c7gnkfxzeqsnucrzjwjxhcspnlxh0ngs0s5tyfd7c574dlsrjx2kr";
+  agent1-dev = "age1mcrz9sxem707s3te8637u5awmqthx25xu0sg0ck73y4e2eykjf9qskmynl";
+  agent2-dev = "age15d8r9qtn4fx374rhf679ve7ka372u42dfajqvydhe9tu0y4hc30sntyy8s";
+  platform-dev = "age10avltmxpnkz3dms7gdzvy7hw7r7f5g7mrqq8nn9xgk9fwcypucpqsja07g";
   hosts = [
     dcf-demo
     pg-cluster
