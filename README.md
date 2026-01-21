@@ -90,21 +90,13 @@ fi
 
 </details>
 
-## Install `home-manager`
+## Configure `home-manager`
 
 ```sh
-nix run home-manager/master -- init --switch
-exit
-# nix-channel --add https://nixos.org/channels/nixpkgs-unstable unstable
-# nix-channel --update
-# nix-env -iA unstable.git
+. /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
 git clone https://github.com/charliie-dev/dot.nix.git ~/.config/home-manager
-# nix-env -e git
-cd ~/.config/home-manager && nix build
-# add `trusted-users `: trusted-users = charles in `/etc/nix/nix.conf`
-rm ~/.config/nix/nix.conf
-~/.config/home-manager/result/bin/home-manager switch --flake ~/.config/home-manager --impure
-home-manager switch --impure # this will prevent current generations get clean up w/ gc`
+nix run home-manager/master switch --impure
+
 determinate-nixd version
 ```
 
