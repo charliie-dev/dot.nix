@@ -19,7 +19,7 @@
     resvg # for SVG preview
     imagemagick # for Font, HEIC, and JPEG XL preview
     hexyl # Command-line hex viewer
-    nur.repos.charmbracelet.glow # Render markdown on the CLI, with pizzazz
+    glow # nur.repos.charmbracelet.glow # Render markdown on the CLI, with pizzazz
     yq-go # jq but for YAML, JSON, XML, CSV, TOML
 
     # nix language server, formatter, linter

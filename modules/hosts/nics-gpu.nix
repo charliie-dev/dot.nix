@@ -8,7 +8,7 @@ let
     nix-index-database
     nixgl
     nixpkgs
-    nur
+    # nur
     snitch
     src
     ;
@@ -18,7 +18,7 @@ in
     pkgs = import nixpkgs {
       system = "x86_64-linux";
       overlays = [
-        nur.overlays.default
+        # nur.overlays.default
         agenix.overlays.default
         nixgl.overlay
       ];
@@ -42,7 +42,7 @@ in
       agenix.homeManagerModules.default
       catppuccin.homeModules.catppuccin
       nix-index-database.homeModules.nix-index
-      nur.modules.homeManager.default
+      # nur.modules.homeManager.default
       snitch.homeManagerModules.default
       {
         home = {

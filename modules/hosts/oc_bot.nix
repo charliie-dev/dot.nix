@@ -7,7 +7,7 @@ let
     hm_ver
     nix-index-database
     nixpkgs
-    nur
+    # nur
     snitch
     src
     ;
@@ -17,7 +17,7 @@ in
     pkgs = import nixpkgs {
       system = "aarch64-linux";
       overlays = [
-        nur.overlays.default
+        # nur.overlays.default
         agenix.overlays.default
       ];
       config.allowUnfree = true;
@@ -33,7 +33,7 @@ in
       agenix.homeManagerModules.default
       catppuccin.homeModules.catppuccin
       nix-index-database.homeModules.nix-index
-      nur.modules.homeManager.default
+      # nur.modules.homeManager.default
       snitch.homeManagerModules.default
       {
         home = {

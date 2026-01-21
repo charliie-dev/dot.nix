@@ -9,10 +9,10 @@
     };
 
     # NUR Community Packages
-    nur = {
-      url = "github:nix-community/NUR";
-      # Requires "nur.modules.nixos.default" to be added to the host modules
-    };
+    # nur = {
+    #   url = "github:nix-community/NUR";
+    #   # Requires "nur.modules.nixos.default" to be added to the host modules
+    # };
 
     # Weekly updated nix-index database
     nix-index-database = {
@@ -34,7 +34,7 @@
     {
       nixpkgs,
       home-manager,
-      nur,
+      # nur,
       nix-index-database,
       agenix,
       catppuccin,
@@ -81,7 +81,7 @@
           home-manager
           nix-index-database
           nixpkgs
-          nur
+          # nur
           snitch
           src
           ;
@@ -96,7 +96,7 @@
           nix-index-database
           nixgl
           nixpkgs
-          nur
+          # nur
           src
           ;
       };
