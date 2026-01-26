@@ -1,4 +1,4 @@
-{ config, ... }:
+_:
 {
   home-manager = {
     # only works on linux
