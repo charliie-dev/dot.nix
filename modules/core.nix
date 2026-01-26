@@ -91,7 +91,7 @@ in
     };
   };
 
-  inherit (import "${src}/modules/xdg-config.nix" { inherit src; }) xdg;
+  inherit (import "${src}/modules/xdg-config.nix" { inherit pkgs lib src; }) xdg;
   inherit (import "${src}/modules/catppuccin.nix") catppuccin;
 
   programs = {

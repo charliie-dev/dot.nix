@@ -20,6 +20,15 @@
       yarn
       lua5_1
       luajitPackages.luarocks-nix
+      tree-sitter # Parser generator tool and an incremental parsing library
+
+      # nix language server, formatter, linter
+      # alejandra # The Uncompromising Nix Code Formatter
+      deadnix # Scan Nix files for dead code
+      nil # NIx Language server
+      nixfmt # Official formatter for Nix code
+      statix # lints and suggestions for the nix
+
     ];
     extraWrapperArgs = [
       "--suffix"
@@ -69,14 +78,6 @@
       pyPkgs: with pyPkgs; [
         docformatter
         pynvim
-      ];
-    extraLuaPackages =
-      luajitPackages: with luajitPackages; [
-        sqlite
-        luv
-        luasnip
-        fzf-lua
-        fzy
       ];
   };
 }
