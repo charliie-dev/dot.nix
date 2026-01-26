@@ -8,7 +8,7 @@
     withRuby = false;
     extraPackages = with pkgs; [
       # Dependent packages used by default plugins
-      doq
+      doq # neogen docstring
       cargo
       clang
       cmake
@@ -17,7 +17,6 @@
       go
       ninja
       pkg-config
-      yarn
       lua5_1
       luajitPackages.luarocks-nix
       tree-sitter # Parser generator tool and an incremental parsing library
