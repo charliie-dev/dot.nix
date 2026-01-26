@@ -5,7 +5,18 @@
       "Bash(gh api:*)",
       "Bash(gh pr view:*)",
       "WebFetch(domain:github.com)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(nix flake check:*)",
+      "Bash(home-manager switch:*)",
+      "Bash(nix flake show:*)",
+      "Bash(nix eval:*)",
+      "Bash(nix flake metadata:*)",
+      "Bash(nix show-config:*)",
+      "Bash(agenix:*)",
+      "Bash(home-manager build:*)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "context7_http"
+  ]
 }

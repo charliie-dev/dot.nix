@@ -1,5 +1,7 @@
 ## Common Commands
 
+**IMPORTANT**: After making ANY changes to `.nix` files, you MUST run the `/validate` skill to verify the configuration works correctly. If validation fails, analyze the error and fix it before proceeding.
+
 ```sh
 # Validate configuration
 nix flake check
