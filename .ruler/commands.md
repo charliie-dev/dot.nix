@@ -8,7 +8,7 @@ nix flake check
 nix eval .#homeConfigurations.$USER@$(hostname).activationPackage --show-trace
 
 # Build with verbose output (useful for debugging)
-zsh -c 'home-manager build -v --show-trace --option eval-cache false'
+home-manager build -v --show-trace --option eval-cache false
 
 # Apply configuration
 home-manager switch --flake .
@@ -24,4 +24,3 @@ nix fmt
 # Garbage collection
 nh clean all --ask
 ```
-
