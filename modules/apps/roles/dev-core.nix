@@ -8,7 +8,6 @@
     jq # JSON parser
     # ripsecrets # Prevent committing secret keys into your source code
     # sd # Intuitive find & replace CLI (sed alternative)
-    tree-sitter # Parser generator tool and an incremental parsing library
     # xh # Friendly and fast tool for sending HTTP requests
     jless # JSON viewer designed for reading, exploring, and searching through JSON data
     witr # Why is this running?
@@ -21,13 +20,6 @@
     hexyl # Command-line hex viewer
     glow # nur.repos.charmbracelet.glow # Render markdown on the CLI, with pizzazz
     yq-go # jq but for YAML, JSON, XML, CSV, TOML
-
-    # nix language server, formatter, linter
-    # alejandra # The Uncompromising Nix Code Formatter
-    deadnix # Scan Nix files for dead code
-    nil # installed for crush
-    nixfmt # Official formatter for Nix code
-    statix # lints and suggestions for the nix
 
   ];
 }
