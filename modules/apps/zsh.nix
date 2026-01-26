@@ -4,6 +4,16 @@
   src,
   ...
 }:
+let
+  exportSecret =
+    { secret, env }:
+    ''
+      if [ -r ${config.age.secrets.${secret}.path} ]; then
+        export ${env}="$(tr -d '\r\n' < ${config.age.secrets.${secret}.path})"
+      fi
+    '';
+  exportSecrets = secrets: builtins.concatStringsSep "\n" (map exportSecret secrets);
+in
 {
   zsh = {
     enable = true;
@@ -121,33 +131,44 @@
       builtins.concatStringsSep "\n" (readAll (commonFiles ++ darwinFiles));
     envExtra = ''
       # Azure
-      if [ -r ${config.age.secrets.azure_openai_api_endpoint.path} ]; then
-        export AZURE_OPENAI_API_ENDPOINT="$(tr -d '\r\n' < ${config.age.secrets.azure_openai_api_endpoint.path})"
-      fi
-      if [ -r ${config.age.secrets.azure_openai_api_key.path} ]; then
-        export AZURE_OPENAI_API_KEY="$(tr -d '\r\n' < ${config.age.secrets.azure_openai_api_key.path})"
-      fi
-      if [ -r ${config.age.secrets.azure_openai_api_version.path} ]; then
-        export AZURE_OPENAI_API_VERSION="$(tr -d '\r\n' < ${config.age.secrets.azure_openai_api_version.path})"
-      fi
+      ${exportSecrets [
+        {
+          secret = "azure_openai_api_endpoint";
+          env = "AZURE_OPENAI_API_ENDPOINT";
+        }
+        {
+          secret = "azure_openai_api_key";
+          env = "AZURE_OPENAI_API_KEY";
+        }
+        {
+          secret = "azure_openai_api_version";
+          env = "AZURE_OPENAI_API_VERSION";
+        }
+      ]}
 
       # AWS
       export AWS_DEFAULT_OUTPUT="json"
       export AWS_DATA_PATH="${config.xdg.dataHome}/aws"
-      if [ -r ${config.age.secrets.aws_region.path} ]; then
-        export AWS_REGION="$(tr -d '\r\n' < ${config.age.secrets.aws_region.path})"
-      fi
-      if [ -r ${config.age.secrets.aws_access_key_id.path} ]; then
-        export AWS_ACCESS_KEY_ID="$(tr -d '\r\n' < ${config.age.secrets.aws_access_key_id.path})"
-      fi
-      if [ -r ${config.age.secrets.aws_secret_access_key.path} ]; then
-        export AWS_SECRET_ACCESS_KEY="$(tr -d '\r\n' < ${config.age.secrets.aws_secret_access_key.path})"
-      fi
+      ${exportSecrets [
+        {
+          secret = "aws_region";
+          env = "AWS_REGION";
+        }
+        {
+          secret = "aws_access_key_id";
+          env = "AWS_ACCESS_KEY_ID";
+        }
+        {
+          secret = "aws_secret_access_key";
+          env = "AWS_SECRET_ACCESS_KEY";
+        }
+      ]}
 
       # D2 Studio
-      if [ -r ${config.age.secrets.d2_token.path} ]; then
-        export TSTRUCT_TOKEN="$(tr -d '\r\n' < ${config.age.secrets.d2_token.path})"
-      fi
+      ${exportSecret {
+        secret = "d2_token";
+        env = "TSTRUCT_TOKEN";
+      }}
     '';
   };
 }
