@@ -20,6 +20,8 @@ in
       overlays = [
         # nur.overlays.default
         agenix.overlays.default
+        # Wrap agenix to filter Determinate Nix warnings
+        (import "${src}/modules/overlays/agenix-wrapper.nix" { inherit agenix; })
         nixgl.overlay
       ];
       config = {
