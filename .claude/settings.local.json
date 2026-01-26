@@ -13,7 +13,8 @@
       "Bash(nix flake metadata:*)",
       "Bash(nix show-config:*)",
       "Bash(agenix:*)",
-      "Bash(home-manager build:*)"
+      "Bash(home-manager build:*)",
+      "Bash(home-manager packages)"
     ]
   },
   "enabledMcpjsonServers": [
