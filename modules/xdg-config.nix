@@ -48,6 +48,10 @@ in
         recursive = true;
         source = "${src}/conf.d/npm";
       };
+      "tombi" = {
+        recursive = true;
+        source = "${src}/conf.d/tombi";
+      };
       "wget" = {
         recursive = true;
         source = "${src}/conf.d/wget";
