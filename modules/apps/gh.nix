@@ -8,18 +8,17 @@
     };
     extensions = with pkgs; [
       gh-actions-cache
-      gh-cal
-      gh-contribs
-      gh-copilot
-      gh-dash
-      gh-eco
+      # gh-cal
+      # gh-contribs
+      # github-copilot-cli
+      # gh-dash
+      # gh-eco
       gh-f
-      gh-i
-      gh-markdown-preview
+      # gh-i
+      # gh-markdown-preview
       gh-notify
       gh-poi
       gh-s
-      gh-screensaver
     ];
     settings = {
       git_protocol = "ssh";
