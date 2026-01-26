@@ -1,11 +1,9 @@
 result
 .DS_Store
-flake.lock
-
 
 # START Ruler Generated Files
-/.crush.json
-/.crush.json.bak
-/CRUSH.md
-/CRUSH.md.bak
+/.mcp.json
+/.mcp.json.bak
+/CLAUDE.md
+/CLAUDE.md.bak
 # END Ruler Generated Files
