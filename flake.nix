@@ -23,46 +23,40 @@
     # Secret Management
     agenix.url = "github:ryantm/agenix";
 
+    # Only used for `check` and `formatter` in flake.nix
+    treefmt-nix.url = "github:numtide/treefmt-nix";
+
+    # Nvidia GPU support for nix app on non-NixOS
+    nixgl.url = "github:nix-community/nixGL";
+
     catppuccin.url = "github:catppuccin/nix/main";
     nix-filter.url = "github:numtide/nix-filter";
-    nix-formatter-pack.url = "github:Gerschtli/nix-formatter-pack";
-    nixgl.url = "github:nix-community/nixGL";
     snitch.url = "github:karol-broda/snitch";
+    systems.url = "github:nix-systems/default";
   };
 
   outputs =
     {
-      nixpkgs,
-      home-manager,
-      # nur,
-      nix-index-database,
+      self,
       agenix,
       catppuccin,
+      home-manager,
       nix-filter,
-      nix-formatter-pack,
+      nix-index-database,
       nixgl,
+      nixpkgs,
+      # nur,
       snitch,
+      systems,
+      treefmt-nix,
       ...
     }:
     let
-      # Supported systems for your flake packages, shell, etc.
-      systems = nixpkgs.lib.systems.flakeExposed;
-      forEachSystem = nixpkgs.lib.genAttrs systems;
+      # Small tool to iterate over each systems
+      eachSystem = f: nixpkgs.lib.genAttrs (import systems) (system: f nixpkgs.legacyPackages.${system});
 
-      formatterPackArgsPerSystem = forEachSystem (system: {
-        inherit nixpkgs system;
-        checkFiles = [ ./. ];
-        config = {
-          tools = {
-            alejandra.enable = false;
-            deadnix.enable = false;
-            nixfmt.enable = true;
-            statix.enable = true;
-          };
-        };
-      });
-
-      nixfmtpack = nix-formatter-pack;
+      # Eval the treefmt modules from ./treefmt.nix
+      treefmtEval = eachSystem (pkgs: treefmt-nix.lib.evalModule pkgs ./treefmt.nix);
 
       src = nix-filter.lib.filter {
         root = ./.;
@@ -88,25 +82,19 @@
       };
 
       gpu-attr = {
-        hm_ver = "26.05";
         inherit
-          agenix
-          catppuccin
-          home-manager
-          nix-index-database
+          base-attr
           nixgl
-          nixpkgs
-          # nur
-          src
           ;
       };
     in
     {
-      checks = forEachSystem (system: {
-        nix-formatter-pack-check = nixfmtpack.lib.mkCheck formatterPackArgsPerSystem.${system};
+      # for `nix fmt`
+      formatter = eachSystem (pkgs: treefmtEval.${pkgs.system}.config.build.wrapper);
+      # for `nix flake check`
+      checks = eachSystem (pkgs: {
+        formatting = treefmtEval.${pkgs.system}.config.build.check self;
       });
-
-      formatter = forEachSystem (system: nixfmtpack.lib.mkFormatter formatterPackArgsPerSystem.${system});
 
       filter = nix-filter.lib;
       source = src;
