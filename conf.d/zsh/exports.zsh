@@ -55,6 +55,10 @@ export AZURE_CONFIG_DIR="$XDG_DATA_HOME"/azure
 # D2 ENV
 export D2_LAYOUT=tala
 
+# Claude Code
+export CLAUDE_CODE_ENABLE_TELEMETRY=0
+export DISABLE_TELEMETRY=1
+
 # zsh plugins options
 export ANTIDOTE_HOME="$XDG_CACHE_HOME"/antidote
 export ZSH_SMARTCACHE_DIR="$XDG_CACHE_HOME"/zsh/smartcache
