@@ -78,5 +78,14 @@
         docformatter
         pynvim
       ];
+    extraLuaPackages =
+      luajitPackages: with luajitPackages; [
+        fzf-lua
+        fzy
+        luasnip
+        luv
+        sqlite
+        jsregexp # for luasnip
+      ];
   };
 }
