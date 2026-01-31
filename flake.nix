@@ -104,25 +104,18 @@
       homeConfigurations = {
         "charles@m3pro" = (import ./modules/hosts/m3pro.nix { inherit base-attr; }).host;
         "charles@callisto" = (import ./modules/hosts/callisto.nix { inherit base-attr; }).host;
-        "charles@bot" = (import ./modules/hosts/oc_bot.nix { inherit base-attr; }).host;
-        "charles@RDSrv01" = (import ./modules/hosts/rdsrv01.nix { inherit base-attr; }).host;
+        "charles@pluto" = (import ./modules/hosts/pluto.nix { inherit base-attr; }).host;
 
-        "charles@nics-demo-lab" = (import ./modules/hosts/nics-demo-lab.nix { inherit base-attr; }).host;
-        "charles@nate-test" = (import ./modules/hosts/dcf-demo.nix { inherit base-attr; }).host;
-        "charles@tmp-gpu" = (import ./modules/hosts/dcf-gpu.nix { inherit gpu-attr; }).host;
+        "charles@RDSrv01" = (import ./modules/hosts/x86-vps.nix { inherit base-attr; }).host;
+
+        "charles@nics-demo-lab" = (import ./modules/hosts/x86-vps.nix { inherit base-attr; }).host;
+        "charles@nate-test" = (import ./modules/hosts/x86-vps.nix { inherit base-attr; }).host;
+        "charles@tmp-gpu" = (import ./modules/hosts/x86-vps-gpu.nix { inherit gpu-attr; }).host;
 
         # dcf playground
-        "charles@dcf-demo" = (import ./modules/hosts/dcf-demo.nix { inherit base-attr; }).host;
-        "charles@pg-cluster" = (import ./modules/hosts/dcf-demo.nix { inherit base-attr; }).host;
-        "charles@nats-dev" = (import ./modules/hosts/dcf-demo.nix { inherit base-attr; }).host;
-        "charles@etcd-dev" = (import ./modules/hosts/dcf-demo.nix { inherit base-attr; }).host;
-        "charles@haproxy-dev" = (import ./modules/hosts/dcf-demo.nix { inherit base-attr; }).host;
-        "charles@pg-primary-dev" = (import ./modules/hosts/dcf-demo.nix { inherit base-attr; }).host;
-        "charles@pg-replica1-dev" = (import ./modules/hosts/dcf-demo.nix { inherit base-attr; }).host;
-        "charles@pg-replica2-dev" = (import ./modules/hosts/dcf-demo.nix { inherit base-attr; }).host;
-        "charles@agent1-dev" = (import ./modules/hosts/dcf-demo.nix { inherit base-attr; }).host;
-        "charles@agent2-dev" = (import ./modules/hosts/dcf-demo.nix { inherit base-attr; }).host;
-        "charles@platform-dev" = (import ./modules/hosts/dcf-demo.nix { inherit base-attr; }).host;
+        "charles@pg-primary-dev" = (import ./modules/hosts/x86-vps.nix { inherit base-attr; }).host;
+        "charles@pg-replica1-dev" = (import ./modules/hosts/x86-vps.nix { inherit base-attr; }).host;
+        "charles@pg-replica2-dev" = (import ./modules/hosts/x86-vps.nix { inherit base-attr; }).host;
       };
     };
 }
