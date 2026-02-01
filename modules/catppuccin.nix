@@ -22,11 +22,11 @@
     };
     starship = {
       enable = true;
-      flavor = "macchiato"; # or frappe, macchiato, mocha
+      # flavor = "macchiato"; # or frappe, macchiato, mocha
     };
     tmux = {
       enable = true;
-      flavor = "macchiato";
+      # flavor = "macchiato";
       extraConfig = ''
         set -g @catppuccin_window_tabs_enabled on
         set -g @catppuccin_host "on"
@@ -37,11 +37,10 @@
     };
     yazi = {
       enable = true;
-      flavor = "macchiato";
     };
     zsh-syntax-highlighting = {
       enable = true;
-      flavor = "frappe";
+      # flavor = "frappe";
     };
   };
 }
