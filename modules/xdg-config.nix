@@ -38,7 +38,7 @@
       # generate a separate file for the lua cpath/path
       # this must be imported by the init.lua file
       "nvim/init.lua".enable = false;
-      "nvim/lua/nix-generated.lua".text = config.programs.neovim.initLua;
+      "nvim/lua/hm-generated.lua".text = config.programs.neovim.initLua;
 
     };
   };
