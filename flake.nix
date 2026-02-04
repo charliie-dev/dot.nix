@@ -113,6 +113,7 @@
         "charles@tmp-gpu" = (import ./modules/hosts/x86-vps-gpu.nix { inherit gpu-attr; }).host;
 
         # dcf playground
+        "charles@pg-proxy-dev" = (import ./modules/hosts/x86-vps.nix { inherit base-attr; }).host;
         "charles@pg-primary-dev" = (import ./modules/hosts/x86-vps.nix { inherit base-attr; }).host;
         "charles@pg-replica1-dev" = (import ./modules/hosts/x86-vps.nix { inherit base-attr; }).host;
         "charles@pg-replica2-dev" = (import ./modules/hosts/x86-vps.nix { inherit base-attr; }).host;
