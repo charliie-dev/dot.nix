@@ -40,7 +40,7 @@ in
       };
     };
     activation = {
-      nvimdotsClone = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      nvimdotsClone = lib.hm.dag.entryBefore [ "writeBoundary" ] ''
         if [ ! -d ${config.xdg.configHome}/nvim ]; then
           ${pkgs.git}/bin/git clone https://github.com/${nvimdots_url} ${config.xdg.configHome}/nvim
         fi
