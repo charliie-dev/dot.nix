@@ -57,7 +57,13 @@
         # Don't ask for confirmations (no default value)
         assume_yes = true;
 
-        # Do not ask to retry failed steps (default: false)
+        # Whether to ask what to do after a step fails (default: true)
+        # ask_retry = false;
+
+        # Number of times to automatically retry a step when it fails (default: 0)
+        # auto_retry = 0;
+
+        # Same as ask_retry = false (default: false) - legacy
         no_retry = true;
 
         # Show the reason for skipped steps (default: false)
@@ -99,6 +105,17 @@
         # These are prepended to the `--log-filter` argument
         # See: https://docs.rs/tracing-subscriber/latest/tracing_subscriber/filter/struct.EnvFilter.html#directives
         # log_filters = ["topgrade::command=debug" "warn"]
+
+        # Whether to show a distribution-specific summary if applicable, e.g. listing
+        # Pacman backup configuration files (*.pacsave and *.pacnew)
+        # (default: true)
+        show_distribution_summary = true;
+
+        # For NixOS/home-manager, there are multiple ways to switch to newer configurations.
+        # When set to autodetect: use nh when available, fall back to vanilla
+        # Allowed values:
+        #   autodetect, nh, vanilla
+        nix_handler = "nh";
       };
 
       # Commands to run before anything
@@ -449,6 +466,19 @@
         # which enables ahead-of-time native compilation of packages.
         # (default: false)
         # aot = true
+      };
+
+      cargo = {
+        # If this is set to true, `cargo install-update` also updates git-originating packages.
+        # (default: true)
+        # git = false
+
+        # If this is set to true, `cargo install-update` is run quietly.
+        # (default: false)
+        # quiet = true
+
+        # Other options like `--locked` or `--jobs` can be passed to `cargo install`
+        # using the `CARGO_INSTALL_OPTS` environment variable.
       };
 
       rustup = {
