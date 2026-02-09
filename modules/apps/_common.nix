@@ -12,6 +12,7 @@
     xdg-ninja
     tree
     lazyjournal
+    tirith # Shell security tool that guards against homograph URL attacks, pip exploits, and other cli threats before they execxute
 
     # Secrets Management
     age

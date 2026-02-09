@@ -35,6 +35,7 @@ fi
 # Use QuarticCat/zsh-smartcache to speedup zsh loading time
 smartcache eval zoxide init zsh
 smartcache eval starship init zsh
+smartcache eval tirith init zsh
 # (( $OSTYPE[(I)msys] )) && smartcache eval mise activate zsh # mise's smartcache won't work if installing mise via home-manager
 
 # vim: set ft=zsh :
