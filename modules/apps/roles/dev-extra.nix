@@ -6,6 +6,7 @@
     snyk # Scans and monitors projects for security vulnerabilities
     tokei # Count your code, quickly
     act # Run your GitHub Actions locally
+    kompose # A conversion tool for Docker Compose to container orchestrators such as Kubernetes (or OpenShift).
 
     # VPS SDKs (better use mise to install in certain repo)
     # awscli2
