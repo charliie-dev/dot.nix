@@ -137,7 +137,7 @@ in
     inherit (import "${src}/modules/apps/ssh.nix" { inherit config; }) ssh;
     inherit (import "${src}/modules/apps/starship.nix" { inherit config lib; }) starship;
     inherit (import "${src}/modules/apps/television.nix") television;
-    inherit (import "${src}/modules/apps/tirith.nix") tirith;
+    # inherit (import "${src}/modules/apps/tirith.nix") tirith;
     inherit (import "${src}/modules/apps/tmux.nix" { inherit pkgs src; }) tmux;
     inherit (import "${src}/modules/apps/topgrade.nix") topgrade;
     inherit (import "${src}/modules/apps/vivid.nix") vivid;
