@@ -1,0 +1,13 @@
+{
+  "nixpkgs": {
+    "expr": "import <nixpkgs> { }"
+  },
+  "formatting": {
+    "command": ["nixfmt"]
+  },
+  "options": {
+    "home-manager": {
+      "expr": "(builtins.getFlake (builtins.toString ./.)).homeConfigurations.\"charles@m3pro\".options"
+    }
+  }
+}
