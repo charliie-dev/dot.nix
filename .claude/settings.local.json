@@ -14,7 +14,8 @@
       "Bash(nix show-config:*)",
       "Bash(agenix:*)",
       "Bash(home-manager build:*)",
-      "Bash(home-manager packages)"
+      "Bash(home-manager packages)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ]
   },
   "enabledMcpjsonServers": [
