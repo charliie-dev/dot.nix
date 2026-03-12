@@ -44,6 +44,8 @@ alias ....='cd ../../..'
 alias .....='cd ../../../..'
 alias bd='cd "$OLDPWD"' # cd to the previous directory
 alias nv='nvim'
+alias cc='claude'
+alias ccd='claude --dangerously-skip-permissions'
 alias wget='wget2'
 
 # Extanded Aliases
