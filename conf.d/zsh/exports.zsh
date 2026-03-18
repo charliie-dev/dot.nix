@@ -44,6 +44,7 @@ export BUNDLE_USER_CONFIG="$XDG_CONFIG_HOME"/bundle
 export BUNDLE_USER_CACHE="$XDG_CACHE_HOME"/bundle
 export BUNDLE_USER_PLUGIN="$XDG_DATA_HOME"/bundle
 export PARALLEL_HOME="$XDG_CONFIG_HOME"/parallel
+export PSQL_HISTORY="$XDG_STATE_HOME"/psql_history
 export EDITOR=nvim
 
 # VPS
@@ -70,7 +71,6 @@ export ZSH_COMPDUMP="$XDG_CACHE_HOME"/zsh/compdump
 export CLICOLOR=1 # for BSD-based distros, like macOS
 export LSCOLORS=Gxfxcxdxbxegedabagacad # for BSD-based distros, like macOS
 # export LS_COLORS="$(vivid generate catppuccin-mocha)" # for GNU-based distros
-
 
 # Enable color in grep
 export GREP_OPTIONS='--color=auto'
