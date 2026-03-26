@@ -47,6 +47,8 @@ alias nv='nvim'
 alias cc='claude'
 alias ccd='claude --dangerously-skip-permissions'
 alias wget='wget2'
+alias readwise='bun "$XDG_CACHE_HOME"/.bun/install/global/node_modules/@readwise/cli/dist/index.js'
+alias ctx7='bun "$XDG_CACHE_HOME"/.bun/install/global/node_modules/ctx7/dist/index.js'
 
 # Extanded Aliases
 # alias yarn='yarn --use-yarnrc "$XDG_CONFIG_HOME/yarn/config"'
