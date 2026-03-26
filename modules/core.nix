@@ -29,6 +29,15 @@ in
     shell.enableZshIntegration = true;
     sessionPath = [ "/nix/var/nix/profiles/default/bin" ];
     file = {
+      ".config/parallel/will-cite" = {
+        text = "";
+      };
+      ".config/terraform/terraformrc" = {
+        text = ''
+          plugin_cache_dir   = "$HOME/.local/share/terraform/plugin-cache"
+          disable_checkpoint = true
+        '';
+      };
       "self-made commands" = {
         enable = true;
         recursive = true;
