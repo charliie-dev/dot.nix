@@ -76,6 +76,16 @@
       signByDefault = true;
       format = "ssh"; # openpgp, ssh, x509
     };
+    includes = [
+      {
+        condition = "hasconfig:remote.*.url:git@github.com:nics-dp/**";
+        path = "~/.config/git/config-work";
+      }
+      {
+        condition = "hasconfig:remote.*.url:git@github.com:nics-tw/**";
+        path = "~/.config/git/config-work";
+      }
+    ];
     attributes = [
       "*.pdf diff=pdf"
     ];
