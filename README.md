@@ -46,13 +46,13 @@ age-keygen -y ~/.config/age/keys.txt  # copy the public key
 ```sh
 # Step 1: First deploy without secrets (install all tools)
 #   add-host automatically sets enableSecrets = false in hosts.nix
-home-manager switch --flake .#charles@<hostname>
+home-manager switch --flake '.#charles@<hostname>'
 
 # Step 2: On local machine: flip enableSecrets = true in hosts.nix
 #   git commit && git push
 
 # Step 3: On new host: deploy again with secrets enabled
-home-manager switch --flake .#charles@<hostname>
+home-manager switch --flake '.#charles@<hostname>'
 ```
 
 ## create `~/.config/nix/nix.conf`
