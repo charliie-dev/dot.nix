@@ -23,7 +23,7 @@ in
               --project dot-nix \
               --config dev_personal \
               --no-file \
-              --format env > "${secretDir}/doppler/env" 2>/dev/null || true
+              --format=env > "${secretDir}/doppler/env" 2>/dev/null || true
           )
           chmod 600 "${secretDir}/doppler/env"
         fi
