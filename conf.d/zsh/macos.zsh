@@ -1,5 +1,8 @@
 #!/bin/zsh
 
+export COLIMA_HOME="$XDG_DATA_HOME"/colima
+export DOCKER_HOST=unix://"${COLIMA_HOME}"/default/docker.sock
+
 # Flush the DNS cache. -> mattmc3/zephyr/tree/main/plugins/macos
 # alias flushdns='dscacheutil -flushcache && sudo killall -HUP mDNSResponder'
 
