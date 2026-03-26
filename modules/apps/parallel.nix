@@ -1,6 +1,5 @@
 {
   parallel = {
-    enable = true;
-    will-cite = true;
+    enable = false;
   };
 }

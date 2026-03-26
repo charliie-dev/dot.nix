@@ -11,6 +11,7 @@
     fastfetch
     xdg-ninja
     tree
+    parallel
     lazyjournal
 
     # Secrets Management
