@@ -66,6 +66,6 @@
   "charles@testvm" = {
     system = "x86_64-linux";
     hostFile = ./modules/hosts/x86-vps.nix;
-    enableSecrets = false;
+    enableSecrets = true;
   };
 }
