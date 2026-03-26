@@ -13,7 +13,7 @@
       compression = true;
       forwardAgent = false;
       hashKnownHosts = false;
-      identityFile = "${config.age.secrets.ssh_ed25519.path}";
+      # identityFile set by core.nix mkIf enableSecrets
       serverAliveInterval = 300;
       serverAliveCountMax = 10;
     };

@@ -4,16 +4,6 @@
   src,
   ...
 }:
-let
-  exportSecret =
-    { secret, env }:
-    ''
-      if [ -r ${config.age.secrets.${secret}.path} ]; then
-        export ${env}="$(tr -d '\r\n' < ${config.age.secrets.${secret}.path})"
-      fi
-    '';
-  exportSecrets = secrets: builtins.concatStringsSep "\n" (map exportSecret secrets);
-in
 {
   zsh = {
     enable = true;
@@ -130,45 +120,10 @@ in
       in
       builtins.concatStringsSep "\n" (readAll (commonFiles ++ darwinFiles));
     envExtra = ''
-      # Azure
-      ${exportSecrets [
-        {
-          secret = "azure_openai_api_endpoint";
-          env = "AZURE_OPENAI_API_ENDPOINT";
-        }
-        {
-          secret = "azure_openai_api_key";
-          env = "AZURE_OPENAI_API_KEY";
-        }
-        {
-          secret = "azure_openai_api_version";
-          env = "AZURE_OPENAI_API_VERSION";
-        }
-      ]}
-
-      # AWS
+      # AWS (non-secret)
       export AWS_DEFAULT_OUTPUT="json"
       export AWS_DATA_PATH="${config.xdg.dataHome}/aws"
-      ${exportSecrets [
-        {
-          secret = "aws_region";
-          env = "AWS_REGION";
-        }
-        {
-          secret = "aws_access_key_id";
-          env = "AWS_ACCESS_KEY_ID";
-        }
-        {
-          secret = "aws_secret_access_key";
-          env = "AWS_SECRET_ACCESS_KEY";
-        }
-      ]}
-
-      # D2 Studio
-      ${exportSecret {
-        secret = "d2_token";
-        env = "TSTRUCT_TOKEN";
-      }}
     '';
+    # Doppler secrets loaded by core.nix mkIf enableSecrets
   };
 }

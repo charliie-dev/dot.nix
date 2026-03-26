@@ -53,6 +53,9 @@ export BUN_INSTALL="$XDG_DATA_HOME"/bun
 export TF_CLI_CONFIG_FILE="$XDG_CONFIG_HOME"/terraform/terraformrc
 export MCP_REMOTE_CONFIG_DIR="$XDG_DATA_HOME"/mcp-auth
 
+# Secrets Management
+export SOPS_AGE_KEY_FILE="$XDG_CONFIG_HOME"/age/keys.txt
+
 # VPS
 export AWS_SHARED_CREDENTIALS_FILE="$XDG_CONFIG_HOME"/aws/credentials
 export AWS_CONFIG_FILE="$XDG_CONFIG_HOME"/aws/config

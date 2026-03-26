@@ -21,7 +21,10 @@
     };
 
     # Secret Management
-    agenix.url = "github:ryantm/agenix";
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     # Only used for `check` and `formatter` in flake.nix
     treefmt-nix.url = "github:numtide/treefmt-nix";
@@ -38,7 +41,7 @@
   outputs =
     {
       self,
-      agenix,
+      sops-nix,
       catppuccin,
       home-manager,
       nix-filter,
@@ -64,13 +67,16 @@
           "conf.d"
           "modules"
           "flake.nix"
+          "hosts.nix"
         ];
       };
+
+      hosts = import ./hosts.nix;
 
       base-attr = {
         hm_ver = "26.05";
         inherit
-          agenix
+          sops-nix
           catppuccin
           home-manager
           nix-index-database
@@ -87,6 +93,20 @@
           nixgl
           ;
       };
+
+      mkHost = _name: hostCfg:
+        let
+          enableSecrets = hostCfg.enableSecrets or true;
+          hostArgs =
+            if hostCfg.gpu or false then {
+              gpu-attr = gpu-attr // {
+                base-attr = gpu-attr.base-attr // { inherit enableSecrets; };
+              };
+            } else {
+              base-attr = base-attr // { inherit enableSecrets; };
+            };
+        in
+        (import hostCfg.hostFile hostArgs).host;
     in
     {
       # for `nix fmt`
@@ -99,25 +119,6 @@
       filter = nix-filter.lib;
       source = src;
 
-      # Define `homeModules`, `homeConfigurations`,
-      # `nixosConfigurations`, etc here
-      homeConfigurations = {
-        "charles@m3pro" = (import ./modules/hosts/m3pro.nix { inherit base-attr; }).host;
-        "charles@callisto" = (import ./modules/hosts/callisto.nix { inherit base-attr; }).host;
-        "charles@pluto" = (import ./modules/hosts/pluto.nix { inherit base-attr; }).host;
-
-        "charles@RDSrv01" = (import ./modules/hosts/x86-vps.nix { inherit base-attr; }).host;
-
-        "charles@nics-demo-lab" = (import ./modules/hosts/x86-vps.nix { inherit base-attr; }).host;
-        "charles@nate-test" = (import ./modules/hosts/x86-vps.nix { inherit base-attr; }).host;
-        "charles@tmp-gpu" = (import ./modules/hosts/x86-vps-gpu.nix { inherit gpu-attr; }).host;
-
-        # dcf playground
-        "charles@testvm" = (import ./modules/hosts/x86-vps.nix { inherit base-attr; }).host;
-        "charles@pg-proxy-dev" = (import ./modules/hosts/x86-vps.nix { inherit base-attr; }).host;
-        "charles@pg-primary-dev" = (import ./modules/hosts/x86-vps.nix { inherit base-attr; }).host;
-        "charles@pg-replica1-dev" = (import ./modules/hosts/x86-vps.nix { inherit base-attr; }).host;
-        "charles@pg-replica2-dev" = (import ./modules/hosts/x86-vps.nix { inherit base-attr; }).host;
-      };
+      homeConfigurations = builtins.mapAttrs mkHost hosts;
     };
 }

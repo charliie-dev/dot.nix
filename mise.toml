@@ -160,3 +160,116 @@ sudo nix-store --optimise
 [tasks.check-dead-path]
 description = "Check dead nix path, should be none after gc"
 run = "nix-store --gc --print-dead"
+
+# ==============================================================================
+#  Host Management (sops-nix + Doppler)
+# ==============================================================================
+
+[tasks.get-remote-age-pubkey]
+description = "Get or generate age public key from remote host"
+usage = '''
+arg "<hostname>" help="Remote hostname (SSH reachable)"
+'''
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+HOST="${usage_hostname?}"
+KEY_DIR=".config/age"
+KEY_FILE="$KEY_DIR/keys.txt"
+
+echo "[INFO] Checking age key on ${HOST}..."
+
+# Check if age CLI is installed on remote
+ssh "$HOST" "command -v age-keygen >/dev/null 2>&1" || {
+  echo "[ERROR] age is not installed on ${HOST}. Install it first:"
+  echo "  ssh ${HOST} 'sudo apt install -y age'  # or: nix profile install nixpkgs#age"
+  exit 1
+}
+
+# Get or generate age key on remote
+PUBKEY=$(ssh "$HOST" "
+  if [ ! -f ~/$KEY_FILE ]; then
+    echo '[INFO] No age key found, generating...' >&2
+    mkdir -p ~/$KEY_DIR
+    age-keygen -o ~/$KEY_FILE 2>&1 | grep 'public key:' | awk '{print \$NF}'
+  else
+    echo '[INFO] Age key already exists.' >&2
+    age-keygen -y ~/$KEY_FILE
+  fi
+")
+
+echo "[OK] Remote age public key for ${HOST}:"
+echo "$PUBKEY"
+'''
+
+[tasks.add-host]
+description = "Add a new host: get remote age key, update .sops.yaml, rekey, add to hosts.nix"
+usage = '''
+arg "<hostname>" help="Remote hostname (SSH reachable)"
+arg "<system>" help="Nix system (e.g. x86_64-linux, aarch64-linux)" default="x86_64-linux"
+arg "<host_file>" help="Host nix file path relative to repo root" default="./modules/hosts/x86-vps.nix"
+'''
+depends = ["get-remote-age-pubkey {{arg(name='hostname')}}"]
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+HOST="${usage_hostname?}"
+SYSTEM="${usage_system?}"
+HOST_FILE="${usage_host_file?}"
+SOPS_FILE=".sops.yaml"
+SECRETS_FILE="conf.d/sops/secrets.yaml"
+HOSTS_FILE="hosts.nix"
+
+# 1. Get remote age public key
+echo "[INFO] Fetching age public key from ${HOST}..."
+AGE_KEY=$(ssh "$HOST" "age-keygen -y ~/.config/age/keys.txt")
+echo "[OK] Got: $AGE_KEY"
+
+# 2. Check if already in .sops.yaml
+if grep -q "$AGE_KEY" "$SOPS_FILE"; then
+  echo "[SKIP] Key already in $SOPS_FILE"
+else
+  echo "[INFO] Adding key to $SOPS_FILE..."
+  sed -i '' "/^      age1.*$/{
+    \$a\\
+      ${AGE_KEY}
+  }" "$SOPS_FILE"
+  echo "[WARN] Please verify $SOPS_FILE manually — sed-based YAML editing is fragile"
+fi
+
+# 3. Rekey sops secrets
+echo "[INFO] Rekeying secrets..."
+export SOPS_AGE_KEY_FILE=~/.config/age/keys.txt
+sops updatekeys "$SECRETS_FILE"
+
+# 4. Check if host already in hosts.nix
+if grep -q "\"charles@${HOST}\"" "$HOSTS_FILE"; then
+  echo "[SKIP] charles@${HOST} already in $HOSTS_FILE"
+else
+  echo "[INFO] Adding charles@${HOST} to $HOSTS_FILE..."
+  sed -i '' "/^}$/i\\
+\\  \"charles@${HOST}\" = {\\
+\\    system = \"${SYSTEM}\";\\
+\\    hostFile = ${HOST_FILE};\\
+\\    enableSecrets = false;\\
+\\  };
+" "$HOSTS_FILE"
+  echo "[WARN] Please verify $HOSTS_FILE manually"
+fi
+
+echo ""
+echo "=== Summary ==="
+echo "Host:       charles@${HOST}"
+echo "System:     ${SYSTEM}"
+echo "Host file:  ${HOST_FILE}"
+echo "Age key:    ${AGE_KEY}"
+echo ""
+echo "Next steps:"
+echo "  1. Verify .sops.yaml and hosts.nix are correct"
+echo "  2. git add .sops.yaml $SECRETS_FILE $HOSTS_FILE"
+echo "  3. git commit -m 'feat(host): add ${HOST}'"
+echo "  4. git push"
+echo "  5. On ${HOST}: home-manager switch --flake '.#charles@${HOST}'"
+'''

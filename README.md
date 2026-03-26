@@ -1,18 +1,58 @@
 # Nix Home-Manager dotfiles
 
 > [!IMPORTANT]
-> Make sure `curl`, `openssl`, `zsh`, `age`, `python3-venv` is already installed.
+> Make sure `curl`, `openssl`, `zsh`, `age`, `sops`, `python3-venv` is already installed.
 
-## make `age` key
+## Secrets Management
+
+This repo uses **sops-nix** (system-layer) + **Doppler** (application-layer) for secrets management.
+
+- System secrets (SSH keys, git config) are encrypted with [sops](https://github.com/getsops/sops) + age, stored in `conf.d/sops/secrets.yaml`
+- Application secrets (API keys, tokens) are managed by [Doppler](https://www.doppler.com/), pulled at deploy time
+- Doppler's Service Token is itself managed by sops-nix (bootstrap chain)
+
+### Add a new host (automated)
 
 ```sh
+# Prerequisites: new server is SSH-reachable and has `age` installed
+mise run add-host <hostname> [system] [host_file]
+
+# Example:
+mise run add-host new-server x86_64-linux ./modules/hosts/x86-vps.nix
+
+# Then commit and push
+git add .sops.yaml conf.d/sops/secrets.yaml hosts.nix
+git commit -m "feat(host): add new-server"
+git push
+```
+
+### Add a new host (manual)
+
+```sh
+# 1. On new server: generate age key
 mkdir -p ~/.config/age
-## gen age key
 age-keygen -o ~/.config/age/keys.txt
-## echo age pubkey
-age-keygen -y ~/.config/age/keys.txt
-## rekey on old machine
-agenix -r -i ~/.config/age/keys.txt
+age-keygen -y ~/.config/age/keys.txt  # copy the public key
+
+# 2. On local machine: add public key and rekey
+#    a. Add public key to .sops.yaml
+#    b. Run: sops updatekeys conf.d/sops/secrets.yaml
+#    c. Add host entry to hosts.nix
+#    d. git commit && git push
+```
+
+### Deploy to new host
+
+```sh
+# Step 1: First deploy without secrets (install all tools)
+#   add-host automatically sets enableSecrets = false in hosts.nix
+home-manager switch --flake .#charles@<hostname>
+
+# Step 2: On local machine: flip enableSecrets = true in hosts.nix
+#   git commit && git push
+
+# Step 3: On new host: deploy again with secrets enabled
+home-manager switch --flake .#charles@<hostname>
 ```
 
 ## create `~/.config/nix/nix.conf`

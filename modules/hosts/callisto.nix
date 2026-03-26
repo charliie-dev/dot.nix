@@ -2,7 +2,7 @@
 let
   hm = base-attr.home-manager;
   inherit (base-attr)
-    agenix
+    sops-nix
     catppuccin
     hm_ver
     nix-index-database
@@ -18,9 +18,6 @@ in
       system = "x86_64-linux";
       overlays = [
         # nur.overlays.default
-        agenix.overlays.default
-        # Wrap agenix to filter Determinate Nix warnings
-        (import "${src}/modules/overlays/agenix-wrapper.nix" { inherit agenix; })
       ];
       config = {
         allowUnfree = true;
@@ -28,6 +25,7 @@ in
     };
     extraSpecialArgs = {
       inherit src;
+      inherit (base-attr) enableSecrets;
       roles = [
         "dev-core"
         "dev-extra"
@@ -37,7 +35,7 @@ in
     };
     modules = [
       "${src}/modules/core.nix"
-      agenix.homeManagerModules.default
+      sops-nix.homeManagerModules.sops
       catppuccin.homeModules.catppuccin
       nix-index-database.homeModules.nix-index
       # nur.modules.homeManager.default
