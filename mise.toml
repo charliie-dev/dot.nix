@@ -17,7 +17,7 @@ bun = "latest"
 # ==============================================================================
 #  Compile Ruler
 # ==============================================================================
-[tasks.ruler] # command: mise run ruler
+[tasks.ruler]  # command: mise run ruler
 description = "Compile ruler to AGENTS.md"
 run = "bunx @intellectronica/ruler apply"
 
@@ -41,11 +41,10 @@ hide = true
 description = "Change remote repo url"
 run = "git remote set-url origin git@github.com:charliie-dev/dot.nix.git"
 
-
 [tasks.mise-install]
 hide = true
 description = "Install langs set via mise"
-depends = "apt-pkg-check libatomic1"       # for node@v25
+depends = "apt-pkg-check libatomic1"  # for node@v25
 run = "mise install"
 
 [tasks.trusted-user-add]
@@ -99,23 +98,22 @@ fi
 {% endraw %}
 '''
 
-
 [tasks.init]
 run = [
-    "echo [INFO] Checking necessary pakcgges",
-    { tasks = [
-        "apt-pkg-check curl",
-        "apt-pkg-check openssl",
-        "apt-pkg-check zsh",
-        "apt-pkg-check git",
-        "apt-pkg-check age",
-    ] },
-    { tasks = [
-        "remote-url-update",
-        "trusted-user-add",
-    ] },
-    { task = "nix-daemon-restart" },
-    { task = "mise-install" },
+  "echo [INFO] Checking necessary pakcgges",
+  { tasks = [
+    "apt-pkg-check curl",
+    "apt-pkg-check openssl",
+    "apt-pkg-check zsh",
+    "apt-pkg-check git",
+    "apt-pkg-check age",
+  ] },
+  { tasks = [
+    "remote-url-update",
+    "trusted-user-add",
+  ] },
+  { task = "nix-daemon-restart" },
+  { task = "mise-install" },
 ]
 
 [tasks.nv-sha256]
@@ -210,12 +208,14 @@ arg "<hostname>" help="Remote hostname (SSH reachable)"
 arg "<system>" help="Nix system (e.g. x86_64-linux, aarch64-linux)" default="x86_64-linux"
 arg "<host_file>" help="Host nix file path relative to repo root" default="./modules/hosts/x86-vps.nix"
 '''
-depends = ["get-remote-age-pubkey {{arg(name='hostname')}}"]
 run = '''
 #!/usr/bin/env bash
 set -euo pipefail
 
 HOST="${usage_hostname?}"
+
+# Run dependent task: get-remote-age-pubkey
+mise run get-remote-age-pubkey "$HOST"
 SYSTEM="${usage_system?}"
 HOST_FILE="${usage_host_file?}"
 SOPS_FILE=".sops.yaml"
@@ -232,11 +232,18 @@ if grep -q "$AGE_KEY" "$SOPS_FILE"; then
   echo "[SKIP] Key already in $SOPS_FILE"
 else
   echo "[INFO] Adding key to $SOPS_FILE..."
-  sed -i '' "/^      age1.*$/{
-    \$a\\
-      ${AGE_KEY}
-  }" "$SOPS_FILE"
-  echo "[WARN] Please verify $SOPS_FILE manually — sed-based YAML editing is fragile"
+  # Find the last age1 line, append comma to it, then insert new key after
+  LAST_LINE=$(grep -n "^      age1" "$SOPS_FILE" | tail -1 | cut -d: -f1)
+  if [ -n "$LAST_LINE" ]; then
+    # Add comma to last key if missing
+    sed -i '' "${LAST_LINE}s/\$/,/" "$SOPS_FILE"
+    # Remove double comma if already had one
+    sed -i '' "${LAST_LINE}s/,,$/,/" "$SOPS_FILE"
+    # Insert new key after last key line
+    sed -i '' "${LAST_LINE}a\\
+      ${AGE_KEY}" "$SOPS_FILE"
+  fi
+  echo "[WARN] Please verify $SOPS_FILE manually"
 fi
 
 # 3. Rekey sops secrets
@@ -245,7 +252,7 @@ export SOPS_AGE_KEY_FILE=~/.config/age/keys.txt
 sops updatekeys "$SECRETS_FILE"
 
 # 4. Check if host already in hosts.nix
-if grep -q "\"charles@${HOST}\"" "$HOSTS_FILE"; then
+if grep -v '^\s*#' "$HOSTS_FILE" | grep -q "\"charles@${HOST}\""; then
   echo "[SKIP] charles@${HOST} already in $HOSTS_FILE"
 else
   echo "[INFO] Adding charles@${HOST} to $HOSTS_FILE..."

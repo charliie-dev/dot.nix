@@ -37,11 +37,6 @@
     gpu = true;
     enableSecrets = true;
   };
-  "charles@testvm" = {
-    system = "x86_64-linux";
-    hostFile = ./modules/hosts/x86-vps.nix;
-    enableSecrets = true;
-  };
   "charles@pg-proxy-dev" = {
     system = "x86_64-linux";
     hostFile = ./modules/hosts/x86-vps.nix;
@@ -68,4 +63,9 @@
   #   hostFile = ./modules/hosts/x86-vps.nix;
   #   enableSecrets = false;  # flip to true after first deploy
   # };
+  "charles@testvm" = {
+    system = "x86_64-linux";
+    hostFile = ./modules/hosts/x86-vps.nix;
+    enableSecrets = false;
+  };
 }
