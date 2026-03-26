@@ -46,6 +46,12 @@ export BUNDLE_USER_PLUGIN="$XDG_DATA_HOME"/bundle
 export PARALLEL_HOME="$XDG_CONFIG_HOME"/parallel
 export PSQL_HISTORY="$XDG_STATE_HOME"/psql_history
 export EDITOR=nvim
+export CLAUDE_CONFIG_DIR="$XDG_CONFIG_HOME"/claude
+export CODEX_HOME="$XDG_CONFIG_HOME"/codex
+export COPILOT_HOME="$XDG_CONFIG_HOME"/copilot
+export BUN_INSTALL="$XDG_DATA_HOME"/bun
+export TF_CLI_CONFIG_FILE="$XDG_CONFIG_HOME"/terraform/terraformrc
+export MCP_REMOTE_CONFIG_DIR="$XDG_DATA_HOME"/mcp-auth
 
 # VPS
 export AWS_SHARED_CREDENTIALS_FILE="$XDG_CONFIG_HOME"/aws/credentials
@@ -93,6 +99,7 @@ add_path "$HOME"/.local/bin
 add_path "$CARGO_HOME"/bin
 add_path "$GOPATH"/bin
 add_path "$PNPM_HOME"
+add_path "$BUN_INSTALL"/bin
 (( $OSTYPE[(I)darwin] )) && add_path "/opt/homebrew/bin"
 
 # set cuda path if nvidia gpus exists
