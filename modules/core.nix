@@ -4,6 +4,7 @@
   lib,
   src,
   roles ? [ ],
+  enableSecrets ? false,
   ...
 }:
 let
@@ -14,9 +15,9 @@ let
   ) roles;
   merged_pkgs = lib.unique (common_apps ++ role_pkgs);
 in
-{
+lib.mkMerge [
+  {
   inherit (import "${src}/modules/nix-config.nix" { inherit pkgs; }) nix;
-  inherit (import "${src}/modules/agenix.nix" { inherit config src; }) age;
 
   manual = {
     manpages.enable = false;
@@ -61,16 +62,6 @@ in
           mkdir -p ${config.home.homeDirectory}/.ssh
         fi
         chmod 700 ${config.home.homeDirectory}/.ssh
-      '';
-      ssh = lib.hm.dag.entryAfter [ "reloadSystemd" ] ''
-        if [ ! -f ${config.home.homeDirectory}/.ssh/authorized_keys ]; then
-          touch ${config.home.homeDirectory}/.ssh/authorized_keys
-        fi
-        if grep -q "charles@home-manager" "${config.home.homeDirectory}/.ssh/authorized_keys"; then
-          exit 0
-        else
-          (cat ${config.home.homeDirectory}/.ssh/id_ed25519.pub) >> ${config.home.homeDirectory}/.ssh/authorized_keys
-        fi
       '';
       gpgFixup = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         if [ ! -d ${config.xdg.dataHome}/gnupg ]; then
@@ -159,4 +150,42 @@ in
     # inherit (import "${src}/modules/services/ssh-agent.nix") ssh-agent;
     inherit (import "${src}/modules/services/home-manager.nix" { inherit config; }) home-manager;
   };
-}
+  }
+  (lib.mkIf enableSecrets (
+    let
+      sopsConfig = import "${src}/modules/sops.nix" { inherit config src; };
+      dopplerConfig = import "${src}/modules/doppler.nix" { inherit config pkgs lib; };
+    in
+    {
+      inherit (sopsConfig) sops;
+
+      home.packages = dopplerConfig.doppler.packages;
+      home.activation = dopplerConfig.doppler.activation // {
+        ssh = lib.hm.dag.entryAfter [ "reloadSystemd" ] ''
+          if [ -f ${config.home.homeDirectory}/.ssh/id_ed25519.pub ]; then
+            if [ ! -f ${config.home.homeDirectory}/.ssh/authorized_keys ]; then
+              touch ${config.home.homeDirectory}/.ssh/authorized_keys
+            fi
+            if ! grep -q "charles@home-manager" "${config.home.homeDirectory}/.ssh/authorized_keys"; then
+              (cat ${config.home.homeDirectory}/.ssh/id_ed25519.pub) >> ${config.home.homeDirectory}/.ssh/authorized_keys
+            fi
+          fi
+        '';
+      };
+
+      programs.git.signing.key = "${config.sops.secrets.ssh_ed25519_pub.path}";
+      programs.git.settings.gpg.ssh.allowedSignersFile = "${config.sops.secrets.allowed_signers.path}";
+
+      programs.ssh.matchBlocks."*".identityFile = "${config.sops.secrets.ssh_ed25519.path}";
+
+      programs.zsh.envExtra = ''
+        # Load Doppler secrets (application-layer)
+        if [ -r "${config.xdg.dataHome}/secrets_output/doppler/env" ]; then
+          set -a
+          source "${config.xdg.dataHome}/secrets_output/doppler/env"
+          set +a
+        fi
+      '';
+    }
+  ))
+]

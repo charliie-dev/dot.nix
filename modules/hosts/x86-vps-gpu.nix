@@ -1,12 +1,12 @@
 { gpu-attr, ... }:
 let
-  hm = gpu-attr.home-manager;
-  inherit (gpu-attr)
-    agenix
+  inherit (gpu-attr) nixgl;
+  hm = gpu-attr.base-attr.home-manager;
+  inherit (gpu-attr.base-attr)
+    sops-nix
     catppuccin
     hm_ver
     nix-index-database
-    nixgl
     nixpkgs
     # nur
     snitch
@@ -19,9 +19,6 @@ in
       system = "x86_64-linux";
       overlays = [
         # nur.overlays.default
-        agenix.overlays.default
-        # Wrap agenix to filter Determinate Nix warnings
-        (import "${src}/modules/overlays/agenix-wrapper.nix" { inherit agenix; })
         nixgl.overlay
       ];
       config = {
@@ -31,6 +28,7 @@ in
     };
     extraSpecialArgs = {
       inherit src;
+      inherit (gpu-attr.base-attr) enableSecrets;
       roles = [
         "dev-core"
         "dev-extra"
@@ -41,7 +39,7 @@ in
     };
     modules = [
       "${src}/modules/core.nix"
-      agenix.homeManagerModules.default
+      sops-nix.homeManagerModules.sops
       catppuccin.homeModules.catppuccin
       nix-index-database.homeModules.nix-index
       # nur.modules.homeManager.default

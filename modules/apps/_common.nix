@@ -16,7 +16,7 @@
 
     # Secrets Management
     age
-    agenix
+    sops
 
     # Nix Utils
     nvd # Nix/NixOS package version diff tool

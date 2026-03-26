@@ -29,9 +29,7 @@
       #     insteadOf = "https://github.com/";
       #   };
       # };
-      gpg.ssh = {
-        allowedSignersFile = "${config.age.secrets.git_allowed_signers.path}";
-      };
+      gpg.ssh = { };
       gc = {
         auto = 256;
       };
@@ -72,7 +70,6 @@
       };
     };
     signing = {
-      key = "${config.age.secrets.ssh_ed25519_pub.path}"; # pub key
       signByDefault = true;
       format = "ssh"; # openpgp, ssh, x509
     };
