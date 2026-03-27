@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 ---
-name: "Update flake.lock"
+name: "Cron: update lockfile"
 on:
   workflow_dispatch: # allows manual triggering
   schedule:
