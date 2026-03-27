@@ -6,13 +6,21 @@ on:
   push:
     branches: [main]
 
+# id-token: write omitted — not using FlakeHub cache
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   flake-check:
+    timeout-minutes: 5
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -20,10 +28,11 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/determinate-nix-action@v3
 
-      - name: Check formatting
+      - name: Run flake checks
         run: nix flake check
 
   eval-hosts:
+    needs: [flake-check]
     strategy:
       fail-fast: false
       matrix:
@@ -35,6 +44,10 @@ jobs:
           - runner: macos-latest
             system: aarch64-darwin
     runs-on: ${{ matrix.runner }}
+    timeout-minutes: 5
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -44,19 +57,21 @@ jobs:
 
       - name: Evaluate ${{ matrix.system }} homeConfigurations
         run: |
+          # -e omitted: the `if nix eval` loop intentionally handles non-zero exits
+          set -uo pipefail
           hosts=$(nix eval --file hosts.nix --apply '
             hosts: builtins.filter
               (name: hosts.${name}.system == "${{ matrix.system }}")
               (builtins.attrNames hosts)
-          ' --json)
+          ' --json) || { echo "::error::nix eval failed"; exit 1; }
           echo "Hosts: $hosts"
-          count=$(echo "$hosts" | jq 'length')
+          count=$(jq 'length' <<< "$hosts") || { echo "::error::jq failed to parse hosts"; exit 1; }
           if [ "$count" -eq 0 ]; then
             echo "No hosts for ${{ matrix.system }}, skipping"
             exit 0
           fi
           failed=0
-          for host in $(echo "$hosts" | jq -r '.[]'); do
+          while IFS= read -r host; do
             echo "::group::Evaluating $host"
             if nix eval .#homeConfigurations.\"$host\".activationPackage.drvPath --raw; then
               echo " ✅"
@@ -65,7 +80,7 @@ jobs:
               failed=1
             fi
             echo "::endgroup::"
-          done
+          done < <(jq -r '.[]' <<< "$hosts")
           if [ "$failed" -gt 0 ]; then
             echo "::error::One or more host evaluations failed"
           fi
