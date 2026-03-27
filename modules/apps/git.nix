@@ -1,5 +1,4 @@
-_:
-{
+_: {
   git = {
     enable = true;
     ignores = [

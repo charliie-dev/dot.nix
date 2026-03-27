@@ -1,5 +1,4 @@
-_:
-{
+_: {
   ssh = {
     enable = true;
     includes = [
