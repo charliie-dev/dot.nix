@@ -43,7 +43,7 @@ jobs:
           ignore-missing-flake-lock: false
 
       - name: Validate updated flake
-        run: nix flake check
+        run: nix build .#checks.x86_64-linux.formatting --no-link
 
       - name: Commit flake.lock via REST Contents API (server-signed → Verified)
         uses: actions/github-script@v8

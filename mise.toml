@@ -206,7 +206,6 @@ description = "Add a new host: get remote age key, update .sops.yaml, rekey, add
 usage = '''
 arg "<hostname>" help="Remote hostname (SSH reachable)"
 arg "<system>" help="Nix system (e.g. x86_64-linux, aarch64-linux)" default="x86_64-linux"
-arg "<host_file>" help="Host nix file path relative to repo root" default="./modules/hosts/x86-vps.nix"
 '''
 run = '''
 #!/usr/bin/env bash
@@ -217,7 +216,6 @@ HOST="${usage_hostname?}"
 # Run dependent task: get-remote-age-pubkey
 mise run get-remote-age-pubkey "$HOST"
 SYSTEM="${usage_system?}"
-HOST_FILE="${usage_host_file?}"
 SOPS_FILE=".sops.yaml"
 SECRETS_FILE="conf.d/sops/secrets.yaml"
 HOSTS_FILE="hosts.nix"
@@ -257,11 +255,7 @@ if grep -v '^\s*#' "$HOSTS_FILE" | grep -q "\"charles@${HOST}\""; then
 else
   echo "[INFO] Adding charles@${HOST} to $HOSTS_FILE..."
   sed -i '' "/^}$/i\\
-\\  \"charles@${HOST}\" = {\\
-\\    system = \"${SYSTEM}\";\\
-\\    hostFile = ${HOST_FILE};\\
-\\    enableSecrets = false;\\
-\\  };
+\\  \"charles@${HOST}\" = { sharedConfig = \"charles@RDSrv01\"; system = \"${SYSTEM}\"; enableSecrets = false; };
 " "$HOSTS_FILE"
   echo "[WARN] Please verify $HOSTS_FILE manually"
 fi
@@ -270,7 +264,6 @@ echo ""
 echo "=== Summary ==="
 echo "Host:       charles@${HOST}"
 echo "System:     ${SYSTEM}"
-echo "Host file:  ${HOST_FILE}"
 echo "Age key:    ${AGE_KEY}"
 echo ""
 echo "Next steps:"
