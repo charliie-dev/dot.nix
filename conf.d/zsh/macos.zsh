@@ -18,14 +18,14 @@ command -v sha1sum > /dev/null || alias sha1sum="shasum"
 # Empty the Trash on all mounted volumes and the main HDD
 # Also, clear Apple’s System Logs to improve shell startup speed
 clearlogs() {
-  if [[ "$1" =~ ^[-]?[aA]{1}(ll)*$ ]]; then
-      sudo rm -rvf ~/Library/Logs/*
-      sudo rm -rvf /Library/Logs/*
-      sudo rm -rvf /var/log/*
-      sudo rm -rfv /private/var/log/asl/*.asl
-  elif [[ "$1" =~ ^[-]?[uU]{1}(ser)*$ ]]; then
-      rm -rvf ~/Library/Logs/*
-  fi
+    if [[ "$1" =~ ^[-]?[aA]{1}(ll)*$ ]]; then
+        sudo rm -rvf ~/Library/Logs/*
+        sudo rm -rvf /Library/Logs/*
+        sudo rm -rvf /var/log/*
+        sudo rm -rfv /private/var/log/asl/*.asl
+    elif [[ "$1" =~ ^[-]?[uU]{1}(ser)*$ ]]; then
+        rm -rvf ~/Library/Logs/*
+    fi
 }
 
 # Mole shell completion
