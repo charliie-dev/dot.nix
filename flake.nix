@@ -46,7 +46,7 @@
     let
       eachSystem = f: nixpkgs.lib.genAttrs (import systems) (system: f nixpkgs.legacyPackages.${system});
       treefmtEval = eachSystem (pkgs: treefmt-nix.lib.evalModule pkgs ./treefmt.nix);
-      lib = nixpkgs.lib;
+      inherit (nixpkgs) lib;
 
       src = nix-filter.lib.filter {
         root = ./.;
@@ -61,13 +61,16 @@
       hm_ver = "26.05";
       hosts = import ./hosts.nix;
 
-      mkHost = _name: hostCfg:
+      mkHost =
+        _name: hostCfg:
         let
           enableSecrets = hostCfg.enableSecrets or true;
           isGpu = hostCfg.gpu or false;
           overlays = if isGpu then [ nixgl.overlay ] else [ ];
-          pkgsConfig = { allowUnfree = true; }
-            // (if isGpu then { nvidia.acceptLicense = true; } else { });
+          pkgsConfig = {
+            allowUnfree = true;
+          }
+          // (if isGpu then { nvidia.acceptLicense = true; } else { });
 
           targetModule =
             if hostCfg ? target then
@@ -90,13 +93,13 @@
         in
         home-manager.lib.homeManagerConfiguration {
           pkgs = import nixpkgs {
-            system = hostCfg.system;
+            inherit (hostCfg) system;
             inherit overlays;
             config = pkgsConfig;
           };
           extraSpecialArgs = {
             inherit src enableSecrets;
-            roles = hostCfg.roles;
+            inherit (hostCfg) roles;
           };
           modules = [
             "${src}/modules/core.nix"
@@ -108,7 +111,7 @@
               {
                 home = {
                   username = "charles";
-                  homeDirectory = hostCfg.homeDirectory;
+                  inherit (hostCfg) homeDirectory;
                   stateVersion = hm_ver;
                 };
               }
