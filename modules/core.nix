@@ -143,7 +143,7 @@ lib.mkMerge [
     };
 
     services = {
-      inherit (import "${src}/modules/services/home-manager.nix" { inherit config; }) home-manager;
+      inherit (import "${src}/modules/services/home-manager.nix" { }) home-manager;
     };
   }
   (lib.mkIf enableSecrets (
