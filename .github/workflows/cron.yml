@@ -1,0 +1,81 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+---
+name: "Update flake.lock"
+on:
+  workflow_dispatch: # allows manual triggering
+  schedule:
+    - cron: 0 0 * * 0 # runs weekly on Sunday at 00:00
+
+env:
+  BRANCH: "main"
+  COMMIT_MESSAGE: "chore(lockfile): auto update flake.lock"
+
+jobs:
+  nix-flake-update:
+    permissions:
+      contents: write
+      id-token: write
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install Nix
+        uses: DeterminateSystems/determinate-nix-action@v3
+
+      - name: Check Nix flake inputs
+        uses: DeterminateSystems/flake-checker-action@v12
+        with:
+          ignore-missing-flake-lock: false
+          fail-mode: true
+
+      - name: Update flake.lock
+        run: nix flake update
+
+      - name: Commit flake.lock via REST Contents API (server-signed → Verified)
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('fs');
+            const { execSync } = require('child_process');
+
+            // Check if flake.lock actually changed
+            // git diff --quiet exits 0 (no changes) or 1 (changes exist)
+            try {
+              execSync('git diff --quiet flake.lock');
+              core.info('flake.lock is unchanged, nothing to commit');
+              return;
+            } catch (err) {
+              if (err.status !== 1) {
+                throw new Error(`git diff failed unexpectedly (exit ${err.status}): ${err.stderr?.toString()}`);
+              }
+            }
+
+            const owner   = context.repo.owner;
+            const repo    = context.repo.repo;
+            const branch  = process.env.BRANCH;
+            const message = process.env.COMMIT_MESSAGE;
+            const path    = 'flake.lock';
+
+            const content = fs.readFileSync(path, { encoding: 'base64' });
+
+            let sha;
+            try {
+              const { data: existing } = await github.rest.repos.getContent({ owner, repo, path, ref: branch });
+              sha = existing.sha;
+            } catch (err) {
+              core.setFailed(`Failed to fetch ${path} from ${owner}/${repo}@${branch}: ${err.message}`);
+              return;
+            }
+
+            // NOTE: author/committer intentionally omitted to allow platform signing
+            try {
+              const r = await github.rest.repos.createOrUpdateFileContents({
+                owner, repo, path, branch,
+                message, content, sha
+              });
+              core.info(`Committed ${path}: ${r.data.commit.sha}`);
+            } catch (err) {
+              core.setFailed(`Failed to commit ${path}: ${err.message}`);
+            }
