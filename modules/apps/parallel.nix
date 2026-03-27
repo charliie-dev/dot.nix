@@ -1,5 +1,0 @@
-{
-  parallel = {
-    enable = false;
-  };
-}
