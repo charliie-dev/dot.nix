@@ -6,6 +6,13 @@ on:
   schedule:
     - cron: 0 0 * * 0 # runs weekly on Sunday at 00:00
 
+# id-token: write omitted — not using FlakeHub cache
+permissions: {}
+
+concurrency:
+  group: flake-update
+  cancel-in-progress: true
+
 env:
   BRANCH: "main"
   COMMIT_MESSAGE: "chore(lockfile): auto update flake.lock"
@@ -14,8 +21,11 @@ jobs:
   nix-flake-update:
     permissions:
       contents: write
-      id-token: write
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - name: Checkout repository
@@ -24,14 +34,16 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/determinate-nix-action@v3
 
+      - name: Update flake.lock
+        run: nix flake update
+
       - name: Check Nix flake inputs
         uses: DeterminateSystems/flake-checker-action@v12
         with:
           ignore-missing-flake-lock: false
-          fail-mode: true
 
-      - name: Update flake.lock
-        run: nix flake update
+      - name: Validate updated flake
+        run: nix flake check
 
       - name: Commit flake.lock via REST Contents API (server-signed → Verified)
         uses: actions/github-script@v8
@@ -60,22 +72,32 @@ jobs:
 
             const content = fs.readFileSync(path, { encoding: 'base64' });
 
-            let sha;
-            try {
-              const { data: existing } = await github.rest.repos.getContent({ owner, repo, path, ref: branch });
-              sha = existing.sha;
-            } catch (err) {
-              core.setFailed(`Failed to fetch ${path} from ${owner}/${repo}@${branch}: ${err.message}`);
-              return;
-            }
-
             // NOTE: author/committer intentionally omitted to allow platform signing
-            try {
-              const r = await github.rest.repos.createOrUpdateFileContents({
-                owner, repo, path, branch,
-                message, content, sha
-              });
-              core.info(`Committed ${path}: ${r.data.commit.sha}`);
-            } catch (err) {
-              core.setFailed(`Failed to commit ${path}: ${err.message}`);
+            // Retry once on 409 Conflict (stale SHA from concurrent push)
+            for (let attempt = 1; attempt <= 2; attempt++) {
+              let sha;
+              try {
+                const { data: existing } = await github.rest.repos.getContent({ owner, repo, path, ref: branch });
+                sha = existing.sha;
+              } catch (err) {
+                core.setFailed(`Failed to fetch ${path} from ${owner}/${repo}@${branch}: ${err.message}`);
+                return;
+              }
+
+              try {
+                const r = await github.rest.repos.createOrUpdateFileContents({
+                  owner, repo, path, branch,
+                  message, content, sha
+                });
+                core.info(`Committed ${path}: ${r.data.commit.sha}`);
+                return;
+              } catch (err) {
+                if (err.status === 409 && attempt < 2) {
+                  core.warning(`SHA conflict, retrying (attempt ${attempt}/2)`);
+                  await new Promise(resolve => setTimeout(resolve, 1000));
+                  continue;
+                }
+                core.setFailed(`Failed to commit ${path}: ${err.message}`);
+                return;
+              }
             }
