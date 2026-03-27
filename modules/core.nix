@@ -146,7 +146,6 @@ lib.mkMerge [
     };
 
     services = {
-      # inherit (import "${src}/modules/services/ssh-agent.nix") ssh-agent;
       inherit (import "${src}/modules/services/home-manager.nix" { inherit config; }) home-manager;
     };
   }
