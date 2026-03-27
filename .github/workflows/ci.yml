@@ -6,8 +6,12 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  format-check:
+  flake-check:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -21,6 +25,7 @@ jobs:
 
   eval-hosts:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - runner: ubuntu-latest
@@ -50,8 +55,18 @@ jobs:
             echo "No hosts for ${{ matrix.system }}, skipping"
             exit 0
           fi
+          failed=0
           for host in $(echo "$hosts" | jq -r '.[]'); do
             echo "::group::Evaluating $host"
-            nix eval .#homeConfigurations.\"$host\".activationPackage.drvPath --raw && echo " ✅" || { echo " ❌"; exit 1; }
+            if nix eval .#homeConfigurations.\"$host\".activationPackage.drvPath --raw; then
+              echo " ✅"
+            else
+              echo " ❌"
+              failed=1
+            fi
             echo "::endgroup::"
           done
+          if [ "$failed" -gt 0 ]; then
+            echo "::error::One or more host evaluations failed"
+          fi
+          exit "$failed"
