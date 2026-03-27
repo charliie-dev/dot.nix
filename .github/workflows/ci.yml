@@ -70,10 +70,22 @@ jobs:
             echo "No hosts for ${{ matrix.system }}, skipping"
             exit 0
           fi
+          # Hosts with gpu=true need --impure (nixGL uses builtins.currentTime)
+          impure_hosts=$(nix eval --file hosts.nix --apply '
+            hosts: builtins.filter
+              (name: (hosts.${name}.gpu or false) && hosts.${name}.system == "${{ matrix.system }}")
+              (builtins.attrNames hosts)
+          ' --json) || impure_hosts="[]"
+
           failed=0
           while IFS= read -r host; do
             echo "::group::Evaluating $host"
-            if nix eval .#homeConfigurations.\"$host\".activationPackage.drvPath --raw; then
+            eval_flags=""
+            if jq -e --arg h "$host" 'index($h) != null' <<< "$impure_hosts" > /dev/null 2>&1; then
+              eval_flags="--impure"
+              echo "ℹ️  Using --impure for $host (gpu host)"
+            fi
+            if nix eval .#homeConfigurations.\"$host\".activationPackage.drvPath --raw $eval_flags; then
               echo " ✅"
             else
               echo " ❌"
