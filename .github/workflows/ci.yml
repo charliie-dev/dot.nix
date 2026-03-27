@@ -6,7 +6,7 @@ on:
     branches: [main]
 
 jobs:
-  flake-check:
+  format-check:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -15,5 +15,42 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/determinate-nix-action@v3
 
-      - name: Run nix flake check
-        run: nix flake check --all-systems
+      - name: Check formatting
+        run: nix flake check
+
+  eval-hosts:
+    strategy:
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            system: x86_64-linux
+          - runner: ubuntu-24.04-arm
+            system: aarch64-linux
+          - runner: macos-latest
+            system: aarch64-darwin
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install Nix
+        uses: DeterminateSystems/determinate-nix-action@v3
+
+      - name: Evaluate ${{ matrix.system }} homeConfigurations
+        run: |
+          hosts=$(nix eval --file hosts.nix --apply '
+            hosts: builtins.filter
+              (name: hosts.${name}.system == "${{ matrix.system }}")
+              (builtins.attrNames hosts)
+          ' --json)
+          echo "Hosts: $hosts"
+          count=$(echo "$hosts" | jq 'length')
+          if [ "$count" -eq 0 ]; then
+            echo "No hosts for ${{ matrix.system }}, skipping"
+            exit 0
+          fi
+          for host in $(echo "$hosts" | jq -r '.[]'); do
+            echo "::group::Evaluating $host"
+            nix eval .#homeConfigurations.\"$host\".activationPackage.drvPath --raw && echo " ✅" || { echo " ❌"; exit 1; }
+            echo "::endgroup::"
+          done
