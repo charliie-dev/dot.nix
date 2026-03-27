@@ -1,4 +1,9 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 let
   secretDir = "${config.xdg.dataHome}/secrets_output";
   # Hardcode path to avoid circular dependency in plain function import
