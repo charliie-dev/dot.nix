@@ -15,10 +15,10 @@ This repo uses **sops-nix** (system-layer) + **Doppler** (application-layer) for
 
 ```sh
 # Prerequisites: new server is SSH-reachable and has `age` installed
-mise run add-host <hostname> [system] [host_file]
+mise run add-host <hostname> [system]
 
 # Example:
-mise run add-host new-server x86_64-linux ./modules/hosts/x86-vps.nix
+mise run add-host new-server x86_64-linux
 
 # Then commit and push
 git add .sops.yaml conf.d/sops/secrets.yaml hosts.nix
@@ -37,7 +37,8 @@ age-keygen -y ~/.config/age/keys.txt  # copy the public key
 # 2. On local machine: add public key and rekey
 #    a. Add public key to .sops.yaml
 #    b. Run: sops updatekeys conf.d/sops/secrets.yaml
-#    c. Add host entry to hosts.nix
+#    c. Add host entry to hosts.nix (use sharedConfig for VPS hosts):
+#       "charles@new-server" = { sharedConfig = "charles@RDSrv01"; system = "x86_64-linux"; };
 #    d. git commit && git push
 ```
 
