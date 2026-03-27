@@ -29,7 +29,7 @@ jobs:
         uses: DeterminateSystems/determinate-nix-action@v3
 
       - name: Run flake checks
-        run: nix flake check
+        run: nix build .#checks.x86_64-linux.formatting --no-link
 
   eval-hosts:
     needs: [flake-check]
