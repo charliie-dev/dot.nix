@@ -4,14 +4,14 @@
 
 - `flake.nix` - Defines all inputs and homeConfigurations for each host
 - `modules/core.nix` - Universal module aggregating all programs, services, and packages
-- `secrets.nix` - Age-encrypted secrets mapping (works with `modules/agenix.nix`)
+- `hosts.nix` - Declarative host registry (system, roles, targets, sharedConfig)
 
 ### Key Patterns
 
 **Role-Based Package Management**: Hosts define roles that conditionally load packages:
 
 ```nix
-# In host config (modules/hosts/*.nix):
+# In hosts.nix:
 roles = [ "dev-core" "dev-extra" "top" "darwin-top" ];
 
 # Roles are defined in modules/apps/roles/*.nix
@@ -46,13 +46,12 @@ activation = {
 - `modules/apps/` - Individual program configurations (`programs.*`)
 - `modules/apps/roles/` - Role-based package sets (dev-core, dev-extra, darwin-top, etc.)
 - `modules/apps/_common.nix` - Packages included on all hosts
-- `modules/hosts/` - Host-specific configurations defining system, roles, and username
 - `modules/targets/` - OS-specific configs (darwin.nix, genericLinux.nix)
 - `modules/services/` - Service configurations (`services.*`)
 - `conf.d/` - Runtime config files (zsh scripts, tmux configs, encrypted secrets)
 - `conf.d/Usercommand/` - Custom scripts deployed to `~/.local/bin`
-- `conf.d/ages/` - Age-encrypted secret files
+- `conf.d/sops/` - Sops-encrypted secret files
 
 ### Secrets Management
 
-Secrets are managed via `agenix`. Public keys are defined in `secrets.nix`, encrypted files live in `conf.d/ages/`, and decryption is configured in `modules/agenix.nix`.
+Secrets are managed via `sops-nix`. Encrypted secrets live in `conf.d/sops/secrets.yaml`, and decryption is configured in `modules/sops.nix`. Application secrets are managed by Doppler (configured in `modules/doppler.nix`).

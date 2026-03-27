@@ -61,7 +61,7 @@ jobs:
           set -uo pipefail
           hosts=$(nix eval --file hosts.nix --apply '
             hosts: builtins.filter
-              (name: hosts.${name}.system == "${{ matrix.system }}" && !(hosts.${name}.gpu or false))
+              (name: hosts.${name}.system == "${{ matrix.system }}" && !(hosts.${name}.gpu or false) && !(hosts.${name} ? sharedConfig))
               (builtins.attrNames hosts)
           ' --json) || { echo "::error::nix eval failed"; exit 1; }
           echo "Hosts: $hosts"
