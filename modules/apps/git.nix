@@ -1,4 +1,4 @@
-{ config, ... }:
+_:
 {
   git = {
     enable = true;

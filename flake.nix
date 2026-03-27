@@ -94,17 +94,25 @@
           ;
       };
 
-      mkHost = _name: hostCfg:
+      mkHost =
+        _name: hostCfg:
         let
           enableSecrets = hostCfg.enableSecrets or true;
           hostArgs =
-            if hostCfg.gpu or false then {
-              gpu-attr = gpu-attr // {
-                base-attr = gpu-attr.base-attr // { inherit enableSecrets; };
+            if hostCfg.gpu or false then
+              {
+                gpu-attr = gpu-attr // {
+                  base-attr = gpu-attr.base-attr // {
+                    inherit enableSecrets;
+                  };
+                };
+              }
+            else
+              {
+                base-attr = base-attr // {
+                  inherit enableSecrets;
+                };
               };
-            } else {
-              base-attr = base-attr // { inherit enableSecrets; };
-            };
         in
         (import hostCfg.hostFile hostArgs).host;
     in

@@ -1,5 +1,4 @@
-_:
-{
+_: {
   home-manager = {
     # only works on linux
     # autoUpgrade = {
