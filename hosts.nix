@@ -4,13 +4,23 @@
 {
   "charles@m3pro" = {
     system = "aarch64-darwin";
-    roles = [ "dev-core" "dev-extra" "top" "darwin-top" ];
+    roles = [
+      "dev-core"
+      "dev-extra"
+      "top"
+      "darwin-top"
+    ];
     homeDirectory = "/Users/charles";
     target = "darwin";
   };
   "charles@callisto" = {
     system = "x86_64-linux";
-    roles = [ "dev-core" "dev-extra" "top" "linux-top" ];
+    roles = [
+      "dev-core"
+      "dev-extra"
+      "top"
+      "linux-top"
+    ];
     homeDirectory = "/home/charles";
     target = "genericLinux";
   };
@@ -22,7 +32,13 @@
   };
   "charles@tmp-gpu" = {
     system = "x86_64-linux";
-    roles = [ "dev-core" "dev-extra" "top" "linux-top" "nvidia-gpu" ];
+    roles = [
+      "dev-core"
+      "dev-extra"
+      "top"
+      "linux-top"
+      "nvidia-gpu"
+    ];
     homeDirectory = "/home/charles";
     target = "genericLinux-gpu";
     gpu = true;
@@ -38,11 +54,32 @@
     silent = true;
   };
   # Shared aliases — reuse RDSrv01's eval result
-  "charles@nics-demo-lab" = { sharedConfig = "charles@RDSrv01"; system = "x86_64-linux"; };
-  "charles@nate-test" = { sharedConfig = "charles@RDSrv01"; system = "x86_64-linux"; };
-  "charles@pg-proxy-dev" = { sharedConfig = "charles@RDSrv01"; system = "x86_64-linux"; };
-  "charles@pg-primary-dev" = { sharedConfig = "charles@RDSrv01"; system = "x86_64-linux"; };
-  "charles@pg-replica1-dev" = { sharedConfig = "charles@RDSrv01"; system = "x86_64-linux"; };
-  "charles@pg-replica2-dev" = { sharedConfig = "charles@RDSrv01"; system = "x86_64-linux"; };
-  "charles@testvm" = { sharedConfig = "charles@RDSrv01"; system = "x86_64-linux"; };
+  "charles@nics-demo-lab" = {
+    sharedConfig = "charles@RDSrv01";
+    system = "x86_64-linux";
+  };
+  "charles@nate-test" = {
+    sharedConfig = "charles@RDSrv01";
+    system = "x86_64-linux";
+  };
+  "charles@pg-proxy-dev" = {
+    sharedConfig = "charles@RDSrv01";
+    system = "x86_64-linux";
+  };
+  "charles@pg-primary-dev" = {
+    sharedConfig = "charles@RDSrv01";
+    system = "x86_64-linux";
+  };
+  "charles@pg-replica1-dev" = {
+    sharedConfig = "charles@RDSrv01";
+    system = "x86_64-linux";
+  };
+  "charles@pg-replica2-dev" = {
+    sharedConfig = "charles@RDSrv01";
+    system = "x86_64-linux";
+  };
+  "charles@testvm" = {
+    sharedConfig = "charles@RDSrv01";
+    system = "x86_64-linux";
+  };
 }
