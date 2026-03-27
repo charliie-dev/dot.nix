@@ -3,14 +3,14 @@ export MANPAGER='batman'
 # alias bathelp="sed 's/.\x08//g' | bat --plain --language=help --strip-ansi=always --theme='Monokai Extended'"
 alias bathelp="sed 's/.\x08//g' | bat --plain --language=help --strip-ansi=always"
 help() {
-  "$@" --help 2>&1 | bathelp
+    "$@" --help 2>&1 | bathelp
 }
 alias -g -- --help='--help 2>&1 | bathelp'
 alias -g -- -h='-h 2>&1 | bathelp'
 
 # List directory contents on cd
 chpwd() {
-  ls
+    ls
 }
 
 # use `ouch decompress` instead
@@ -37,7 +37,7 @@ chpwd() {
 # }
 
 wdym() {
-  echo -n "$1 means: " && grep -i "^$1\`" <(curl -fsSL https://raw.githubusercontent.com/Ashpex/Slang-Word/master/slang.txt) | awk -F'`' '{ print $2 }'
+    echo -n "$1 means: " && grep -i "^$1\`" <(curl -fsSL https://raw.githubusercontent.com/Ashpex/Slang-Word/master/slang.txt) | awk -F'`' '{ print $2 }'
 }
 
 # vim: set ft=zsh :

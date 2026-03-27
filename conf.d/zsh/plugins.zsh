@@ -27,9 +27,9 @@ export _ZO_FZF_OPTS="--select-1 --height=40% --reverse --margin=3% --style=full 
 
 # Init micromamba
 if (( $+commands[micromamba] )); then
-  export MAMBA_ROOT_PREFIX="$HOME"/.local/bin
-  eval "$($MAMBA_ROOT_PREFIX/micromamba shell hook -s zsh)"
-  mkdir -p "$MAMBA_ROOT_PREFIX"/envs/completion
+    export MAMBA_ROOT_PREFIX="$HOME"/.local/bin
+    eval "$($MAMBA_ROOT_PREFIX/micromamba shell hook -s zsh)"
+    mkdir -p "$MAMBA_ROOT_PREFIX"/envs/completion
 fi
 
 # Use QuarticCat/zsh-smartcache to speedup zsh loading time
