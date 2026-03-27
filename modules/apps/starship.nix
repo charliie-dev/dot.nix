@@ -4,7 +4,7 @@
     enable = true;
     configPath = "${config.xdg.configHome}/starship/starship.toml";
     enableZshIntegration = false; # self-definded smartcache in conf.d/zsh
-    enableIonIntegration = true;
+    enableIonIntegration = false;
     settings = {
 
       # Inserts a blank line between shell prompts
