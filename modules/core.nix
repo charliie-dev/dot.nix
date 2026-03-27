@@ -114,7 +114,6 @@ lib.mkMerge [
       inherit (import "${src}/modules/apps/difftastic.nix") difftastic;
       inherit (import "${src}/modules/apps/fd.nix") fd;
       inherit (import "${src}/modules/apps/fzf.nix") fzf;
-      # inherit (import "${src}/modules/apps/gcc.nix") gcc;
       inherit (import "${src}/modules/apps/gh-dash.nix") gh-dash;
       inherit (import "${src}/modules/apps/gh.nix" { inherit pkgs; }) gh;
       inherit (import "${src}/modules/apps/git.nix" { inherit config; }) git;
@@ -129,14 +128,12 @@ lib.mkMerge [
       inherit (import "${src}/modules/apps/nh.nix" { inherit config; }) nh;
       inherit (import "${src}/modules/apps/nix-index.nix") nix-index;
       inherit (import "${src}/modules/apps/nix-search-tv.nix") nix-search-tv;
-      # inherit (import "${src}/modules/apps/pistol.nix") pistol;
       inherit (import "${src}/modules/apps/ripgrep-all.nix") ripgrep-all;
       inherit (import "${src}/modules/apps/ripgrep.nix") ripgrep;
       inherit (import "${src}/modules/apps/snitch.nix") snitch;
       inherit (import "${src}/modules/apps/ssh.nix" { inherit config; }) ssh;
       inherit (import "${src}/modules/apps/starship.nix" { inherit config lib; }) starship;
       inherit (import "${src}/modules/apps/television.nix") television;
-      # inherit (import "${src}/modules/apps/tirith.nix") tirith;
       inherit (import "${src}/modules/apps/tmux.nix" { inherit pkgs src; }) tmux;
       inherit (import "${src}/modules/apps/topgrade.nix") topgrade;
       inherit (import "${src}/modules/apps/vivid.nix") vivid;
