@@ -1,71 +1,48 @@
 # hosts.nix — All host definitions in one place
 # enableSecrets: per-host flag, set to false for first-time deploys on new machines
+# sharedConfig: point to another host name to reuse its homeManagerConfiguration
 {
   "charles@m3pro" = {
     system = "aarch64-darwin";
-    hostFile = ./modules/hosts/m3pro.nix;
-    enableSecrets = true;
+    roles = [ "dev-core" "dev-extra" "top" "darwin-top" ];
+    homeDirectory = "/Users/charles";
+    target = "darwin";
   };
   "charles@callisto" = {
     system = "x86_64-linux";
-    hostFile = ./modules/hosts/callisto.nix;
-    enableSecrets = true;
+    roles = [ "dev-core" "dev-extra" "top" "linux-top" ];
+    homeDirectory = "/home/charles";
+    target = "genericLinux";
   };
   "charles@pluto" = {
     system = "aarch64-linux";
-    hostFile = ./modules/hosts/pluto.nix;
-    enableSecrets = true;
-  };
-  "charles@RDSrv01" = {
-    system = "x86_64-linux";
-    hostFile = ./modules/hosts/x86-vps.nix;
-    enableSecrets = true;
-  };
-  "charles@nics-demo-lab" = {
-    system = "x86_64-linux";
-    hostFile = ./modules/hosts/x86-vps.nix;
-    enableSecrets = true;
-  };
-  "charles@nate-test" = {
-    system = "x86_64-linux";
-    hostFile = ./modules/hosts/x86-vps.nix;
-    enableSecrets = true;
+    roles = [ "dev-core" ];
+    homeDirectory = "/home/charles";
+    silent = true;
   };
   "charles@tmp-gpu" = {
     system = "x86_64-linux";
-    hostFile = ./modules/hosts/x86-vps-gpu.nix;
+    roles = [ "dev-core" "dev-extra" "top" "linux-top" "nvidia-gpu" ];
+    homeDirectory = "/home/charles";
+    target = "genericLinux-gpu";
     gpu = true;
-    enableSecrets = true;
+    silent = true;
   };
-  "charles@pg-proxy-dev" = {
+
+  # Canonical VPS config (built once)
+  "charles@RDSrv01" = {
     system = "x86_64-linux";
-    hostFile = ./modules/hosts/x86-vps.nix;
-    enableSecrets = true;
+    roles = [ "dev-core" ];
+    homeDirectory = "/home/charles";
+    target = "genericLinux";
+    silent = true;
   };
-  "charles@pg-primary-dev" = {
-    system = "x86_64-linux";
-    hostFile = ./modules/hosts/x86-vps.nix;
-    enableSecrets = true;
-  };
-  "charles@pg-replica1-dev" = {
-    system = "x86_64-linux";
-    hostFile = ./modules/hosts/x86-vps.nix;
-    enableSecrets = true;
-  };
-  "charles@pg-replica2-dev" = {
-    system = "x86_64-linux";
-    hostFile = ./modules/hosts/x86-vps.nix;
-    enableSecrets = true;
-  };
-  # Example new host:
-  # "charles@new-server" = {
-  #   system = "x86_64-linux";
-  #   hostFile = ./modules/hosts/x86-vps.nix;
-  #   enableSecrets = false;  # flip to true after first deploy
-  # };
-  "charles@testvm" = {
-    system = "x86_64-linux";
-    hostFile = ./modules/hosts/x86-vps.nix;
-    enableSecrets = true;
-  };
+  # Shared aliases — reuse RDSrv01's eval result
+  "charles@nics-demo-lab" = { sharedConfig = "charles@RDSrv01"; system = "x86_64-linux"; };
+  "charles@nate-test" = { sharedConfig = "charles@RDSrv01"; system = "x86_64-linux"; };
+  "charles@pg-proxy-dev" = { sharedConfig = "charles@RDSrv01"; system = "x86_64-linux"; };
+  "charles@pg-primary-dev" = { sharedConfig = "charles@RDSrv01"; system = "x86_64-linux"; };
+  "charles@pg-replica1-dev" = { sharedConfig = "charles@RDSrv01"; system = "x86_64-linux"; };
+  "charles@pg-replica2-dev" = { sharedConfig = "charles@RDSrv01"; system = "x86_64-linux"; };
+  "charles@testvm" = { sharedConfig = "charles@RDSrv01"; system = "x86_64-linux"; };
 }
