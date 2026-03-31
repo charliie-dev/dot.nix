@@ -3,13 +3,14 @@
     enable = true;
     settings = {
       gui = {
+        language = "en";
         theme = {
           activeBorderColor = [
-            "#a6e3a1" # Green
+            "#cba6f7" # mauve
             "bold"
           ];
           inactiveBorderColor = [
-            "#cdd6f4" # Text
+            "#313244" # Surface0
           ];
           selectedLineBgColor = [
             "#313244" # Surface0
@@ -20,6 +21,9 @@
         };
         returnImmediately = true;
         containerStatusHealthStyle = "icon";
+      };
+      logs = {
+        timestamps = false;
       };
       # commandTemplates.dockerCompose = "docker compose";
     };
