@@ -26,4 +26,17 @@ bindkey '^X^E' edit-command-line
 # Expands history expressions like !! or !$ when you press space
 bindkey ' ' magic-space
 
+# Init tirith BEFORE deferred plugins so their widget wrapping chains correctly
+if (( $+commands[tirith] )); then
+  eval "$(tirith init --shell zsh)"
+  # Fix: tirith's zle -A creates _tirith_original_bracketed_paste as builtin type.
+  # FSH wraps ALL widgets; for builtin type it calls zle .<name> which fails
+  # because ._tirith_original_bracketed_paste isn't a real built-in.
+  # Re-register as user widget so FSH uses the user-widget path instead.
+  if (( ${+widgets[_tirith_original_bracketed_paste]} )); then
+    _tirith_orig_bp() { zle .bracketed-paste "$@"; }
+    zle -N _tirith_original_bracketed_paste _tirith_orig_bp
+  fi
+fi
+
 # vim: set ft=zsh :

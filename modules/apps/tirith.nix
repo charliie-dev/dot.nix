@@ -1,8 +1,6 @@
 {
   tirith = {
     enable = true;
-    enableZshIntegration = true;
-    # allowlist = [];
-    # polocy = {};
+    enableZshIntegration = false; # loaded manually in bindkeys.zsh to control ordering
   };
 }
