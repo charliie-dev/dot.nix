@@ -146,6 +146,9 @@ lib.mkMerge [
       inherit (import "${src}/modules/services/home-manager.nix" { }) home-manager;
     };
   }
+  (lib.mkIf pkgs.stdenv.isDarwin {
+    launchd.agents = import "${src}/modules/services/colima.nix" { inherit config; };
+  })
   (lib.mkIf enableSecrets (
     let
       sopsConfig = import "${src}/modules/sops.nix" { inherit config src; };
