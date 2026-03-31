@@ -18,6 +18,8 @@
     resvg # for SVG preview
     imagemagick # for Font, HEIC, and JPEG XL preview
     hexyl # Command-line hex viewer
+    chafa # Terminal graphics for images
+    lnav # Log file navigator
     glow # nur.repos.charmbracelet.glow # Render markdown on the CLI, with pizzazz
     yq-go # jq but for YAML, JSON, XML, CSV, TOML
 
