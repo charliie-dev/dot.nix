@@ -10,7 +10,7 @@ alias -g -- -h='-h 2>&1 | bathelp'
 
 # List directory contents on cd
 chpwd() {
-    ls
+    ls -a
 }
 
 # use `ouch decompress` instead
