@@ -46,11 +46,14 @@ export BUNDLE_USER_PLUGIN="$XDG_DATA_HOME"/bundle
 export PARALLEL_HOME="$XDG_CONFIG_HOME"/parallel
 export PSQL_HISTORY="$XDG_STATE_HOME"/psql_history
 export EDITOR=nvim
+export BUN_INSTALL="$XDG_DATA_HOME"/bun
+export TF_CLI_CONFIG_FILE="$XDG_CONFIG_HOME"/terraform/terraformrc
+export DOPPLER_CONFIG_DIR="$XDG_CONFIG_HOME"/doppler
+
+# Code Agents
 export CLAUDE_CONFIG_DIR="$XDG_CONFIG_HOME"/claude
 export CODEX_HOME="$XDG_CONFIG_HOME"/codex
 export COPILOT_HOME="$XDG_CONFIG_HOME"/copilot
-export BUN_INSTALL="$XDG_DATA_HOME"/bun
-export TF_CLI_CONFIG_FILE="$XDG_CONFIG_HOME"/terraform/terraformrc
 export MCP_REMOTE_CONFIG_DIR="$XDG_DATA_HOME"/mcp-auth
 
 # Secrets Management
