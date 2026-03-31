@@ -5,13 +5,11 @@
     # shellWrapperName = "lg";
     settings = {
       gui = {
-        mouseEvents = true;
         language = "en";
         timeFormat = "2022-11-03 15:04"; # https://pkg.go.dev/time#Time.Format
         shortTimeFormat = "15:04";
         showRandomTip = false;
         nerdFontsVersion = "3";
-        useHunkModeInStagingView = true;
       };
       git = {
         pagers = [
@@ -21,9 +19,8 @@
           }
         ];
         commit = {
-          signoff = true;
+          signOff = true;
           autoWrapCommitMessage = true;
-          autoWrapWidth = 72;
         };
         parseEmoji = true;
       };
