@@ -8,7 +8,6 @@
     ouch # Painless compression and decompression in the terminal
     wget
     wget2
-    fastfetch
     xdg-ninja
     tree
     parallel

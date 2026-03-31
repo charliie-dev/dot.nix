@@ -4,5 +4,8 @@
     s-tui # Stress-Terminal UI monitoring tool
     iotop-c
     wavemon
+
+    # System info
+    gpufetch # GPU architecture info
   ];
 }
