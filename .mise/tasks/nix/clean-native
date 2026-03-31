@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+#MISE description="Use native command to do nix gc"
+
+home-manager expire-generations '0s'
+nix profile wipe-history --older-than '4d'
+nix store gc
+sudo nix store gc
+nix-store --optimise
+sudo nix-store --optimise

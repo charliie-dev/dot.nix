@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+#MISE description="Do nix gc"
+
+nh clean all --ask

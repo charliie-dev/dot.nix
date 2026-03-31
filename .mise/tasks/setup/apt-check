@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+#MISE hide=true
+#USAGE arg "<pkg_name>" help="apt pkage name"
+# shellcheck disable=SC2154 # usage_pkg_name is set by mise USAGE
+
+if dpkg -s "${usage_pkg_name?}" >/dev/null 2>&1; then
+    echo "[OK] ${usage_pkg_name?} is already installed."
+else
+    echo "[INFO] ${usage_pkg_name?} not found. Installing..."
+    sudo DEBIAN_FRONTEND=noninteractive apt install -y "${usage_pkg_name?}"
+    echo "[DONE] Installed ${usage_pkg_name?}."
+fi

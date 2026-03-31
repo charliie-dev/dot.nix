@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+#MISE description="Compile ruler to AGENTS.md"
+
+bunx @intellectronica/ruler apply

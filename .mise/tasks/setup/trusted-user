@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+#MISE description="Add trusted-user to nix.custom.conf"
+#MISE hide=true
+
+TARGET_FILE="/etc/nix/nix.custom.conf"
+LINE="trusted-users = charles"
+
+if [ ! -f "$TARGET_FILE" ]; then
+    sudo touch "$TARGET_FILE"
+fi
+
+if sudo grep -Fxq "$LINE" "$TARGET_FILE"; then
+    echo "[INFO] line already exists, nothing to do"
+else
+    echo "[INFO] appending line..."
+    echo "$LINE" | sudo tee -a "$TARGET_FILE" >/dev/null
+    echo "[INFO] done"
+fi

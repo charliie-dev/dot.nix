@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+#MISE description="Add a new host: get remote age key, update .sops.yaml, rekey, add to hosts.nix"
+#USAGE arg "<hostname>" help="Remote hostname (SSH reachable)"
+#USAGE arg "<system>" help="Nix system (e.g. x86_64-linux, aarch64-linux)" default="x86_64-linux"
+# shellcheck disable=SC2154 # usage_hostname, usage_system are set by mise USAGE
+set -euo pipefail
+
+HOST="${usage_hostname?}"
+
+# Run dependent task: host:age-pubkey
+mise run host:age-pubkey "$HOST"
+SYSTEM="${usage_system?}"
+SOPS_FILE=".sops.yaml"
+SECRETS_FILE="conf.d/sops/secrets.yaml"
+HOSTS_FILE="hosts.nix"
+
+# 1. Get remote age public key
+echo "[INFO] Fetching age public key from ${HOST}..."
+AGE_KEY=$(ssh "$HOST" "age-keygen -y ~/.config/age/keys.txt")
+echo "[OK] Got: $AGE_KEY"
+
+# 2. Check if already in .sops.yaml
+if grep -q "$AGE_KEY" "$SOPS_FILE"; then
+  echo "[SKIP] Key already in $SOPS_FILE"
+else
+  echo "[INFO] Adding key to $SOPS_FILE..."
+  # Find the last age1 line, append comma to it, then insert new key after
+  LAST_LINE=$(grep -n "^      age1" "$SOPS_FILE" | tail -1 | cut -d: -f1)
+  if [ "$LAST_LINE" != "" ]; then
+    # Add comma to last key if missing
+    sed -i '' "${LAST_LINE}s/\$/,/" "$SOPS_FILE"
+    # Remove double comma if already had one
+    sed -i '' "${LAST_LINE}s/,,$/,/" "$SOPS_FILE"
+    # Insert new key after last key line
+    sed -i '' "${LAST_LINE}a\\
+      ${AGE_KEY}" "$SOPS_FILE"
+  fi
+  echo "[WARN] Please verify $SOPS_FILE manually"
+fi
+
+# 3. Rekey sops secrets
+echo "[INFO] Rekeying secrets..."
+export SOPS_AGE_KEY_FILE=~/.config/age/keys.txt
+sops updatekeys "$SECRETS_FILE"
+
+# 4. Check if host already in hosts.nix
+if grep -v '^\s*#' "$HOSTS_FILE" | grep -q "\"charles@${HOST}\""; then
+  echo "[SKIP] charles@${HOST} already in $HOSTS_FILE"
+else
+  echo "[INFO] Adding charles@${HOST} to $HOSTS_FILE..."
+  sed -i '' "/^}$/i\\
+\\  \"charles@${HOST}\" = { sharedConfig = \"charles@RDSrv01\"; system = \"${SYSTEM}\"; enableSecrets = false; };
+" "$HOSTS_FILE"
+  echo "[WARN] Please verify $HOSTS_FILE manually"
+fi
+
+echo ""
+echo "=== Summary ==="
+echo "Host:       charles@${HOST}"
+echo "System:     ${SYSTEM}"
+echo "Age key:    ${AGE_KEY}"
+echo ""
+echo "Next steps:"
+echo "  1. Verify .sops.yaml and hosts.nix are correct"
+echo "  2. git add .sops.yaml $SECRETS_FILE $HOSTS_FILE"
+echo "  3. git commit -m 'feat(host): add ${HOST}'"
+echo "  4. git push"
+echo "  5. On ${HOST}: home-manager switch --flake '.#charles@${HOST}'"

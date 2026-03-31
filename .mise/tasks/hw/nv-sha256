@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+#MISE description="Get sha256 for nvidia driver"
+#MISE quiet=true
+#USAGE arg "<nv_version>" help="nvidia driver version from https://download.nvidia.com/XFree86/Linux-x86_64/"
+# shellcheck disable=SC2154 # usage_nv_version is set by mise USAGE
+
+nix store prefetch-file "https://download.nvidia.com/XFree86/Linux-x86_64/${usage_nv_version?}/NVIDIA-Linux-x86_64-${usage_nv_version?}.run" 2>&1 \
+  | grep -o "sha256-[A-Za-z0-9+/=]\+"

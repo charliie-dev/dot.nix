@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+#MISE description="Restart nix-daemon"
+
+if [[ "$(uname)" == "Darwin" ]]; then
+    echo "[info] Detected macOS, restarting Determinate Nix daemon..."
+    plist="/Library/LaunchDaemons/systems.determinate.nix-daemon.plist"
+
+    if [[ ! -f "$plist" ]]; then
+        echo "[error] plist not found: $plist" >&2
+        exit 1
+    fi
+
+    sudo launchctl unload "$plist"
+    sudo launchctl load "$plist"
+
+    echo "[info] macOS Nix daemon restarted."
+else
+    echo "[info] Detected Linux, restarting nix-daemon via systemd..."
+    if ! command -v systemctl >/dev/null 2>&1; then
+        echo "[error] systemctl not found. This Linux system may not use systemd." >&2
+        exit 1
+    fi
+
+    sudo systemctl restart nix-daemon
+    echo "[info] Linux nix-daemon restarted."
+fi

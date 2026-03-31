@@ -1,275 +1,35 @@
+[settings]
+jobs = 16
+task.output = "keep-order"
+
+# ------------------------------------------------------------------------------
 [tools]
 bun = "latest"
 
 # ------------------------------------------------------------------------------
-
-# ref: https://mise.jdx.dev/environments/
-# redactions = ["SECRET_*", "*_TOKEN", "*_KEY", "PASSWORD"]
 [env]
-## MCPs
-# Context7: Get free API key from https://context7.com/
-# CONTEXT7_API_KEY = ""
 
 # ------------------------------------------------------------------------------
-
-# ref: https://mise.jdx.dev/tasks/
+[task_config]
+includes = [".mise/tasks"]
 
 # ==============================================================================
-#  Compile Ruler
+#  Setup
 # ==============================================================================
-[tasks.ruler]  # command: mise run ruler
-description = "Compile ruler to AGENTS.md"
-run = "bunx @intellectronica/ruler apply"
-
-[tasks.apt-pkg-check]
-hide = true
-usage = '''
-arg "<pkg_name>" help="apt pkage name"
-'''
-run = '''
-if dpkg -s ${usage_pkg_name?} >/dev/null 2>&1; then
-    echo "[OK] ${usage_pkg_name?} is already installed."
-else
-    echo "[INFO] ${usage_pkg_name?} not found. Installing..."
-    sudo DEBIAN_FRONTEND=noninteractive apt install -y ${usage_pkg_name?}
-    echo "[DONE] Installed ${usage_pkg_name?}."
-fi
-'''
-
-[tasks.remote-url-update]
-hide = true
-description = "Change remote repo url"
-run = "git remote set-url origin git@github.com:charliie-dev/dot.nix.git"
-
-[tasks.mise-install]
-hide = true
-description = "Install langs set via mise"
-depends = "apt-pkg-check libatomic1"  # for node@v25
-run = "mise install"
-
-[tasks.trusted-user-add]
-hide = true
-description = "Add trusted-user to nix.custom.conf"
-run = '''
-TARGET_FILE="/etc/nix/nix.custom.conf"
-LINE="trusted-users = charles"
-
-if [ ! -f "$TARGET_FILE" ]; then
-    sudo touch "$TARGET_FILE"
-fi
-
-if sudo grep -Fxq "$LINE" "$TARGET_FILE"; then
-    echo "[INFO] line already exists, nothing to do"
-else
-    echo "[INFO] appending line..."
-    echo "$LINE" | sudo tee -a "$TARGET_FILE" >/dev/null
-    echo "[INFO] done"
-fi
-'''
-
-[tasks.nix-daemon-restart]
-description = "Restart nix-daemon"
-shell = "bash -lc"
-run = '''
-{% raw %}
-if [[ "$(uname)" == "Darwin" ]]; then
-    echo "[info] Detected macOS, restarting Determinate Nix daemon..."
-    plist="/Library/LaunchDaemons/systems.determinate.nix-daemon.plist"
-
-    if [[ ! -f "$plist" ]]; then
-        echo "[error] plist not found: $plist" >&2
-        exit 1
-    fi
-
-    sudo launchctl unload "$plist"
-    sudo launchctl load "$plist"
-
-    echo "[info] macOS Nix daemon restarted."
-else
-    echo "[info] Detected Linux, restarting nix-daemon via systemd..."
-    if ! command -v systemctl >/dev/null 2>&1; then
-        echo "[error] systemctl not found. This Linux system may not use systemd." >&2
-        exit 1
-    fi
-
-    sudo systemctl restart nix-daemon
-    echo "[info] Linux nix-daemon restarted."
-fi
-{% endraw %}
-'''
-
-[tasks.init]
+[tasks."setup:init"]
 run = [
   "echo [INFO] Checking necessary pakcgges",
   { tasks = [
-    "apt-pkg-check curl",
-    "apt-pkg-check openssl",
-    "apt-pkg-check zsh",
-    "apt-pkg-check git",
-    "apt-pkg-check age",
+    "setup:apt-check curl",
+    "setup:apt-check openssl",
+    "setup:apt-check zsh",
+    "setup:apt-check git",
+    "setup:apt-check age",
   ] },
   { tasks = [
-    "remote-url-update",
-    "trusted-user-add",
+    "repo:remote-url",
+    "setup:trusted-user",
   ] },
-  { task = "nix-daemon-restart" },
-  { task = "mise-install" },
+  { task = "nix:daemon-restart" },
+  { task = "setup:mise-install" },
 ]
-
-[tasks.nv-sha256]
-description = "Get sha256 for nvidia driver"
-quiet = true
-# outputs = "Grepping sha256 for nvidia driver run file..."
-outputs = { auto = true }
-usage = '''
-arg "<nv_version>" help="nvidia driver version from https://download.nvidia.com/XFree86/Linux-x86_64/"
-'''
-run = '''
-nix store prefetch-file https://download.nvidia.com/XFree86/Linux-x86_64/${usage_nv_version?}/NVIDIA-Linux-x86_64-${usage_nv_version?}.run 2>&1 \
-  | grep -o "sha256-[A-Za-z0-9+/=]\+"
-'''
-
-[tasks.nh-clean-fix]
-description = "Fix nix not being found in sudo $PATH"
-run = '''
-sudo touch /etc/sudoers.d/nix-path
-Defaults:charles secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/nix/var/nix/profiles/default/bin" >> /etc/sudoers.d/nix-path
-'''
-
-[tasks.nh-clean]
-description = "Do nix gc"
-run = "nh clean all --ask"
-
-[tasks.nhsw]
-description = "home-manager switch but nh"
-run = "nh home switch"
-
-[tasks.og-clean]
-description = "Use native command to do nix gc"
-run = '''
-home-manager expire-generations '0s'
-nix profile wipe-history --older-than '4d'
-nix store gc
-sudo nix store gc
-nix-store --optimise
-sudo nix-store --optimise
-'''
-
-[tasks.check-dead-path]
-description = "Check dead nix path, should be none after gc"
-run = "nix-store --gc --print-dead"
-
-# ==============================================================================
-#  Host Management (sops-nix + Doppler)
-# ==============================================================================
-
-[tasks.get-remote-age-pubkey]
-description = "Get or generate age public key from remote host"
-usage = '''
-arg "<hostname>" help="Remote hostname (SSH reachable)"
-'''
-run = '''
-#!/usr/bin/env bash
-set -euo pipefail
-
-HOST="${usage_hostname?}"
-KEY_DIR=".config/age"
-KEY_FILE="$KEY_DIR/keys.txt"
-
-echo "[INFO] Checking age key on ${HOST}..."
-
-# Check if age CLI is installed on remote
-ssh "$HOST" "command -v age-keygen >/dev/null 2>&1" || {
-  echo "[ERROR] age is not installed on ${HOST}. Install it first:"
-  echo "  ssh ${HOST} 'sudo apt install -y age'  # or: nix profile install nixpkgs#age"
-  exit 1
-}
-
-# Get or generate age key on remote
-PUBKEY=$(ssh "$HOST" "
-  if [ ! -f ~/$KEY_FILE ]; then
-    echo '[INFO] No age key found, generating...' >&2
-    mkdir -p ~/$KEY_DIR
-    age-keygen -o ~/$KEY_FILE 2>&1 | grep 'public key:' | awk '{print \$NF}'
-  else
-    echo '[INFO] Age key already exists.' >&2
-    age-keygen -y ~/$KEY_FILE
-  fi
-")
-
-echo "[OK] Remote age public key for ${HOST}:"
-echo "$PUBKEY"
-'''
-
-[tasks.add-host]
-description = "Add a new host: get remote age key, update .sops.yaml, rekey, add to hosts.nix"
-usage = '''
-arg "<hostname>" help="Remote hostname (SSH reachable)"
-arg "<system>" help="Nix system (e.g. x86_64-linux, aarch64-linux)" default="x86_64-linux"
-'''
-run = '''
-#!/usr/bin/env bash
-set -euo pipefail
-
-HOST="${usage_hostname?}"
-
-# Run dependent task: get-remote-age-pubkey
-mise run get-remote-age-pubkey "$HOST"
-SYSTEM="${usage_system?}"
-SOPS_FILE=".sops.yaml"
-SECRETS_FILE="conf.d/sops/secrets.yaml"
-HOSTS_FILE="hosts.nix"
-
-# 1. Get remote age public key
-echo "[INFO] Fetching age public key from ${HOST}..."
-AGE_KEY=$(ssh "$HOST" "age-keygen -y ~/.config/age/keys.txt")
-echo "[OK] Got: $AGE_KEY"
-
-# 2. Check if already in .sops.yaml
-if grep -q "$AGE_KEY" "$SOPS_FILE"; then
-  echo "[SKIP] Key already in $SOPS_FILE"
-else
-  echo "[INFO] Adding key to $SOPS_FILE..."
-  # Find the last age1 line, append comma to it, then insert new key after
-  LAST_LINE=$(grep -n "^      age1" "$SOPS_FILE" | tail -1 | cut -d: -f1)
-  if [ -n "$LAST_LINE" ]; then
-    # Add comma to last key if missing
-    sed -i '' "${LAST_LINE}s/\$/,/" "$SOPS_FILE"
-    # Remove double comma if already had one
-    sed -i '' "${LAST_LINE}s/,,$/,/" "$SOPS_FILE"
-    # Insert new key after last key line
-    sed -i '' "${LAST_LINE}a\\
-      ${AGE_KEY}" "$SOPS_FILE"
-  fi
-  echo "[WARN] Please verify $SOPS_FILE manually"
-fi
-
-# 3. Rekey sops secrets
-echo "[INFO] Rekeying secrets..."
-export SOPS_AGE_KEY_FILE=~/.config/age/keys.txt
-sops updatekeys "$SECRETS_FILE"
-
-# 4. Check if host already in hosts.nix
-if grep -v '^\s*#' "$HOSTS_FILE" | grep -q "\"charles@${HOST}\""; then
-  echo "[SKIP] charles@${HOST} already in $HOSTS_FILE"
-else
-  echo "[INFO] Adding charles@${HOST} to $HOSTS_FILE..."
-  sed -i '' "/^}$/i\\
-\\  \"charles@${HOST}\" = { sharedConfig = \"charles@RDSrv01\"; system = \"${SYSTEM}\"; enableSecrets = false; };
-" "$HOSTS_FILE"
-  echo "[WARN] Please verify $HOSTS_FILE manually"
-fi
-
-echo ""
-echo "=== Summary ==="
-echo "Host:       charles@${HOST}"
-echo "System:     ${SYSTEM}"
-echo "Age key:    ${AGE_KEY}"
-echo ""
-echo "Next steps:"
-echo "  1. Verify .sops.yaml and hosts.nix are correct"
-echo "  2. git add .sops.yaml $SECRETS_FILE $HOSTS_FILE"
-echo "  3. git commit -m 'feat(host): add ${HOST}'"
-echo "  4. git push"
-echo "  5. On ${HOST}: home-manager switch --flake '.#charles@${HOST}'"
-'''

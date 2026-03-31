@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+#MISE description="Check dead nix path, should be none after gc"
+
+nix-store --gc --print-dead
