@@ -40,4 +40,32 @@ wdym() {
     echo -n "$1 means: " && grep -i "^$1\`" <(curl -fsSL https://raw.githubusercontent.com/Ashpex/Slang-Word/master/slang.txt) | awk -F'`' '{ print $2 }'
 }
 
+# mise run with fzf-tab completion
+mr() {
+    local name="$1"
+    [[ -z "$name" ]] && { echo "usage: mr <task|shell-alias> [args...]"; return 1; }
+    shift
+    if mise tasks ls --no-header 2>/dev/null | awk '{print $1}' | grep -qx "$name"; then
+        print -s "mise run $name $*"
+        mise run "$name" "$@"
+    elif mise shell-alias ls 2>/dev/null | awk '{print $1}' | grep -qx "$name"; then
+        local cmd
+        cmd=$(mise shell-alias ls 2>/dev/null | awk -v n="$name" '$1==n {$1=""; print substr($0,2)}')
+        print -s "$name $*"
+        eval "$cmd" "$@"
+    else
+        echo "mr: unknown task or shell-alias: $name" >&2
+        return 1
+    fi
+}
+
+_mr() {
+    local -a tasks aliases
+    tasks=(${(f)"$(mise tasks ls --no-header 2>/dev/null | awk '{print $1 ":" $2}')"})
+    aliases=(${(f)"$(mise shell-alias ls 2>/dev/null | awk '{print $1 ":shell-alias→" substr($0, index($0,$2))}')"})
+    _describe 'task' tasks
+    _describe 'shell-alias' aliases
+}
+compdef _mr mr
+
 # vim: set ft=zsh :

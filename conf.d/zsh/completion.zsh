@@ -65,6 +65,14 @@ zstyle ':fzf-tab:complete:(\\|*/|)man:*' fzf-preview 'MANPAGER=cat MANWIDTH=$FZF
 zstyle ':fzf-tab:complete:*:*' fzf-preview \
   'f=${realpath:-$PWD/${word% }}; [[ -e $f ]] && pistol $f 2>/dev/null'
 
+# mr (mise run) preview
+zstyle ':fzf-tab:complete:mr:*' fzf-preview \
+  'if mise tasks ls --no-header 2>/dev/null | awk "{print \$1}" | grep -qx "${word%:*}"; then
+    mise tasks info "${word%:*}"
+  else
+    mise shell-alias ls 2>/dev/null | awk -v n="${word%:*}" "\$1==n {for(i=2;i<=NF;i++) printf \"%s \",\$i; print \"\"}"
+  fi'
+
 # carapace config
 zstyle ':completion:*' format $'\e[2;37mCompleting %d\e[m'
 zstyle ':completion:*:git:*' group-order 'main commands' 'alias commands' 'external commands'
