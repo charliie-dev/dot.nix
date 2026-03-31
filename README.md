@@ -15,10 +15,10 @@ This repo uses **sops-nix** (system-layer) + **Doppler** (application-layer) for
 
 ```sh
 # Prerequisites: new server is SSH-reachable and has `age` installed
-mise run add-host <hostname> [system]
+mise run host:add <hostname> [system]
 
 # Example:
-mise run add-host new-server x86_64-linux
+mise run host:add new-server x86_64-linux
 
 # Then commit and push
 git add .sops.yaml conf.d/sops/secrets.yaml hosts.nix
@@ -49,13 +49,13 @@ Each host in `hosts.nix` has a per-host `enableSecrets` flag:
 - `false` — skip all secrets (sops-nix, Doppler, git signing, SSH identity). Use for first-time deploys before the age key is set up.
 - `true` — enable full secrets management. Requires age key at `~/.config/age/keys.txt`.
 
-The `add-host` mise task automatically sets `enableSecrets = false` for new hosts.
+The `host:add` mise task automatically sets `enableSecrets = false` for new hosts.
 
 ### Deploy to new host
 
 ```sh
 # Step 1: First deploy without secrets (install all tools)
-#   add-host automatically sets enableSecrets = false in hosts.nix
+#   host:add automatically sets enableSecrets = false in hosts.nix
 home-manager switch --flake '.#charles@<hostname>'
 
 # Step 2: On local machine: flip enableSecrets = true in hosts.nix
