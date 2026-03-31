@@ -4,7 +4,7 @@
     associations = [
       {
         fpath = ".*.md$";
-        command = "glow -s dark %pistol-filename%";
+        command = "bat --color=always --style=plain --language=markdown %pistol-filename%";
       }
       {
         fpath = ".*.log$";
@@ -12,7 +12,7 @@
       }
       {
         mime = "inode/directory";
-        command = "lsd -A --color always --tree %pistol-filename%";
+        command = "lsd -A --color=always --blocks git,name %pistol-filename%";
       }
       {
         mime = "text/.*";
@@ -39,10 +39,6 @@
         command = "yq -CP %pistol-filename%";
       }
       {
-        mime = "application/json";
-        command = "yq -CP -oj %pistol-filename%";
-      }
-      {
         mime = "application/toml";
         command = "yq -CP -oy %pistol-filename%";
       }
@@ -58,11 +54,6 @@
         mime = "application/tsv";
         command = "yq -CP -ot %pistol-filename%";
       }
-      {
-        mime = "application/json";
-        command = "yq -CP -oj %pistol-filename%";
-      }
-
     ];
   };
 }
