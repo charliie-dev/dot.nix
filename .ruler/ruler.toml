@@ -1,77 +1,32 @@
+# Ruler Configuration File
+# See https://ai.intellectronica.net/ruler for documentation.
+
 # Default agents to run when --agents is not specified
 # Uses case-insensitive substring matching
-default_agents = ["claude"]
+default_agents = ["claude", "codex", "opencode"]
+
+# Enable nested rule loading from nested .ruler directories
+# When enabled, ruler will search for and process .ruler directories throughout the project hierarchy
+nested = true
 
 # --- Global MCP Server Configuration ---
 [mcp]
 # Enable/disable MCP propagation globally (default: true)
-enabled = true
-# Global merge strategy: 'merge' or 'overwrite' (default: 'merge')
-merge_strategy = "merge"
-
-# --- MCP Server Definitions ---
-[mcp_servers.context7_http]
-url = "https://mcp.context7.com/mcp"
-
-[mcp_servers.context7_http.headers]
-"CONTEXT7_API_KEY" = "${CONTEXT7_API_KEY}"
+enabled = false
 
 # --- Global .gitignore Configuration ---
 [gitignore]
 # Enable/disable automatic .gitignore updates (default: true)
 enabled = true
+# Write managed entries to .git/info/exclude instead of .gitignore (default: false)
+local = false
 
-# --- Agent-Specific Configurations ---
-[agents.copilot]
-enabled = false
-
+# --- Agent Specific Configurations ---
 [agents.claude]
 enabled = true
-output_path = "CLAUDE.md"
 
-[agents.aider]
-enabled = false
-output_path_instructions = "AGENTS.md"
-output_path_config = ".aider.conf.yml"
-
-# OpenAI Codex CLI agent and MCP config
 [agents.codex]
-enabled = false
-output_path = "AGENTS.md"
-output_path_config = ".codex/config.toml"
+enabled = true
 
-# Agent-specific MCP configuration for Codex CLI
-[agents.codex.mcp]
-enabled = false
-merge_strategy = "merge"
-
-[agents.firebase]
-enabled = false
-output_path = ".idx/airules.md"
-
-[agents.gemini-cli]
-enabled = false
-
-[agents.jules]
-enabled = false
-
-[agents.junie]
-enabled = false
-output_path = ".junie/guidelines.md"
-
-# Agent-specific MCP configuration
-[agents.cursor.mcp]
-enabled = false
-merge_strategy = "merge"
-
-# Disable specific agents
-[agents.windsurf]
-enabled = false
-
-[agents.kilocode]
-enabled = false
-output_path = "AGENTS.md"
-
-[agents.warp]
-enabled = false
-output_path = "WARP.md"
+[agents.opencode]
+enabled = true
