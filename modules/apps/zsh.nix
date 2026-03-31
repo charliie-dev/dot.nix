@@ -83,7 +83,7 @@
             # lazy-loading `kind:defer`
             "QuarticCat/zsh-smartcache" # better mroth/evalcache
             # "belak/zsh-utils path:completion"
-            # "Aloxaf/fzf-tab kind:defer" # needs to load after `compinit`, but before wrap widgets, such as `zsh-autosuggestions` or `fast-syntax-highlighting`
+            "Aloxaf/fzf-tab kind:defer"
             "zsh-users/zsh-autosuggestions kind:defer"
             "zdharma-continuum/fast-syntax-highlighting kind:defer" # add before zsh-history-substring-search to prevent breaking
             "zsh-users/zsh-history-substring-search kind:defer"
