@@ -10,7 +10,7 @@
             "bold"
           ];
           inactiveBorderColor = [
-            "#313244" # Surface0
+            "#cdd6f4" # Text
           ];
           selectedLineBgColor = [
             "#313244" # Surface0
