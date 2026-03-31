@@ -7,6 +7,10 @@
   xdg = {
     enable = true;
     configFile = {
+      "carapace/specs" = {
+        recursive = true;
+        source = "${src}/conf.d/carapace/specs";
+      };
       "conda" = {
         recursive = true;
         source = "${src}/conf.d/conda";
@@ -31,10 +35,10 @@
         recursive = true;
         source = "${src}/conf.d/wget";
       };
-      "yarn" = {
-        recursive = true;
-        source = "${src}/conf.d/yarn";
-      };
+      # "yarn" = {
+      #   recursive = true;
+      #   source = "${src}/conf.d/yarn";
+      # };
       # generate a separate file for the lua cpath/path
       # this must be imported by the init.lua file
       "nvim/init.lua".enable = false;

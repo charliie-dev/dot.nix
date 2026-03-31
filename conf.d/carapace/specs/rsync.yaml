@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=https://carapace.sh/schemas/command.json
+name: rsync
+description: a fast, versatile, remote (and local) file-copying tool
+flags:
+  -a: "archive mode; equals -rlptgoD"
+  -v: "increase verbosity"
+  -z: "compress file data during the transfer"
+  -r: "recurse into directories"
+  -l: "copy symlinks as symlinks"
+  -p: "preserve permissions"
+  -t: "preserve modification times"
+  -g: "preserve group"
+  -o: "preserve owner"
+  -D: "same as --devices --specials"
+  -H: "preserve hard links"
+  -n: "perform a trial run with no changes made"
+  -e=: "specify the remote shell to use"
+  -P: "same as --partial --progress"
+  -u: "skip files that are newer on the receiver"
+  -c: "skip based on checksum, not mod-time and size"
+  -h: "output numbers in a human-readable format"
+  -i: "output a change-summary for all updates"
+  -q: "suppress non-error messages"
+  -x: "don't cross filesystem boundaries"
+  -W: "copy files whole without delta-xfer algorithm"
+  -S: "turn sequences of nulls into sparse blocks"
+  -C: "auto-ignore files in the same way CVS does"
+  -I: "don't skip files that match size and time"
+  -R: "use relative path names"
+  -V: "print the version and exit"
+  -4: "prefer IPv4"
+  -6: "prefer IPv6"
+completion:
+  positional:
+    - ["$zsh(awk '/^Host /{print $2}' ~/.ssh/host_configuration)"]
