@@ -1,0 +1,97 @@
+theme = Catppuccin Mocha
+background-opacity = 0.88
+background-blur-radius = 25
+
+font-feature = liga,-calt,-dlig
+cursor-style = block
+cursor-style-blink = false
+cursor-color = cell-foreground
+cursor-text = cell-background
+unfocused-split-opacity = 0.55
+split-divider-color = #524f67
+
+macos-window-buttons = hidden
+mouse-hide-while-typing = true
+
+window-decoration = true
+window-padding-x = 10
+window-padding-y = 10
+window-padding-balance = true
+
+bold-is-bright = true
+auto-update = off
+shell-integration-features = sudo, ssh-terminfo
+
+clipboard-read = allow
+clipboard-write = allow
+clipboard-trim-trailing-spaces = true
+clipboard-paste-protection = true
+copy-on-select = clipboard
+
+quick-terminal-position = right
+
+adjust-cursor-thickness = 1
+cursor-style = bar
+cursor-style-blink = true
+
+macos-option-as-alt = true
+macos-titlebar-style = transparent
+
+notify-on-command-finish = unfocused
+notify-on-command-finish-action = no-bell,notify
+
+# keybinds
+# alt (alias: opt, option)
+# super (alias: cmd, command)
+keybind = cmd+s>r=reload_config
+keybind = cmd+s>q=close_surface
+
+# zoom
+keybind = cmd+s>shift+==increase_font_size:1.5
+keybind = cmd+s>shift+-=decrease_font_size:1.5
+keybind = cmd+s>shift+r=reset_font_size
+
+# split
+keybind = cmd+s>\=new_split:right
+keybind = cmd+s>-=new_split:down
+keybind = cmd+s>e=equalize_splits
+
+# split navigation
+keybind = cmd+s>h=goto_split:left
+keybind = cmd+s>j=goto_split:bottom
+keybind = cmd+s>k=goto_split:top
+keybind = cmd+s>l=goto_split:right
+
+keybind = cmd+s>z=toggle_split_zoom
+
+# tab
+keybind = cmd+s>t=new_tab
+keybind = cmd+s>]=next_tab
+keybind = cmd+s>[=previous_tab
+keybind = cmd+s>comma=move_tab:-1
+keybind = cmd+s>period=move_tab:1
+
+# tab navigation
+keybind = cmd+s>1=goto_tab:1
+keybind = cmd+s>2=goto_tab:2
+keybind = cmd+s>3=goto_tab:3
+keybind = cmd+s>4=goto_tab:4
+keybind = cmd+s>5=goto_tab:5
+keybind = cmd+s>6=goto_tab:6
+keybind = cmd+s>7=goto_tab:7
+keybind = cmd+s>8=goto_tab:8
+keybind = cmd+s>9=goto_tab:9
+
+# command palette
+keybind = cmd+s>p=toggle_command_palette
+
+# quick terminal
+keybind = cmd+s>`=toggle_quick_terminal
+
+# search
+keybind = cmd+s>/=start_search
+keybind = cmd+s>n=navigate_search:next
+keybind = cmd+s>shift+n=navigate_search:previous
+
+# vim: ft=ghostty
+

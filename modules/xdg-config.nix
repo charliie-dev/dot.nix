@@ -19,6 +19,10 @@
         recursive = true;
         source = "${src}/conf.d/python";
       };
+      "ghostty" = {
+        recursive = true;
+        source = "${src}/conf.d/ghostty";
+      };
       "glow" = {
         recursive = true;
         source = "${src}/conf.d/glow";
