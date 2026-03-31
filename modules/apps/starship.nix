@@ -95,9 +95,8 @@
       hostname = {
         disabled = false;
         ssh_only = true;
-        ssh_symbol = " ";
         style = "sky";
-        format = "@[$hostname]($style) ";
+        format = "[$hostname]($style)";
         # trim_at = ".com"
       };
 
