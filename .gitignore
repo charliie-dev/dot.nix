@@ -1,5 +1,11 @@
+# Nix build
 result
+
+# OS
 .DS_Store
+
+# IDEs
+.prettierd/
 docs/
 
 # START Ruler Generated Files
