@@ -1,11 +1,14 @@
-{ config, ... }:
+{ config, pkgs, ... }:
+let
+  logDir = "${config.home.homeDirectory}/Library/Logs/colima";
+in
 {
   colima = {
     enable = true;
     config = {
       Label = "com.github.abiosoft.colima";
       ProgramArguments = [
-        "colima"
+        "${pkgs.colima}/bin/colima"
         "start"
         "--foreground"
         "--cpu"
@@ -21,13 +24,15 @@
         "--mount-inotify"
       ];
       EnvironmentVariables = {
+        PATH = "${pkgs.colima}/bin:${pkgs.docker-client}/bin:/usr/bin:/bin:/usr/sbin:/sbin";
         COLIMA_HOME = "${config.xdg.dataHome}/colima";
-        PATH = "${config.home.homeDirectory}/.local/state/nix/profile/bin:/nix/var/nix/profiles/default/bin:/usr/bin:/bin:/usr/sbin:/sbin";
+        DOCKER_CONFIG = "${config.xdg.configHome}/docker";
       };
       RunAtLoad = true;
       KeepAlive = false;
-      StandardOutPath = "/tmp/colima.stdout.log";
-      StandardErrorPath = "/tmp/colima.stderr.log";
+      ThrottleInterval = 30;
+      StandardOutPath = "${logDir}/colima.log";
+      StandardErrorPath = "${logDir}/colima.log";
     };
   };
 }

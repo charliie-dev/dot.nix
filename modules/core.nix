@@ -148,7 +148,7 @@ lib.mkMerge [
     };
   }
   (lib.mkIf pkgs.stdenv.isDarwin {
-    launchd.agents = import "${src}/modules/services/colima.nix" { inherit config; };
+    launchd.agents = import "${src}/modules/services/colima.nix" { inherit config pkgs; };
   })
   (lib.mkIf enableSecrets (
     let
