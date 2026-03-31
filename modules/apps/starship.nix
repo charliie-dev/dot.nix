@@ -96,7 +96,7 @@
         disabled = false;
         ssh_only = true;
         style = "sky";
-        format = "[$hostname]($style)";
+        format = "[$hostname]($style) ";
         # trim_at = ".com"
       };
 
