@@ -5,10 +5,10 @@
   ...
 }:
 let
-  secretDir = "${config.xdg.dataHome}/secrets_output";
+  dopplerDir = "${config.xdg.dataHome}/doppler";
   # Hardcode path to avoid circular dependency in plain function import
   # Must match sops.nix doppler_token.path
-  dopplerTokenPath = "${secretDir}/doppler/token";
+  dopplerTokenPath = "${dopplerDir}/token";
 in
 {
   doppler = {
@@ -21,17 +21,17 @@ in
         export DOPPLER_CONFIG_DIR="${config.xdg.configHome}/doppler"
         if [ -r "${dopplerTokenPath}" ]; then
           export DOPPLER_TOKEN="$(cat "${dopplerTokenPath}")"
-          mkdir -p "${secretDir}/doppler"
-          chmod 700 "${secretDir}/doppler"
+          mkdir -p "${dopplerDir}"
+          chmod 700 "${dopplerDir}"
           (
             umask 077
             ${pkgs.doppler}/bin/doppler secrets download \
               --project dot-nix \
               --config dev_personal \
               --no-file \
-              --format=env > "${secretDir}/doppler/env" 2>/dev/null || true
+              --format=env > "${dopplerDir}/env" 2>/dev/null || true
           )
-          chmod 600 "${secretDir}/doppler/env"
+          chmod 600 "${dopplerDir}/env"
         fi
       '';
     };

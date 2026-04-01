@@ -1,7 +1,4 @@
 { config, src, ... }:
-let
-  secretDir = "${config.xdg.dataHome}/secrets_output";
-in
 {
   sops = {
     defaultSopsFile = "${src}/conf.d/sops/secrets.yaml";
@@ -23,7 +20,7 @@ in
         path = "${config.xdg.configHome}/git/allowed_signers";
       };
       doppler_token = {
-        path = "${secretDir}/doppler/token";
+        path = "${config.xdg.dataHome}/doppler/token";
         mode = "0400";
       };
     };

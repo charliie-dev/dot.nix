@@ -186,9 +186,9 @@ lib.mkMerge [
         ssh.matchBlocks."*".identityFile = "${config.sops.secrets.ssh_ed25519.path}";
         zsh.envExtra = ''
           # Load Doppler secrets (application-layer)
-          if [ -r "${config.xdg.dataHome}/secrets_output/doppler/env" ]; then
+          if [ -r "${config.xdg.dataHome}/doppler/env" ]; then
             set -a
-            source "${config.xdg.dataHome}/secrets_output/doppler/env"
+            source "${config.xdg.dataHome}/doppler/env"
             set +a
           fi
         '';
