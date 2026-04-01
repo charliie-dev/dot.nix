@@ -12,6 +12,7 @@
     tree
     parallel
     lazyjournal
+    gum
 
     # Secrets Management
     age

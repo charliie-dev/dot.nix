@@ -45,4 +45,50 @@ _mr() {
 }
 compdef _mr mr
 
+_cct_current() {
+    if [[ -n "$CLAUDE_CODE_USE_VERTEX" ]]; then
+        echo "vertex"
+    elif [[ -n "$CLAUDE_CODE_USE_BEDROCK" ]]; then
+        echo "bedrock"
+    elif [[ -n "$CLAUDE_CODE_USE_FOUNDRY" ]]; then
+        echo "azure"
+    else
+        echo "team"
+    fi
+}
+
+claude-code-toggle() {
+    local choice="$1"
+    local current
+    current=$(_cct_current)
+
+    if [[ -z "$choice" ]]; then
+        if command -v gum &>/dev/null; then
+            choice=$(gum choose \
+                    --header "Claude backend (current: $current)" \
+                "team" "vertex" "bedrock" "azure")
+        else
+            echo "current: $current" >&2
+            echo "usage: cct <team|vertex|bedrock|azure>" >&2
+            return 1
+        fi
+    fi
+
+    [[ -z "$choice" ]] && return 0
+
+    unset CLAUDE_CODE_USE_VERTEX CLAUDE_CODE_USE_BEDROCK CLAUDE_CODE_USE_FOUNDRY
+
+    case "$choice" in
+        team)    echo "→ Team Plan mode" ;;
+        vertex)  export CLAUDE_CODE_USE_VERTEX=1;  echo "→ Vertex AI mode" ;;
+        bedrock) export CLAUDE_CODE_USE_BEDROCK=1; echo "→ Amazon Bedrock mode" ;;
+        azure)   export CLAUDE_CODE_USE_FOUNDRY=1; echo "→ Microsoft Foundry mode" ;;
+        *)
+            echo "cct: unknown backend '$choice'" >&2
+            echo "backends: team, vertex, bedrock, azure" >&2
+            return 1
+            ;;
+    esac
+}
+
 # vim: set ft=zsh :

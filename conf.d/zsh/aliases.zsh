@@ -44,18 +44,15 @@ alias ....='cd ../../..'
 alias .....='cd ../../../..'
 alias bd='cd "$OLDPWD"' # cd to the previous directory
 alias nv='nvim'
-alias cc='claude'
-alias ccd='claude --dangerously-skip-permissions'
 alias wget='wget2'
 alias zip='ouch compress'
 alias unzip='ouch decompress'
-alias readwise='bun "$XDG_CACHE_HOME"/.bun/install/global/node_modules/@readwise/cli/dist/index.js'
-alias ctx7='bun "$XDG_CACHE_HOME"/.bun/install/global/node_modules/ctx7/dist/index.js'
+alias cc='claude --dangerously-skip-permissions'
+alias cct="claude-code-toggle"
 
 # Extanded Aliases
 # alias yarn='yarn --use-yarnrc "$XDG_CONFIG_HOME/yarn/config"'
 alias py='TERM=xterm-256color python3'
-alias npm='bun'
 alias ls='lsd -lAh'
 alias lg='lazygit'
 alias lzd='lazydocker'
