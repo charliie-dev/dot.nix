@@ -39,6 +39,9 @@ lib.mkMerge [
             disable_checkpoint = true
           '';
         };
+        ".config/tirith/policy.yaml" = {
+          source = "${src}/conf.d/tirith/policy.yaml";
+        };
         "self-made commands" = {
           enable = true;
           recursive = true;

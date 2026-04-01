@@ -1,0 +1,2 @@
+severity_overrides:
+  schemeless_to_sink: INFO
