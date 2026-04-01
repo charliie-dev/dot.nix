@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# npm → bun shim: allows npm commands to run via bun
+exec bun "$@"

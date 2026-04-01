@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# npx → bunx shim: allows npx commands to run via bunx
+exec bunx "$@"
