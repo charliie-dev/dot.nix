@@ -150,6 +150,11 @@ lib.mkMerge [
   }
   (lib.mkIf pkgs.stdenv.isDarwin {
     launchd.agents = import "${src}/modules/services/colima.nix" { inherit config pkgs; };
+    home.activation.unloadColimaAgent = lib.hm.dag.entryBefore [ "setupLaunchAgents" ] ''
+      if /bin/launchctl print gui/$(id -u)/com.github.abiosoft.colima &>/dev/null; then
+        /bin/launchctl bootout gui/$(id -u)/com.github.abiosoft.colima
+      fi
+    '';
   })
   (lib.mkIf enableSecrets (
     let
