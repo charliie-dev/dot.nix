@@ -18,6 +18,7 @@ in
     # Verify with: grep -r "entryAfter\|entryBefore\|activation" <sops-nix-src>
     activation = {
       doppler-secrets = lib.hm.dag.entryAfter [ "setupSecrets" ] ''
+        export DOPPLER_CONFIG_DIR="${config.xdg.configHome}/doppler"
         if [ -r "${dopplerTokenPath}" ]; then
           export DOPPLER_TOKEN="$(cat "${dopplerTokenPath}")"
           mkdir -p "${secretDir}/doppler"
