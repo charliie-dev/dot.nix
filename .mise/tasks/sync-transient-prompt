@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+#MISE description="Update transient prompt colors from starship palette"
+
+set -euo pipefail
+
+TOML="${STARSHIP_CONFIG:-$XDG_CONFIG_HOME/starship/starship.toml}"
+TARGET="conf.d/zsh/plugins.zsh"
+
+palette=$(yq -p toml -oy '.palette' "$TOML")
+subtext0=$(yq -p toml -oy ".palettes.$palette.subtext0" "$TOML")
+green=$(yq -p toml -oy ".palettes.$palette.green" "$TOML")
+red=$(yq -p toml -oy ".palettes.$palette.red" "$TOML")
+
+echo "Palette: $palette"
+echo "  subtext0=$subtext0  green=$green  red=$red"
+
+# Match the PROMPT= line inside _transient_prompt_accept_line
+sed -i '' "s|PROMPT='%F{#[0-9a-fA-F]\{6\}}%~%f %(?.%B%F{#[0-9a-fA-F]\{6\}}.%B%F{#[0-9a-fA-F]\{6\}})❯%f%b '|PROMPT='%F{${subtext0}}%~%f %(?.%B%F{${green}}.%B%F{${red}})❯%f%b '|" "$TARGET"
+
+echo "Updated $TARGET"
