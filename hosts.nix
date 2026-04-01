@@ -54,7 +54,7 @@
     silent = true;
   };
   # Shared aliases — reuse RDSrv01's eval result
-  "charles@nics-demo-lab" = {
+  "charles@ra-lab" = {
     sharedConfig = "charles@RDSrv01";
     system = "x86_64-linux";
   };
