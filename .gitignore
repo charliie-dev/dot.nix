@@ -3,6 +3,7 @@ result
 
 # OS
 .DS_Store
+*-e
 
 # IDEs
 .prettierd/
