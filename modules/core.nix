@@ -164,33 +164,35 @@ lib.mkMerge [
     {
       inherit (sopsConfig) sops;
 
-      home.packages = dopplerConfig.doppler.packages;
-      home.activation = dopplerConfig.doppler.activation // {
-        ssh = lib.hm.dag.entryAfter [ "reloadSystemd" ] ''
-          if [ -f ${config.home.homeDirectory}/.ssh/id_ed25519.pub ]; then
-            if [ ! -f ${config.home.homeDirectory}/.ssh/authorized_keys ]; then
-              touch ${config.home.homeDirectory}/.ssh/authorized_keys
+      home = {
+        inherit (dopplerConfig.doppler) packages;
+        activation = dopplerConfig.doppler.activation // {
+          ssh = lib.hm.dag.entryAfter [ "reloadSystemd" ] ''
+            if [ -f ${config.home.homeDirectory}/.ssh/id_ed25519.pub ]; then
+              if [ ! -f ${config.home.homeDirectory}/.ssh/authorized_keys ]; then
+                touch ${config.home.homeDirectory}/.ssh/authorized_keys
+              fi
+              if ! grep -q "charles@home-manager" "${config.home.homeDirectory}/.ssh/authorized_keys"; then
+                (cat ${config.home.homeDirectory}/.ssh/id_ed25519.pub) >> ${config.home.homeDirectory}/.ssh/authorized_keys
+              fi
             fi
-            if ! grep -q "charles@home-manager" "${config.home.homeDirectory}/.ssh/authorized_keys"; then
-              (cat ${config.home.homeDirectory}/.ssh/id_ed25519.pub) >> ${config.home.homeDirectory}/.ssh/authorized_keys
-            fi
+          '';
+        };
+      };
+
+      programs = {
+        git.signing.key = "${config.sops.secrets.ssh_ed25519_pub.path}";
+        git.settings.gpg.ssh.allowedSignersFile = "${config.sops.secrets.allowed_signers.path}";
+        ssh.matchBlocks."*".identityFile = "${config.sops.secrets.ssh_ed25519.path}";
+        zsh.envExtra = ''
+          # Load Doppler secrets (application-layer)
+          if [ -r "${config.xdg.dataHome}/secrets_output/doppler/env" ]; then
+            set -a
+            source "${config.xdg.dataHome}/secrets_output/doppler/env"
+            set +a
           fi
         '';
       };
-
-      programs.git.signing.key = "${config.sops.secrets.ssh_ed25519_pub.path}";
-      programs.git.settings.gpg.ssh.allowedSignersFile = "${config.sops.secrets.allowed_signers.path}";
-
-      programs.ssh.matchBlocks."*".identityFile = "${config.sops.secrets.ssh_ed25519.path}";
-
-      programs.zsh.envExtra = ''
-        # Load Doppler secrets (application-layer)
-        if [ -r "${config.xdg.dataHome}/secrets_output/doppler/env" ]; then
-          set -a
-          source "${config.xdg.dataHome}/secrets_output/doppler/env"
-          set +a
-        fi
-      '';
     }
   ))
 ]
