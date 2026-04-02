@@ -38,19 +38,19 @@ smartcache eval starship init zsh
 # (( $OSTYPE[(I)msys] )) && smartcache eval mise activate zsh # mise's smartcache won't work if installing mise via home-manager
 
 # Transient Prompt — simplify previous prompt after command execution
-_transient_prompt_accept_line() {
-  local _saved_prompt="$PROMPT"
-  local _saved_rprompt="$RPROMPT"
-  local _saved_prompt2="$PROMPT2"
-  PROMPT='%F{#a6adc8}%~%f %(?.%B%F{#a6e3a1}.%B%F{#f38ba8})❯%f%b '
-  RPROMPT=''
-  PROMPT2='   '
-  zle reset-prompt
-  PROMPT="$_saved_prompt"
-  RPROMPT="$_saved_rprompt"
-  PROMPT2="$_saved_prompt2"
-  zle .accept-line
-}
-zle -N accept-line _transient_prompt_accept_line
+# _transient_prompt_accept_line() {
+#     local _saved_prompt="$PROMPT"
+#     local _saved_rprompt="$RPROMPT"
+#     local _saved_prompt2="$PROMPT2"
+#     PROMPT='%F{#a6adc8}%~%f %(?.%B%F{#a6e3a1}.%B%F{#f38ba8})❯%f%b '
+#     RPROMPT=''
+#     PROMPT2='   '
+#     zle reset-prompt
+#     PROMPT="$_saved_prompt"
+#     RPROMPT="$_saved_rprompt"
+#     PROMPT2="$_saved_prompt2"
+#     zle .accept-line
+# }
+# zle -N accept-line _transient_prompt_accept_line
 
 # vim: set ft=zsh :
