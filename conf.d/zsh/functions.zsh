@@ -80,9 +80,18 @@ claude-code-toggle() {
 
     case "$choice" in
         team)    echo "→ Team Plan mode" ;;
-        vertex)  export CLAUDE_CODE_USE_VERTEX=1;  echo "→ Vertex AI mode" ;;
-        bedrock) export CLAUDE_CODE_USE_BEDROCK=1; echo "→ Amazon Bedrock mode" ;;
-        azure)   export CLAUDE_CODE_USE_FOUNDRY=1; echo "→ Microsoft Foundry mode" ;;
+        vertex)
+            export CLAUDE_CODE_USE_VERTEX=1
+            echo "→ Vertex AI mode"
+            ;;
+        bedrock)
+            export CLAUDE_CODE_USE_BEDROCK=1
+            echo "→ Amazon Bedrock mode"
+            ;;
+        azure)
+            export CLAUDE_CODE_USE_FOUNDRY=1
+            echo "→ Microsoft Foundry mode"
+            ;;
         *)
             echo "cct: unknown backend '$choice'" >&2
             echo "backends: team, vertex, bedrock, azure" >&2
