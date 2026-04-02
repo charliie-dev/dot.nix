@@ -62,24 +62,13 @@
     sharedConfig = "charles@RDSrv01";
     system = "x86_64-linux";
   };
-  "charles@pg-proxy-dev" = {
-    sharedConfig = "charles@RDSrv01";
-    system = "x86_64-linux";
-  };
-  "charles@pg-primary-dev" = {
-    sharedConfig = "charles@RDSrv01";
-    system = "x86_64-linux";
-  };
-  "charles@pg-replica1-dev" = {
-    sharedConfig = "charles@RDSrv01";
-    system = "x86_64-linux";
-  };
-  "charles@pg-replica2-dev" = {
-    sharedConfig = "charles@RDSrv01";
-    system = "x86_64-linux";
-  };
   "charles@testvm" = {
     sharedConfig = "charles@RDSrv01";
     system = "x86_64-linux";
+  };
+  "charles@dcf-dev" = {
+    sharedConfig = "charles@RDSrv01";
+    system = "x86_64-linux";
+    enableSecrets = false;
   };
 }
