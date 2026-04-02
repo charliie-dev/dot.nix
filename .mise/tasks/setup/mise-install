@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-#MISE description="Install langs set via mise"
-#MISE hide=true
-#MISE depends=["setup:apt-check libatomic1"]
-
-mise install
-
-# vim: ft=sh

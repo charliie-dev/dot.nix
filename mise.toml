@@ -28,7 +28,6 @@ run = [
   ] },
   { tasks = ["repo:remote-url", "setup:trusted-user", "setup:zsh"] },
   { task = "nix:daemon-restart" },
-  { task = "setup:mise-install" },
 ]
 
 # mise sync-transient-prompt: update colors in plugins.zsh after changing theme
