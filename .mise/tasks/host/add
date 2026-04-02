@@ -41,7 +41,7 @@ fi
 # 3. Rekey sops secrets
 echo "[INFO] Rekeying secrets..."
 export SOPS_AGE_KEY_FILE=~/.config/age/keys.txt
-sops updatekeys "$SECRETS_FILE"
+sops updatekeys -y "$SECRETS_FILE"
 
 # 4. Check if host already in hosts.nix
 if grep -v '^\s*#' "$HOSTS_FILE" | grep -q "\"charles@${HOST}\""; then
