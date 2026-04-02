@@ -26,10 +26,7 @@ run = [
     "setup:apt-check git",
     "setup:apt-check age",
   ] },
-  { tasks = [
-    "repo:remote-url",
-    "setup:trusted-user",
-  ] },
+  { tasks = ["repo:remote-url", "setup:trusted-user", "setup:zsh"] },
   { task = "nix:daemon-restart" },
   { task = "setup:mise-install" },
 ]
