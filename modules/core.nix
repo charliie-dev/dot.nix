@@ -87,7 +87,7 @@ lib.mkMerge [
         '';
         topgradeCopy = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
           if [ ! -f ${config.xdg.configHome}/topgrade.d/disable.toml ]; then
-            cd ${config.xdg.configHome}/home-manager/conf.d/
+            mkdir -r ${config.xdg.configHome}/topgrade.d
             cp "${src}/conf.d/topgrade/disable.toml" ${config.xdg.configHome}/topgrade.d/disable.toml
           fi
         '';
