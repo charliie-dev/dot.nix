@@ -10,3 +10,5 @@ else
     sudo DEBIAN_FRONTEND=noninteractive apt install -y "${usage_pkg_name?}"
     echo "[DONE] Installed ${usage_pkg_name?}."
 fi
+
+# vim: ft=sh

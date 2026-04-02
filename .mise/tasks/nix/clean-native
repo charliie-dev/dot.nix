@@ -7,3 +7,5 @@ nix store gc
 sudo nix store gc
 nix-store --optimise
 sudo nix-store --optimise
+
+# vim: ft=sh

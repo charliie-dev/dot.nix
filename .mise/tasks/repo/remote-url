@@ -3,3 +3,5 @@
 #MISE hide=true
 
 git remote set-url origin git@github.com:charliie-dev/dot.nix.git
+
+# vim: ft=sh

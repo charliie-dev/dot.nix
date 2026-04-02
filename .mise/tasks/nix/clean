@@ -2,3 +2,5 @@
 #MISE description="Do nix gc"
 
 nh clean all --ask
+
+# vim: ft=sh

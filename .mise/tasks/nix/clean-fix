@@ -3,3 +3,5 @@
 
 sudo touch /etc/sudoers.d/nix-path
 Defaults:charles secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/nix/var/nix/profiles/default/bin" >> /etc/sudoers.d/nix-path
+
+# vim: ft=sh

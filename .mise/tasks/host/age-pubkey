@@ -32,3 +32,5 @@ PUBKEY=$(ssh "$HOST" "
 
 echo "[OK] Remote age public key for ${HOST}:"
 echo "$PUBKEY"
+
+# vim: ft=sh

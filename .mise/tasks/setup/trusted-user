@@ -16,3 +16,5 @@ else
     echo "$LINE" | sudo tee -a "$TARGET_FILE" >/dev/null
     echo "[INFO] done"
 fi
+
+# vim: ft=sh

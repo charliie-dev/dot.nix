@@ -4,3 +4,5 @@
 #MISE depends=["setup:apt-check libatomic1"]
 
 mise install
+
+# vim: ft=sh

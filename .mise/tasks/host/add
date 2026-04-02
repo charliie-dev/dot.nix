@@ -66,3 +66,5 @@ echo "  2. git add .sops.yaml $SECRETS_FILE $HOSTS_FILE"
 echo "  3. git commit -m 'feat(host): add ${HOST}'"
 echo "  4. git push"
 echo "  5. On ${HOST}: home-manager switch --flake '.#charles@${HOST}'"
+
+# vim: ft=sh

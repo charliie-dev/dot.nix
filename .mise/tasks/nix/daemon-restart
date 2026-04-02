@@ -24,3 +24,5 @@ else
     sudo systemctl restart nix-daemon
     echo "[info] Linux nix-daemon restarted."
 fi
+
+# vim: ft=sh

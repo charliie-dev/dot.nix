@@ -18,3 +18,5 @@ echo "  subtext0=$subtext0  green=$green  red=$red"
 sed -i '' "s|PROMPT='%F{#[0-9a-fA-F]\{6\}}%~%f %(?.%B%F{#[0-9a-fA-F]\{6\}}.%B%F{#[0-9a-fA-F]\{6\}})❯%f%b '|PROMPT='%F{${subtext0}}%~%f %(?.%B%F{${green}}.%B%F{${red}})❯%f%b '|" "$TARGET"
 
 echo "Updated $TARGET"
+
+# vim: ft=sh
