@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+#MISE description="Start home-manager for the first time"
+
+set -euo pipefail
+
+echo "Switching home-manager for the first time..."
+
+# shellcheck source=/dev/null
+source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+git clone https://github.com/charliie-dev/dot.nix.git ~/.config/home-manager
+nix run home-manager/master switch --impure
+
+nix --version
+determinate-nixd version
+
+echo "Switch completed."
+
+# vim: ft=sh
