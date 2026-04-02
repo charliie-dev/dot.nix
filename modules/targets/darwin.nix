@@ -1,10 +1,6 @@
 {
   darwin = {
-    copyApps = {
-      enable = true;
-      enableChecks = true;
-      directory = "Applications/Home Manager Apps";
-    };
+    copyApps.enable = false;
     linkApps.enable = false;
     # null or one of "Bing", "DuckDuckGo", "Ecosia", "Google", "Yahoo"
     search = null;
