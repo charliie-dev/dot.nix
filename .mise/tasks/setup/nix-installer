@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-#MISE description="Update transient prompt colors from starship palette"
+#MISE description="Install nix(DeterminateSystems)"
 
 set -euo pipefail
 
-echo "Updated login shell for $USER to /usr/bin/zsh"
+echo "Starting nix installation..."
 
 curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install --no-confirm
 
-echo "Updated login shell for $USER to /usr/bin/zsh"
+echo "Completed nix installation."
 
 # vim: ft=sh
