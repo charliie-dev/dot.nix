@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+#MISE description="Change login shell to zsh for current user"
+
+set -euo pipefail
+
+sudo usermod -s /usr/bin/zsh "$USER"
+
+echo "Change login shell for $USER to /usr/bin/zsh"
+
+# vim: ft=sh
