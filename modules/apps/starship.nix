@@ -24,7 +24,7 @@
         "[](surface0)"
 
         "$line_break"
-        " "
+        "  "
         # "$shell"
         "$character"
       ];
@@ -49,49 +49,64 @@
         style = "fg:subtext1 bg:surface0";
         format = "[$symbol]($style)";
         symbols = {
-          AlmaLinux = "";
-          Alpaquita = "";
-          Alpine = "";
-          Amazon = "";
-          Android = "";
-          Arch = "";
-          Artix = "";
-          CentOS = "";
-          Debian = "";
-          DragonFly = "";
-          Emscripten = "";
-          EndeavourOS = "";
-          Fedora = "";
-          FreeBSD = "";
-          Garuda = "󰛓";
-          Gentoo = "";
-          HardenedBSD = "󰞌";
-          Illumos = "";
-          Kali = "";
-          Linux = "";
-          Mabox = "";
-          Macos = "";
-          Manjaro = "";
-          Mariner = "";
-          MidnightBSD = "";
-          Mint = "󰣭";
-          NetBSD = "";
-          NixOS = "";
-          OpenBSD = "";
-          openSUSE = "";
-          OracleLinux = "󰌷";
-          Pop = "";
-          Raspbian = "";
-          RedHatEnterprise = "󱄛";
-          Redhat = "󱄛";
-          Redox = "󰀘";
-          RockyLinux = "";
-          SUSE = "";
-          Solus = "";
-          Ubuntu = "";
-          Unknown = "";
-          Void = "";
-          Windows = "";
+          AIX = "➿ ";
+          ALTLinux = "Ⓐ ";
+          AOSC = " ";
+          AlmaLinux = " ";
+          Alpaquita = " ";
+          Alpine = " ";
+          Amazon = " ";
+          Android = " ";
+          Arch = " ";
+          Artix = " ";
+          Bluefin = "󰈺 ";
+          CachyOS = "🎗️ ";
+          CentOS = " ";
+          Debian = " ";
+          DragonFly = " ";
+          Elementary = " ";
+          Emscripten = " ";
+          EndeavourOS = " ";
+          Fedora = " ";
+          FreeBSD = " ";
+          Garuda = "󰛓 ";
+          Gentoo = " ";
+          HardenedBSD = "󰞌 ";
+          Illumos = " ";
+          InstantOS = "⏲️ ";
+          Ios = "󰀷 ";
+          Kali = " ";
+          Linux = " ";
+          Mabox = " ";
+          Macos = " ";
+          Manjaro = " ";
+          Mariner = " ";
+          MidnightBSD = " ";
+          Mint = "󰣭 ";
+          NetBSD = " ";
+          NixOS = " ";
+          Nobara = " ";
+          OpenBSD = " ";
+          OpenCloudOS = "☁️ ";
+          OracleLinux = "󰌷 ";
+          PikaOS = "🐤 ";
+          Pop = " ";
+          Raspbian = " ";
+          RedHatEnterprise = "󱄛 ";
+          Redhat = "󱄛 ";
+          Redox = "󰀘 ";
+          RockyLinux = " ";
+          SUSE = " ";
+          Solus = " ";
+          Ubuntu = " ";
+          Ultramarine = "🔷 ";
+          Unknown = " ";
+          Uos = "🐲 ";
+          Void = " ";
+          Windows = " ";
+          Zorin = " ";
+          openEuler = "🦉 ";
+          openSUSE = " ";
         };
       };
 
