@@ -258,7 +258,7 @@
         # Enable the mandb step (to update manual entries).
         # Mandb is updated in the background by a service on most systems by default.
         # (default: false)
-        enable = true;
+        enable = false;
       };
 
       pkgfile = {
