@@ -59,4 +59,35 @@ else
   echo "ubuntu-advantage-tools not found (skipped)"
 fi
 
+# Silence ESM/Ubuntu Pro messages emitted by apt_check.py (update-notifier).
+# On Ubuntu 24.04, the "ESM Apps is not enabled" notice is printed by
+# _output_esm_service_status() and _output_esm_package_alert() inside
+# apt_check.py — not by any update-motd.d script — so it survives the steps
+# above. Inserting a bare `return` as the first statement in each function
+# makes them no-ops while leaving the file otherwise intact.
+APT_CHECK="/usr/lib/update-notifier/apt_check.py"
+if [[ -f "$APT_CHECK" ]]; then
+  if grep -q "_output_esm_service_status\|_output_esm_package_alert" "$APT_CHECK"; then
+    sudo python3 - "$APT_CHECK" <<'PYEOF'
+import re, sys
+path = sys.argv[1]
+with open(path) as f:
+    src = f.read()
+for fn in ("_output_esm_service_status", "_output_esm_package_alert"):
+    src = re.sub(
+        r'(def ' + fn + r'[^\n]*:\n)',
+        r'\1    return  # disabled by disable-motd\n',
+        src,
+    )
+with open(path, "w") as f:
+    f.write(src)
+PYEOF
+    echo "Patched apt_check.py ESM functions"
+  else
+    echo "apt_check.py: ESM functions not found (already patched or different version)"
+  fi
+else
+  echo "apt_check.py not found (skipped)"
+fi
+
 # vim: ft=sh
