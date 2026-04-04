@@ -31,7 +31,7 @@ echo "MOTD scripts disabled!"
 
 # Disable any remaining ESM/Ubuntu Pro scripts not covered by the named list above
 # (script numbers vary across Ubuntu versions)
-for path in "${MOTD_DIR}"/*; do
+for path in "$MOTD_DIR"/*; do
   [[ -x "$path" ]] || continue
   name="$(basename "$path")"
   case "$name" in
