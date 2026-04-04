@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+#MISE description="Disable Ubuntu MOTD scripts and suppress apt Ubuntu Pro ads"
+
+set -euo pipefail
+
+MOTD_DIR="/etc/update-motd.d"
+
+# List of MOTD scripts to disable
+DISABLE_LIST=(
+  "10-help-text"        # Ubuntu 使用說明（man / manpath / info 指令提示）
+  "50-motd-news"        # Canonical 遠端新聞公告（需網路，會拖慢 SSH 登入）
+  "80-esm"              # Ubuntu Pro ESM 可用套件數量提示
+  "88-esm-announce"     # Ubuntu Pro ESM 促銷廣告（與 80-esm 互補）
+  "91-contract-ua-esm-status" # Ubuntu Advantage 合約與 ESM 授權狀態
+)
+
+for name in "${DISABLE_LIST[@]}"; do
+  path="${MOTD_DIR}/${name}"
+  if [[ -x "$path" ]]; then
+    sudo chmod -x "$path"
+    echo "Disabled: ${name}"
+  elif [[ -f "$path" ]]; then
+    echo "Already disabled: ${name}"
+  else
+    echo "Not found (skipped): ${name}"
+  fi
+done
+
+echo "MOTD scripts disabled!"
+
+# Suppress Ubuntu Pro upsell messages in apt/apt-get output
+if command -v pro &>/dev/null; then
+  sudo pro config set apt_news=false
+  echo "Ubuntu Pro apt ads disabled!"
+else
+  echo "ubuntu-advantage-tools not found (skipped)"
+fi
+
+# vim: ft=sh

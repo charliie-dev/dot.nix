@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+#MISE description="Remove Ubuntu telemetry, ad services, and unnecessary packages"
+
+set -euo pipefail
+
+# ---------------------------------------------------------------------------
+# Telemetry & error reporting
+# ---------------------------------------------------------------------------
+
+REMOVE_PKGS=(
+  # Canonical telemetry & error reporting
+  apport              # Crash reporter — collects crash dumps and reports to Canonical
+  apport-symptoms     # Symptom analysis plugin for apport
+  whoopsie            # Uploads apport reports to errors.ubuntu.com
+  ubuntu-report       # System info telemetry (the prompt shown during install)
+  popularity-contest  # Periodically reports installed package list to Canonical
+  kerneloops          # Kernel oops reporting tool
+  landscape-common    # Provides landscape-sysinfo (CPU/RAM summary) on login
+
+  # Printing
+  cups                # Print service — not needed on servers
+  cups-browsed        # Network printer discovery
+
+  # Hardware services (typically unnecessary on servers)
+  avahi-daemon        # mDNS/Bonjour — not needed in server environments
+  bluez               # Bluetooth stack
+  bluetooth           # Bluetooth service
+  ModemManager        # Mobile broadband management
+  speech-dispatcher   # Text-to-speech framework
+  brltty              # Braille display support (has USB device hijacking vulnerability history)
+  plymouth            # Boot splash screen — pointless on headless servers
+
+  # Network / mail
+  postfix             # Listens on localhost:25 by default — remove if not sending mail
+)
+
+echo "==> Removing telemetry and ad packages..."
+for pkg in "${REMOVE_PKGS[@]}"; do
+  if dpkg -s "$pkg" &>/dev/null; then
+    sudo DEBIAN_FRONTEND=noninteractive apt purge -y "$pkg"
+    echo "Removed: ${pkg}"
+  else
+    echo "Not installed (skipped): ${pkg}"
+  fi
+done
+
+sudo apt autoremove -y --purge
+
+echo ""
+echo "Ubuntu debloat complete!"
+
+# vim: ft=sh
