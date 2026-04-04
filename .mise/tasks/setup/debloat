@@ -25,7 +25,7 @@ REMOVE_PKGS=(
   avahi-daemon        # mDNS/Bonjour — not needed in server environments
   bluez               # Bluetooth stack
   bluetooth           # Bluetooth service
-  ModemManager        # Mobile broadband management
+  modemmanager        # Mobile broadband management
   speech-dispatcher   # Text-to-speech framework
   brltty              # Braille display support (has USB device hijacking vulnerability history)
   plymouth            # Boot splash screen — pointless on headless servers
@@ -37,14 +37,14 @@ REMOVE_PKGS=(
 echo "==> Removing telemetry and ad packages..."
 for pkg in "${REMOVE_PKGS[@]}"; do
   if dpkg -s "$pkg" &>/dev/null; then
-    sudo DEBIAN_FRONTEND=noninteractive apt purge -y "$pkg"
+    sudo DEBIAN_FRONTEND=noninteractive apt-get purge -y "$pkg"
     echo "Removed: ${pkg}"
   else
     echo "Not installed (skipped): ${pkg}"
   fi
 done
 
-sudo apt autoremove -y --purge
+sudo apt-get autoremove -y --purge
 
 echo ""
 echo "Ubuntu debloat complete!"
