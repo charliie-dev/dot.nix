@@ -7,11 +7,12 @@ MOTD_DIR="/etc/update-motd.d"
 
 # List of MOTD scripts to disable
 DISABLE_LIST=(
-  "10-help-text"        # Ubuntu 使用說明（man / manpath / info 指令提示）
-  "50-motd-news"        # Canonical 遠端新聞公告（需網路，會拖慢 SSH 登入）
-  "80-esm"              # Ubuntu Pro ESM 可用套件數量提示
-  "88-esm-announce"     # Ubuntu Pro ESM 促銷廣告（與 80-esm 互補）
-  "91-contract-ua-esm-status" # Ubuntu Advantage 合約與 ESM 授權狀態
+  "10-help-text"        # Ubuntu usage tips (man / manpath / info command hints)
+  "50-motd-news"        # Canonical remote news feed (requires network, slows SSH login)
+  "60-unminimize"       # Prompt to restore full Ubuntu packages from minimal install
+  "80-esm"              # Ubuntu Pro ESM available package count notice
+  "88-esm-announce"     # Ubuntu Pro ESM upsell ad (complements 80-esm)
+  "91-contract-ua-esm-status" # Ubuntu Advantage contract and ESM license status
 )
 
 for name in "${DISABLE_LIST[@]}"; do
@@ -27,6 +28,28 @@ for name in "${DISABLE_LIST[@]}"; do
 done
 
 echo "MOTD scripts disabled!"
+
+# Disable any remaining ESM/Ubuntu Pro scripts not covered by the named list above
+# (script numbers vary across Ubuntu versions)
+for path in "${MOTD_DIR}"/*; do
+  [[ -x "$path" ]] || continue
+  name="$(basename "$path")"
+  case "$name" in
+    *esm* | *ubuntu-advantage* | *ubuntu-pro* | *contract* | *ua-*)
+      sudo chmod -x "$path"
+      echo "Disabled (pattern): ${name}"
+      ;;
+  esac
+done
+
+# Clear cached ubuntu-pro MOTD message files written by the ua-timer service.
+# These persist independently of the update-motd.d scripts and can still appear
+# via PAM or other display mechanisms.
+UA_MSG_DIR="/var/lib/ubuntu-advantage/messages"
+if [[ -d "$UA_MSG_DIR" ]]; then
+  sudo find "$UA_MSG_DIR" -maxdepth 1 -name "motd-*" -type f -delete
+  echo "Cleared ubuntu-pro cached MOTD messages"
+fi
 
 # Suppress Ubuntu Pro upsell messages in apt/apt-get output
 if command -v pro &>/dev/null; then
