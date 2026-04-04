@@ -90,4 +90,20 @@ else
   echo "apt_check.py not found (skipped)"
 fi
 
+# Flush stale MOTD caches so the next login reflects changes immediately.
+# /run/motd.dynamic is read by PAM; /var/lib/update-notifier/updates-available
+# is written by apt_check.py and included in the dynamic MOTD.
+for cache in /run/motd.dynamic /var/lib/update-notifier/updates-available; do
+  if [[ -f "$cache" ]]; then
+    sudo truncate -s 0 "$cache"
+    echo "Cleared cache: ${cache}"
+  fi
+done
+
+# Regenerate the dynamic MOTD so it picks up all changes above
+if [[ -x /usr/bin/update-motd ]]; then
+  sudo update-motd 2>/dev/null || true
+  echo "Regenerated MOTD"
+fi
+
 # vim: ft=sh
