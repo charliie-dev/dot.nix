@@ -46,6 +46,7 @@
           "~/.config/mise"
           "~/.config/nvim"
           "~/.config/home-manager"
+          "/etc/docker/composes"
           "~/Workspace"
           "~/Work"
         ];
