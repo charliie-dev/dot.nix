@@ -46,7 +46,7 @@ jobs:
         run: nix build .#checks.x86_64-linux.formatting --no-link
 
       - name: Commit flake.lock via REST Contents API (server-signed → Verified)
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs');
