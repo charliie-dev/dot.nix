@@ -2,6 +2,7 @@
 {
   neovim = {
     enable = true;
+    sideloadInitLua = true;
     # package = pkgs.neovim-nightly;
     withNodeJs = true;
     withPython3 = true;
