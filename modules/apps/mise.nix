@@ -7,6 +7,7 @@
         bun = "latest";
         python = "latest";
         uv = "latest";
+        node = "latest";
         # ruby = "latest";
         # go = "latest";
         usage = "latest";
