@@ -67,7 +67,9 @@
           enableSecrets = hostCfg.enableSecrets or true;
           isGpu = hostCfg.gpu or false;
           nushellOverlay = _: prev: {
-            nushell = prev.nushell.overrideAttrs (_: { doCheck = false; });
+            nushell = prev.nushell.overrideAttrs (_: {
+              doCheck = false;
+            });
           };
           overlays = [ nushellOverlay ] ++ (if isGpu then [ nixgl.overlay ] else [ ]);
           pkgsConfig = {
