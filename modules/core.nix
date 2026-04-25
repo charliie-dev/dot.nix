@@ -14,6 +14,33 @@ let
     r: (import "${src}/modules/apps/roles/${r}.nix" { inherit config pkgs; }).packages
   ) roles;
   merged_pkgs = lib.unique (common_apps ++ role_pkgs);
+
+  # Auto-discover program modules from modules/apps/.
+  # Convention: <name>.nix returns { <name> = {...}; }; helpers prefix with _;
+  # disabled modules use .bak suffix.
+  appsDir = "${src}/modules/apps";
+  appFiles = lib.filterAttrs (
+    name: type: type == "regular" && lib.hasSuffix ".nix" name && !(lib.hasPrefix "_" name)
+  ) (builtins.readDir appsDir);
+  appArgs = {
+    inherit
+      config
+      pkgs
+      lib
+      src
+      ;
+  };
+  loadApp =
+    filename:
+    let
+      raw = import "${appsDir}/${filename}";
+      module = if lib.isFunction raw then raw appArgs else raw;
+    in
+    if lib.isAttrs module && module != { } then
+      module
+    else
+      throw "modules/apps/${filename}: expected non-empty attrset, got ${builtins.typeOf module}";
+  appModules = map loadApp (builtins.attrNames appFiles);
 in
 lib.mkMerge [
   {
@@ -104,45 +131,7 @@ lib.mkMerge [
       ;
     inherit (import "${src}/modules/catppuccin.nix") catppuccin;
 
-    programs = {
-      inherit (import "${src}/modules/apps/home-manager.nix") home-manager;
-      inherit (import "${src}/modules/apps/asciinema.nix") asciinema;
-      inherit (import "${src}/modules/apps/bat.nix" { inherit pkgs; }) bat;
-      inherit (import "${src}/modules/apps/btop.nix") btop;
-      inherit (import "${src}/modules/apps/carapace.nix") carapace;
-      inherit (import "${src}/modules/apps/delta.nix") delta;
-      inherit (import "${src}/modules/apps/difftastic.nix") difftastic;
-      inherit (import "${src}/modules/apps/fd.nix") fd;
-      inherit (import "${src}/modules/apps/fzf.nix") fzf;
-      inherit (import "${src}/modules/apps/gh-dash.nix") gh-dash;
-      inherit (import "${src}/modules/apps/gh.nix" { inherit pkgs; }) gh;
-      inherit (import "${src}/modules/apps/git.nix" { inherit config; }) git;
-      inherit (import "${src}/modules/apps/hstr.nix") hstr;
-      inherit (import "${src}/modules/apps/hwatch.nix") hwatch;
-      inherit (import "${src}/modules/apps/lazydocker.nix") lazydocker;
-      inherit (import "${src}/modules/apps/lazygit.nix") lazygit;
-      inherit (import "${src}/modules/apps/lsd.nix") lsd;
-      inherit (import "${src}/modules/apps/man.nix") man;
-      inherit (import "${src}/modules/apps/mise.nix") mise;
-      inherit (import "${src}/modules/apps/neovim.nix" { inherit pkgs lib; }) neovim;
-      inherit (import "${src}/modules/apps/nh.nix" { inherit config; }) nh;
-      inherit (import "${src}/modules/apps/nix-index.nix") nix-index;
-      inherit (import "${src}/modules/apps/nix-search-tv.nix") nix-search-tv;
-      inherit (import "${src}/modules/apps/pistol.nix") pistol;
-      inherit (import "${src}/modules/apps/ripgrep-all.nix") ripgrep-all;
-      inherit (import "${src}/modules/apps/ripgrep.nix") ripgrep;
-      inherit (import "${src}/modules/apps/snitch.nix") snitch;
-      inherit (import "${src}/modules/apps/ssh.nix" { inherit config; }) ssh;
-      inherit (import "${src}/modules/apps/starship.nix" { inherit config lib; }) starship;
-      inherit (import "${src}/modules/apps/television.nix") television;
-      inherit (import "${src}/modules/apps/tirith.nix") tirith;
-      inherit (import "${src}/modules/apps/tmux.nix" { inherit pkgs src; }) tmux;
-      inherit (import "${src}/modules/apps/topgrade.nix") topgrade;
-      inherit (import "${src}/modules/apps/vivid.nix") vivid;
-      inherit (import "${src}/modules/apps/yazi.nix" { inherit pkgs; }) yazi;
-      inherit (import "${src}/modules/apps/zoxide.nix") zoxide;
-      inherit (import "${src}/modules/apps/zsh.nix" { inherit config pkgs src; }) zsh;
-    };
+    programs = lib.mkMerge appModules;
 
     services = {
       inherit (import "${src}/modules/services/home-manager.nix" { }) home-manager;
