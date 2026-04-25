@@ -6,7 +6,6 @@
 }:
 let
   dopplerDir = "${config.xdg.dataHome}/doppler";
-  # Hardcode path to avoid circular dependency in plain function import
   # Must match sops.nix doppler_token.path
   dopplerTokenPath = "${dopplerDir}/token";
 in
