@@ -66,30 +66,21 @@ lib.mkMerge [
           cd ${config.xdg.configHome}/nvim
           ${pkgs.git}/bin/git remote set-url origin git@github.com:${nvimdots_url}
         '';
-        sshDirectory = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-          if [ ! -d ${config.home.homeDirectory}/.ssh ]; then
-            mkdir -p ${config.home.homeDirectory}/.ssh
-          fi
+        initDataDirs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+          # SSH
+          mkdir -p ${config.home.homeDirectory}/.ssh
           chmod 700 ${config.home.homeDirectory}/.ssh
-        '';
-        gpgFixup = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-          if [ ! -d ${config.xdg.dataHome}/gnupg ]; then
-            mkdir -p ${config.xdg.dataHome}/gnupg
-          fi
-          if [ "$(ls -A ${config.xdg.dataHome}/gnupg/)" ]; then
+
+          # GPG
+          mkdir -p ${config.xdg.dataHome}/gnupg
+          chmod 700 ${config.xdg.dataHome}/gnupg
+          if [ -n "$(ls -A ${config.xdg.dataHome}/gnupg/ 2>/dev/null)" ]; then
             chmod 600 ${config.xdg.dataHome}/gnupg/*
           fi
-          chmod 700 ${config.xdg.dataHome}/gnupg
-        '';
-        dotnetFixup = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-          if [ ! -d ${config.xdg.dataHome}/dotnet ]; then
-            mkdir -p ${config.xdg.dataHome}/dotnet
-          fi
-        '';
-        awsFixup = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-          if [ ! -d ${config.xdg.dataHome}/aws ]; then
-            mkdir -p ${config.xdg.dataHome}/aws
-          fi
+
+          # Tool data dirs
+          mkdir -p ${config.xdg.dataHome}/dotnet
+          mkdir -p ${config.xdg.dataHome}/aws
         '';
         topgradeCopy = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
           if [ ! -f ${config.xdg.configHome}/topgrade.d/disable.toml ]; then
