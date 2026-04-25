@@ -155,9 +155,6 @@
         formatting = treefmtEval.${pkgs.system}.config.build.check self;
       });
 
-      filter = nix-filter.lib;
-      source = src;
-
       homeConfigurations = directConfigs // sharedConfigs;
     };
 }
