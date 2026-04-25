@@ -8,7 +8,6 @@
       "dev-core"
       "dev-extra"
       "top"
-      "darwin-top"
     ];
     homeDirectory = "/Users/charles";
     target = "darwin";
@@ -24,7 +23,6 @@
       "dev-core"
       "dev-extra"
       "top"
-      "linux-top"
     ];
     homeDirectory = "/home/charles";
     target = "genericLinux";
@@ -41,7 +39,6 @@
       "dev-core"
       "dev-extra"
       "top"
-      "linux-top"
       "nvidia-gpu"
     ];
     homeDirectory = "/home/charles";
