@@ -26,6 +26,11 @@
     nix-filter.url = "github:numtide/nix-filter";
     snitch.url = "github:karol-broda/snitch";
     systems.url = "github:nix-systems/default";
+
+    nix-src = {
+      url = "github:DeterminateSystems/nix-src";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -36,6 +41,7 @@
       home-manager,
       nix-filter,
       nix-index-database,
+      nix-src,
       nixgl,
       nixpkgs,
       snitch,
@@ -71,7 +77,15 @@
               doCheck = false;
             });
           };
-          overlays = [ nushellOverlay ] ++ (if isGpu then [ nixgl.overlay ] else [ ]);
+          determinateNixOverlay = final: prev: {
+            determinate-nix = nix-src.packages.${hostCfg.system}.default;
+            nixos-option = prev.nixos-option.override { nix = final.determinate-nix; };
+            nurl = prev.nurl.override { nix = final.determinate-nix; };
+          };
+          overlays = [
+            nushellOverlay
+            determinateNixOverlay
+          ] ++ (if isGpu then [ nixgl.overlay ] else [ ]);
           pkgsConfig = {
             allowUnfree = true;
           }

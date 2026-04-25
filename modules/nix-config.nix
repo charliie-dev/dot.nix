@@ -1,7 +1,7 @@
 { pkgs, ... }:
 {
   nix = {
-    package = pkgs.nix;
+    package = pkgs.determinate-nix;
     checkConfig = true;
     settings = {
       experimental-features = [
@@ -16,6 +16,11 @@
       http-connections = 50;
       trusted-users = "charles";
       download-buffer-size = 16777216000; # 16 GB
+
+      # Determinate Nix-only settings (require pkgs.determinate-nix)
+      lazy-trees = true;
+      eval-cores = 0;
+      # lazy-locks = true; # still being polished by DS, off by default
     };
     # use nh to clean
     # gc = {
