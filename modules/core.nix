@@ -172,8 +172,10 @@ lib.mkMerge [
               if [ ! -f ${config.home.homeDirectory}/.ssh/authorized_keys ]; then
                 touch ${config.home.homeDirectory}/.ssh/authorized_keys
               fi
-              if ! grep -q "charles@home-manager" "${config.home.homeDirectory}/.ssh/authorized_keys"; then
-                (cat ${config.home.homeDirectory}/.ssh/id_ed25519.pub) >> ${config.home.homeDirectory}/.ssh/authorized_keys
+              # Compare key type + body (cols 1-2), ignoring the comment field
+              read -r ktype kbody _ < ${config.home.homeDirectory}/.ssh/id_ed25519.pub
+              if ! grep -qF "$ktype $kbody" ${config.home.homeDirectory}/.ssh/authorized_keys; then
+                cat ${config.home.homeDirectory}/.ssh/id_ed25519.pub >> ${config.home.homeDirectory}/.ssh/authorized_keys
               fi
             fi
           '';
