@@ -51,14 +51,20 @@ export BUN_INSTALL="$XDG_DATA_HOME"/bun
 export TF_CLI_CONFIG_FILE="$XDG_CONFIG_HOME"/terraform/terraformrc
 export DOPPLER_CONFIG_DIR="$XDG_CONFIG_HOME"/doppler
 
+
+# Disable Determinate Nix telemetry
+# https://docs.determinate.systems/guides/telemetry/
+export NIX_SENTRY_ENDPOINT=""
+export DETSYS_IDS_TELEMETRY="disabled"
+
+# Secrets Management
+export SOPS_AGE_KEY_FILE="$XDG_CONFIG_HOME"/age/keys.txt
+
 # Code Agents
 export CLAUDE_CONFIG_DIR="$XDG_CONFIG_HOME"/claude
 export CODEX_HOME="$XDG_CONFIG_HOME"/codex
 export COPILOT_HOME="$XDG_CONFIG_HOME"/copilot
 export MCP_REMOTE_CONFIG_DIR="$XDG_DATA_HOME"/mcp-auth
-
-# Secrets Management
-export SOPS_AGE_KEY_FILE="$XDG_CONFIG_HOME"/age/keys.txt
 
 # VPS
 export AWS_SHARED_CREDENTIALS_FILE="$XDG_CONFIG_HOME"/aws/credentials

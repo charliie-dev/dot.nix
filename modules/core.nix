@@ -29,6 +29,12 @@ lib.mkMerge [
       packages = merged_pkgs;
       shell.enableZshIntegration = true;
       sessionPath = [ "/nix/var/nix/profiles/default/bin" ];
+      sessionVariables = {
+        # Disable Determinate Nix telemetry
+        # https://docs.determinate.systems/guides/telemetry/
+        NIX_SENTRY_ENDPOINT = "";
+        DETSYS_IDS_TELEMETRY = "disabled";
+      };
       file = {
         ".config/parallel/will-cite" = {
           text = "";
