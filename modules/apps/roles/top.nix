@@ -17,8 +17,8 @@ in
     ]
     ++ lib.optionals stdenv.isLinux [
       s-tui # Stress-Terminal UI monitoring tool
-      iotop-c
-      wavemon
+      iotop-c # Top-like UI for monitoring I/O usage (C port of iotop)
+      wavemon # ncurses Wi-Fi signal and statistics monitor
       gpufetch # GPU architecture info
     ]
     ++ lib.optionals stdenv.isDarwin [
