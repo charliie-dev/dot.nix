@@ -2,7 +2,7 @@
 # enableSecrets: per-host flag, set to false for first-time deploys on new machines
 # sharedConfig: point to another host name to reuse its homeManagerConfiguration
 {
-  "charles@m3pro" = {
+  "charles@24041-LABNB01" = {
     system = "aarch64-darwin";
     roles = [
       "dev-core"
@@ -12,6 +12,11 @@
     ];
     homeDirectory = "/Users/charles";
     target = "darwin";
+  };
+  # home-manager switch uses hostname with .local suffix on macOS
+  "charles@24041-LABNB01.local" = {
+    sharedConfig = "charles@24041-LABNB01";
+    system = "aarch64-darwin";
   };
   "charles@callisto" = {
     system = "x86_64-linux";
