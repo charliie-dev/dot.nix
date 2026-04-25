@@ -88,7 +88,8 @@
           overlays = [
             nushellOverlay
             determinateNixOverlay
-          ] ++ (if isGpu then [ nixgl.overlay ] else [ ]);
+          ]
+          ++ (if isGpu then [ nixgl.overlay ] else [ ]);
           pkgsConfig = {
             allowUnfree = true;
           }
