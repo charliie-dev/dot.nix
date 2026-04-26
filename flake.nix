@@ -142,7 +142,7 @@
             });
           };
           determinateNixOverlay =
-            final: prev:
+            _final: prev:
             let
               determinateNix = nixSrcRebuilt.packages.${hostCfg.system}.default;
             in
