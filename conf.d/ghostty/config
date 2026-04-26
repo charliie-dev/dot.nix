@@ -19,7 +19,7 @@ window-padding-balance = true
 
 bold-is-bright = true
 auto-update = off
-shell-integration-features = sudo, ssh-terminfo
+shell-integration-features = sudo
 
 clipboard-read = allow
 clipboard-write = allow
