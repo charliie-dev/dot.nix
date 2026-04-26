@@ -136,7 +136,8 @@
               doInstallCheck = false;
             });
           };
-          determinateNixOverlay = final: prev:
+          determinateNixOverlay =
+            final: prev:
             let
               determinateNix = nixSrcRebuilt.packages.${hostCfg.system}.default;
             in
