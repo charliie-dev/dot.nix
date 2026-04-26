@@ -118,14 +118,16 @@
             mise = mkBinaryStub prev "mise";
             topgrade = mkBinaryStub prev "topgrade";
           };
+          # Each overlay below disables checks on a single package that we're
+          # already forced to rebuild locally (determinate-nix override, src
+          # patch, etc.). Setting doCheck=false on a package that DOES
+          # substitute from cache.nixos.org would flip its hash and force a
+          # needless local rebuild — only add an overlay when the package is
+          # already cache-missing for some other reason.
           nushellOverlay = _: prev: {
             nushell = prev.nushell.overrideAttrs (_: {
               doCheck = false;
-            });
-          };
-          direnvOverlay = _: prev: {
-            direnv = prev.direnv.overrideAttrs (_: {
-              doCheck = false;
+              doInstallCheck = false;
             });
           };
           neovimOverlay = _: prev: {
@@ -134,15 +136,22 @@
               doInstallCheck = false;
             });
           };
-          determinateNixOverlay = final: prev: {
-            determinate-nix = nixSrcRebuilt.packages.${hostCfg.system}.default;
-            nixos-option = prev.nixos-option.override { nix = final.determinate-nix; };
-            nurl = prev.nurl.override { nix = final.determinate-nix; };
-          };
+          determinateNixOverlay = final: prev:
+            let
+              determinateNix = nixSrcRebuilt.packages.${hostCfg.system}.default;
+            in
+            {
+              determinate-nix = determinateNix;
+              nixos-option = prev.nixos-option.override { nix = determinateNix; };
+              # nurl is forced local because of the nix override; skip its tests too.
+              nurl = (prev.nurl.override { nix = determinateNix; }).overrideAttrs (_: {
+                doCheck = false;
+                doInstallCheck = false;
+              });
+            };
           overlays = [
             binaryStubsOverlay
             nushellOverlay
-            direnvOverlay
             neovimOverlay
             determinateNixOverlay
           ]
