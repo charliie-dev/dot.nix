@@ -80,6 +80,17 @@
               doCheck = false;
             });
           };
+          direnvOverlay = _: prev: {
+            direnv = prev.direnv.overrideAttrs (_: {
+              doCheck = false;
+            });
+          };
+          neovimOverlay = _: prev: {
+            neovim-unwrapped = prev.neovim-unwrapped.overrideAttrs (_: {
+              doCheck = false;
+              doInstallCheck = false;
+            });
+          };
           determinateNixOverlay = final: prev: {
             determinate-nix = nix-src.packages.${hostCfg.system}.default;
             nixos-option = prev.nixos-option.override { nix = final.determinate-nix; };
@@ -87,6 +98,8 @@
           };
           overlays = [
             nushellOverlay
+            direnvOverlay
+            neovimOverlay
             determinateNixOverlay
           ]
           ++ (if isGpu then [ nixgl.overlay ] else [ ]);
