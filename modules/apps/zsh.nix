@@ -1,9 +1,26 @@
 {
   config,
+  lib,
   pkgs,
   src,
   ...
 }:
+let
+  # macOS Tahoe 26 + nixpkgs zsh 5.9 (built against older Darwin SDK) hangs in
+  # `sigsuspend → pause()` waiting for SIGCHLD that never wakes it up — every
+  # `$(...)` in zshrc has a chance to deadlock. Apple's `/bin/zsh` (also 5.9,
+  # but built with current macOS SDK) works correctly. Until nixpkgs fixes
+  # this upstream, point home-manager at system zsh on Darwin.
+  # See: zsh Src/signals.c "race prone, or what?" comment.
+  systemZsh = pkgs.runCommand "system-zsh" { meta.mainProgram = "zsh"; } ''
+    mkdir -p $out/bin
+    ln -sf /bin/zsh $out/bin/zsh
+    if [ -d /usr/share/zsh ]; then
+      mkdir -p $out/share
+      ln -sf /usr/share/zsh $out/share/zsh
+    fi
+  '';
+in
 {
   zsh = {
     enable = true;
@@ -125,5 +142,6 @@
       export AWS_DATA_PATH="${config.xdg.dataHome}/aws"
     '';
     # Doppler secrets loaded by core.nix mkIf enableSecrets
-  };
+  }
+  // lib.optionalAttrs pkgs.stdenv.isDarwin { package = systemZsh; };
 }
