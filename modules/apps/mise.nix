@@ -32,7 +32,9 @@
         gpg_verify = true;
         jobs = 8;
         paranoid = false;
-        task_output = "keep-order";
+        task = {
+          output = "keep-order";
+        };
 
         npm = {
           package_manager = "bun";
