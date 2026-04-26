@@ -37,11 +37,32 @@ mr() {
 }
 
 _mr() {
-    local -a tasks aliases
-    tasks=(${(f)"$(mise tasks ls --no-header 2>/dev/null | awk '{print $1 ":" $2}')"})
-    aliases=(${(f)"$(mise shell-alias ls 2>/dev/null | awk '{print $1 ":shell-alias→" substr($0, index($0,$2))}')"})
-    _describe 'task' tasks
-    _describe 'shell-alias' aliases
+    local -a tnames tdisp anames adisp
+    local line name rest expl
+    local sep=$'\t'
+
+    for line in ${(f)"$(mise tasks ls --no-header 2>/dev/null | awk '{
+        match($0, /[[:space:]]+/)
+        print substr($0,1,RSTART-1) "\t" substr($0,RSTART+RLENGTH)
+    }')"}; do
+        name=${line%%$sep*}
+        rest=${line#*$sep}
+        tnames+=("$name")
+        tdisp+=("${(r:28:)name} -- $rest")
+    done
+
+    for line in ${(f)"$(mise shell-alias ls 2>/dev/null | awk '{
+        match($0, /[[:space:]]+/)
+        print substr($0,1,RSTART-1) "\t" substr($0,RSTART+RLENGTH)
+    }')"}; do
+        name=${line%%$sep*}
+        rest=${line#*$sep}
+        anames+=("$name")
+        adisp+=("${(r:28:)name} -- shell-alias→ $rest")
+    done
+
+    (( ${#tnames} )) && _wanted tasks expl 'task' compadd -ld tdisp -a tnames
+    (( ${#anames} )) && _wanted aliases expl 'shell-alias' compadd -ld adisp -a anames
 }
 compdef _mr mr
 
