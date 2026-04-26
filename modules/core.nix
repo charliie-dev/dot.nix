@@ -306,7 +306,7 @@ lib.mkMerge [
   (lib.mkIf pkgs.stdenv.isLinux {
     home = {
       packages = [ pkgs.ghostty.terminfo ];
-      sessionVariables.TERMINFO_DIRS = "$HOME/.nix-profile/share/terminfo\${TERMINFO_DIRS:+:}\${TERMINFO_DIRS}:/usr/share/terminfo";
+      sessionVariables.TERMINFO_DIRS = "${config.home.profileDirectory}/share/terminfo\${TERMINFO_DIRS:+:}\${TERMINFO_DIRS}:/usr/share/terminfo";
     };
   })
   (lib.mkIf enableSecrets (
