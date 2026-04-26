@@ -83,7 +83,7 @@ export DISABLE_TELEMETRY=1
 export ANTIDOTE_HOME="$XDG_CACHE_HOME"/antidote
 export ZSH_SMARTCACHE_DIR="$XDG_CACHE_HOME"/zsh/smartcache
 export ZSH_AUTOSUGGEST_USE_ASYNC="true"
-export ZSH_COMPDUMP="$XDG_CACHE_HOME"/zsh/compdump
+export ZSH_COMPDUMP="$XDG_CACHE_HOME"/zsh/zcompdump
 
 # Setup terminal, and turn on colors
 [ "$TMUX" != "" ] && export TERM="tmux-256color"
