@@ -124,11 +124,16 @@
           # substitute from cache.nixos.org would flip its hash and force a
           # needless local rebuild — only add an overlay when the package is
           # already cache-missing for some other reason.
-          nushellOverlay = _: prev: {
-            nushell = prev.nushell.overrideAttrs (_: {
-              doCheck = false;
-              doInstallCheck = false;
-            });
+          # bat-extras.batman pulls nushell/fish/zsh in via nativeCheckInputs
+          # for its test suite; disabling doCheck drops them from the closure
+          # entirely so we never have to rebuild nushell locally. batman's
+          # installPhase is just `cp` — there is no real build to validate.
+          batExtrasOverlay = _: prev: {
+            bat-extras = prev.bat-extras // {
+              batman = prev.bat-extras.batman.overrideAttrs (_: {
+                doCheck = false;
+              });
+            };
           };
           neovimOverlay = _: prev: {
             neovim-unwrapped = prev.neovim-unwrapped.overrideAttrs (_: {
@@ -152,7 +157,7 @@
             };
           overlays = [
             binaryStubsOverlay
-            nushellOverlay
+            batExtrasOverlay
             neovimOverlay
             determinateNixOverlay
           ]
