@@ -303,6 +303,12 @@ lib.mkMerge [
   (lib.mkIf pkgs.stdenv.isDarwin {
     launchd.agents = import "${src}/modules/services/colima.nix" { inherit config pkgs; };
   })
+  (lib.mkIf pkgs.stdenv.isLinux {
+    home = {
+      packages = [ pkgs.ghostty.terminfo ];
+      sessionVariables.TERMINFO_DIRS = "$HOME/.nix-profile/share/terminfo\${TERMINFO_DIRS:+:}\${TERMINFO_DIRS}:/usr/share/terminfo";
+    };
+  })
   (lib.mkIf enableSecrets (
     let
       sopsConfig = import "${src}/modules/sops.nix" { inherit config src; };
