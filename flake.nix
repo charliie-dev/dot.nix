@@ -34,6 +34,13 @@
       url = "github:DeterminateSystems/nix-src";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Used to re-evaluate nix-src flake outputs after locally patching
+    # tests/functional/json.sh for util-linux 2.42 compatibility.
+    flake-compat = {
+      url = "github:edolstra/flake-compat";
+      flake = false;
+    };
   };
 
   outputs =
@@ -41,6 +48,7 @@
       self,
       sops-nix,
       catppuccin,
+      flake-compat,
       home-manager,
       nix-filter,
       nix-index-database,
@@ -75,6 +83,27 @@
         let
           enableSecrets = hostCfg.enableSecrets or true;
           isGpu = hostCfg.gpu or false;
+          # Patch nix-src tests/functional/json.sh: util-linux 2.42's `script`
+          # rejects `script -e -q /dev/null -c CMD` (positional file before -c).
+          # Only the -c branch needs reordering — the no-flag branch takes
+          # `script ... file command ...`, which is BSD `script`'s required
+          # syntax and is never reached on Linux (acceptsCommandFlag=1 there).
+          # The grep assertion catches upstream drift loudly: if nix-src reflows
+          # whitespace or quoting, the sed silently no-ops and the build would
+          # fail 8 minutes later on the same json test — better to fail here.
+          nixSrcPatched = nixpkgs.legacyPackages.${hostCfg.system}.applyPatches {
+            name = "nix-src-utillinux-2.42-fix";
+            src = nix-src;
+            postPatch = ''
+              sed -i \
+                -e 's|script -e -q /dev/null -c "$(shellEscapeArray "$@")"|script -e -q -c "$(shellEscapeArray "$@")" /dev/null|' \
+                tests/functional/json.sh
+              grep -q 'script -e -q -c "$(shellEscapeArray "$@")" /dev/null' \
+                tests/functional/json.sh \
+                || { echo "nix-src json.sh patch did not match upstream — sed pattern needs updating" >&2; exit 1; }
+            '';
+          };
+          nixSrcRebuilt = (import flake-compat { src = nixSrcPatched; }).defaultNix;
           nushellOverlay = _: prev: {
             nushell = prev.nushell.overrideAttrs (_: {
               doCheck = false;
@@ -92,7 +121,7 @@
             });
           };
           determinateNixOverlay = final: prev: {
-            determinate-nix = nix-src.packages.${hostCfg.system}.default;
+            determinate-nix = nixSrcRebuilt.packages.${hostCfg.system}.default;
             nixos-option = prev.nixos-option.override { nix = final.determinate-nix; };
             nurl = prev.nurl.override { nix = final.determinate-nix; };
           };
