@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 #MISE description="Restart nix-daemon"
+#MISE raw=true
 
 if [[ "$(uname)" == "Darwin" ]]; then
     echo "[info] Detected macOS, restarting Determinate Nix daemon..."

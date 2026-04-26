@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 #MISE description="Remove Ubuntu telemetry, ad services, and unnecessary packages"
+#MISE raw=true
 
 set -euo pipefail
 

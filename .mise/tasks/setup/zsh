@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 #MISE description="Change login shell to zsh for current user"
+#MISE raw=true
 
 set -euo pipefail
 

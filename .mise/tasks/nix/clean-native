@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 #MISE description="Use native command to do nix gc"
+#MISE raw=true
 
 home-manager expire-generations '0s'
 nix profile wipe-history --older-than '4d'

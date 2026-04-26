@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 #MISE hide=true
+#MISE raw=true
 #USAGE arg "<pkg_name>" help="apt pkage name"
 # shellcheck disable=SC2154 # usage_pkg_name is set by mise USAGE
 

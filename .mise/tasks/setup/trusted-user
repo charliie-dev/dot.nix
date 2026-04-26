@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #MISE description="Add trusted-user to nix.custom.conf"
 #MISE hide=true
+#MISE raw=true
 
 TARGET_FILE="/etc/nix/nix.custom.conf"
 LINE="trusted-users = charles"
