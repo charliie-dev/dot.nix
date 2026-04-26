@@ -192,6 +192,23 @@ lib.mkMerge [
             install -m 755 "$tmpdir/mise/bin/mise" "$install_dir/.mise.new"
             mv -f "$install_dir/.mise.new" "$installed_bin"
           ) || echo "mise upgrade: skipped (subshell exit $?)" >&2
+          # The mise stub package only ships bin/mise, so the upstream
+          # _mise completion never lands in the nix profile FPATH. Regenerate
+          # it here against the freshly-synced binary so completion versions
+          # cannot drift from the binary.
+          (
+            set -eu
+            installed_bin=${config.home.homeDirectory}/.local/share/mise/bin/mise
+            completion_dir=${config.xdg.dataHome}/zsh/site-functions
+            [ -x "$installed_bin" ] || exit 0
+            mkdir -p "$completion_dir"
+            tmp="$completion_dir/.mise.completion.new"
+            if "$installed_bin" completion zsh >"$tmp" 2>/dev/null; then
+              mv -f "$tmp" "$completion_dir/_mise"
+            else
+              rm -f "$tmp"
+            fi
+          ) || echo "mise completion: skipped (subshell exit $?)" >&2
         '';
         # topgrade --version prints "topgrade <VERSION>", second field is version.
         upgradeTopgrade = lib.hm.dag.entryAfter [ "writeBoundary" ] ''

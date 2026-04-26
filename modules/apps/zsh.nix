@@ -140,6 +140,11 @@ in
       # AWS (non-secret)
       export AWS_DEFAULT_OUTPUT="json"
       export AWS_DATA_PATH="${config.xdg.dataHome}/aws"
+
+      # Completions for stub-packaged tools (mise, …) whose upstream binary is
+      # fetched at activation time (see upgradeMise in core.nix). The hook drops
+      # _mise here, so it must be on FPATH before compinit runs.
+      fpath=("${config.xdg.dataHome}/zsh/site-functions" $fpath)
     '';
     # Doppler secrets loaded by core.nix mkIf enableSecrets
   }
