@@ -104,6 +104,20 @@
             '';
           };
           nixSrcRebuilt = (import flake-compat { src = nixSrcPatched; }).defaultNix;
+          # Stub packages that delegate to upstream-tracked binaries kept in
+          # $HOME/.local/share/<name>/bin/<name>. home-manager hardcodes
+          # ${pkgs.<name>}/bin/<name> in places like `eval "$(.../mise activate zsh)"`,
+          # so we keep a tiny Nix-managed wrapper for each tool and let the
+          # DAG hooks in core.nix sync the actual binary with each switch.
+          mkBinaryStub =
+            prev: name:
+            prev.writeShellScriptBin name ''
+              exec "$HOME/.local/share/${name}/bin/${name}" "$@"
+            '';
+          binaryStubsOverlay = _: prev: {
+            mise = mkBinaryStub prev "mise";
+            topgrade = mkBinaryStub prev "topgrade";
+          };
           nushellOverlay = _: prev: {
             nushell = prev.nushell.overrideAttrs (_: {
               doCheck = false;
@@ -126,6 +140,7 @@
             nurl = prev.nurl.override { nix = final.determinate-nix; };
           };
           overlays = [
+            binaryStubsOverlay
             nushellOverlay
             direnvOverlay
             neovimOverlay
