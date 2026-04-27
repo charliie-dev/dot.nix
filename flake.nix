@@ -112,7 +112,7 @@
           mkBinaryStub =
             prev: name:
             prev.writeShellScriptBin name ''
-              exec "$HOME/.local/share/${name}/bin/${name}" "$@"
+              exec -a "$(basename "$0")" "$HOME/.local/share/${name}/bin/${name}" "$@"
             '';
           binaryStubsOverlay = _: prev: {
             mise = mkBinaryStub prev "mise";
