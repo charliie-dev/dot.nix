@@ -167,7 +167,7 @@ lib.mkMerge [
                 echo "mise upgrade: GitHub API returned HTTP $http_code, skipping" >&2
                 exit 0 ;;
             esac
-            latest=$(awk -F'"' '/"tag_name":/ { sub(/^v/, "", $4); print $4; exit }' "$tmpdir/release.json")
+            latest=$(grep -o '"tag_name": *"v[^"]*"' "$tmpdir/release.json" | grep -o 'v[^"]*' | sed 's/^v//')
             if [ -z "''${latest:-}" ]; then
               echo "mise upgrade: failed to parse latest tag, skipping" >&2
               exit 0
@@ -253,7 +253,7 @@ lib.mkMerge [
                 echo "topgrade upgrade: GitHub API returned HTTP $http_code, skipping" >&2
                 exit 0 ;;
             esac
-            latest=$(awk -F'"' '/"tag_name":/ { sub(/^v/, "", $4); print $4; exit }' "$tmpdir/release.json")
+            latest=$(grep -o '"tag_name": *"v[^"]*"' "$tmpdir/release.json" | grep -o 'v[^"]*' | sed 's/^v//')
             if [ -z "''${latest:-}" ]; then
               echo "topgrade upgrade: failed to parse latest tag, skipping" >&2
               exit 0
