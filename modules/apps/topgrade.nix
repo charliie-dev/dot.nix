@@ -24,6 +24,12 @@
         # (default: false)
         pre_sudo = true;
 
+        # Periodically runs `sudo -v` or `please -w` to avoid password re-prompts during updates (default: false)
+        # WARNING: This is a potential security risk; if you walk away from the computer while topgrade is running,
+        # another person can come by, CTRL+C, and gain access to a sudo session.
+        sudo_loop = true;
+        sudo_loop_interval = 600; # 10 minutes (600s); default if sudo_loop enabled
+
         # Sudo command to be used
         sudo_command = "sudo";
 
@@ -32,6 +38,12 @@
         #   "system"
         #   "emacs"
         # ];
+
+        # Run these steps before all others
+        # first = ["chezmoi"]
+
+        # Run these steps after all others
+        # last = ["system"]
 
         # Ignore failures for these steps
         # ignore_failures = ["powershell"]
@@ -226,6 +238,8 @@
 
         # pamac_arguments = "--no-devel"
 
+        # shelly_arguments = ""
+
         # enable_tlmgr = true
 
         # emerge_sync_flags = "-q"
@@ -258,7 +272,7 @@
         # Enable the mandb step (to update manual entries).
         # Mandb is updated in the background by a service on most systems by default.
         # (default: false)
-        enable = false;
+        # enable = false;
       };
 
       pkgfile = {
@@ -278,7 +292,7 @@
           "~/.config/home-manager"
         ];
 
-        # Don't pull the predefined git repos
+        # Set to `false` to skip pulling/fetching the predefined git repos
         # pull_predefined = false
 
         # Arguments to pass Git when pulling Repositories
@@ -335,11 +349,16 @@
 
         # Number of jobs to run in parallel
         # (default: 4)
-        jobs = 4;
+        jobs = 8;
 
         # Run interactively
         # (default: false)
         interactive = false;
+      };
+
+      go = {
+        # Exclude specified binaries from `gup update`
+        # gup_exclude = ["kind", "pkgsite"]
       };
 
       npm = {
@@ -355,6 +374,11 @@
       deno = {
         # Upgrade deno executable to the given version.
         # version = "stable"
+      };
+
+      viteplus = {
+        # Use sudo if the Vite+ directory isn't owned by the current user
+        # use_sudo = true
       };
 
       vim = {
