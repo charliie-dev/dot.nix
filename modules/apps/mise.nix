@@ -9,9 +9,23 @@
         uv = "latest";
         node = "latest";
         # ruby = "latest";
-        # go = "latest";
+        go = "latest";
         usage = "latest";
         cargo-binstall = "latest";
+        "npm:@google-cloud/backupdr-mcp" = "latest";
+        "npm:@google-cloud/gcloud-mcp" = "latest";
+        "npm:@google-cloud/observability-mcp" = "latest";
+        "npm:@google-cloud/storage-mcp" = "latest";
+        "npm:@hackmd/hackmd-cli" = "latest";
+        "npm:@readwise/cli" = "latest";
+        "npm:@sliday/tamp" = "latest";
+        "npm:ctx7" = "latest";
+        "go:github.com/go-delve/delve/cmd/dlv" = "latest";
+        "go:mvdan.cc/gofumpt" = "latest";
+        "go:golang.org/x/tools/cmd/goimports" = "latest";
+        "go:github.com/golangci/golangci-lint/v2/cmd/golangci-lint" = "latest";
+        "go:golang.org/x/tools/gopls" = "latest";
+        "go:golang.org/x/vuln/cmd/govulncheck" = "latest";
       };
       # plugins = {
       #   # specify a custom repo url
