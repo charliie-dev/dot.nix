@@ -71,7 +71,7 @@
         # configure messages displayed when entering directories with config files
         status = {
           missing_tools = "if_other_versions_installed";
-          show_env = true;
+          show_env = false;
         };
       };
     };
