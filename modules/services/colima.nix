@@ -29,8 +29,10 @@ in
         DOCKER_CONFIG = "${config.xdg.configHome}/docker";
       };
       RunAtLoad = true;
-      KeepAlive = false;
-      ThrottleInterval = 30;
+      KeepAlive = {
+        SuccessfulExit = false;
+      };
+      ThrottleInterval = 60;
       StandardOutPath = "${logDir}/colima.log";
       StandardErrorPath = "${logDir}/colima.log";
     };
