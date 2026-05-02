@@ -99,8 +99,9 @@ lib.mkMerge [
         '';
         initDataDirs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
           # SSH
-          mkdir -p ${config.home.homeDirectory}/.ssh
+          mkdir -p ${config.home.homeDirectory}/.ssh/sockets
           chmod 700 ${config.home.homeDirectory}/.ssh
+          chmod 700 ${config.home.homeDirectory}/.ssh/sockets
 
           # GPG
           mkdir -p ${config.xdg.dataHome}/gnupg
