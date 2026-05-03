@@ -65,6 +65,8 @@ lib.mkMerge [
         # https://docs.determinate.systems/guides/telemetry/
         NIX_SENTRY_ENDPOINT = "";
         DETSYS_IDS_TELEMETRY = "disabled";
+        # nh home switch is pure user-space; no sudo needed
+        NH_ELEVATION_STRATEGY = "none";
       };
       file = {
         ".config/parallel/will-cite" = {
