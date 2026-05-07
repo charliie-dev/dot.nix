@@ -19,6 +19,7 @@
         "npm:@hackmd/hackmd-cli" = "latest";
         "npm:@readwise/cli" = "latest";
         "npm:@sliday/tamp" = "latest";
+        "npm:caveman-shrink" = "latest";
         "npm:ctx7" = "latest";
         "go:github.com/go-delve/delve/cmd/dlv" = "latest";
         "go:mvdan.cc/gofumpt" = "latest";
