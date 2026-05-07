@@ -66,6 +66,8 @@ _: {
         ignore = "update-index --skip-worktree";
         unignore = "update-index --no-skip-worktree";
         ignorels = "!git ls-files -v | grep \"^S\"";
+        sweep = "!bash ~/.local/bin/git-sweep";
+        gone = "!bash ~/.local/bin/git-sweep --dry-run";
       };
     };
     signing = {

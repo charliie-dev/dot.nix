@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+set -e
+
+FORCE=0
+DRY_RUN=0
+PROTECTED='^(main|master|develop|dev)$'
+
+for arg in "$@"; do
+    case "$arg" in
+        -f|--force)   FORCE=1 ;;
+        -n|--dry-run) DRY_RUN=1 ;;
+        -h|--help)
+            cat <<EOF
+Usage: git sweep [-f|--force] [-n|--dry-run]
+
+Delete local branches whose upstream is gone.
+
+Options:
+  -f, --force     Force delete (use 'git branch -D'), needed for squash-merges
+  -n, --dry-run   Show what would be deleted without deleting
+  -h, --help      Show this help
+EOF
+            exit 0
+            ;;
+    esac
+done
+
+git fetch -p
+
+branches=$(git branch -vv | awk '/: gone]/ {print $1}' | grep -vE "$PROTECTED" || true)
+
+if [ "$branches" = "" ]; then
+    echo "✓ No stale branches to clean."
+    exit 0
+fi
+
+echo "Stale branches (upstream gone):"
+echo "  - ${branches//$'\n'/$'\n'  - }"
+
+if [ "$DRY_RUN" -eq 1 ]; then
+    echo "(dry-run, nothing deleted)"
+    exit 0
+fi
+
+if [ "$FORCE" -eq 1 ]; then
+    printf "Proceed with FORCE delete? [y/N] "
+else
+    printf "Proceed? [y/N] "
+fi
+
+read -r ans
+if [ "$ans" != "y" ] && [ "$ans" != "Y" ]; then
+    echo "Aborted."
+    exit 0
+fi
+
+flag="-d"
+[ "$FORCE" -eq 1 ] && flag="-D"
+
+echo "$branches" | xargs -n 1 git branch "$flag"
