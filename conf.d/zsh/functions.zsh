@@ -1,5 +1,8 @@
 # set https://github.com/victor-gp/cmd-help-sublime-syntax
-export MANPAGER='batman'
+# batman must run in pager mode when invoked by man(1); without
+# BATMAN_IS_BEING_MANPAGER it falls into the fzf-search branch and discards stdin
+export MANPAGER='env BATMAN_IS_BEING_MANPAGER=yes batman'
+export MANROFFOPT='-c'
 # alias bathelp="sed 's/.\x08//g' | bat --plain --language=help --strip-ansi=always --theme='Monokai Extended'"
 alias bathelp="sed 's/.\x08//g' | bat --plain --language=help --strip-ansi=always"
 help() {
