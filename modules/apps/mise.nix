@@ -45,6 +45,7 @@
         experimental = true;
         gpg_verify = true;
         jobs = 8;
+        libc = "gnu"; # force glibc selection; mise's static-musl binary misdetects host libc
         paranoid = false;
         task = {
           output = "keep-order";
