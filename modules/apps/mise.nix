@@ -18,6 +18,7 @@
         "npm:@google-cloud/storage-mcp" = "latest";
         "npm:@hackmd/hackmd-cli" = "latest";
         "npm:@readwise/cli" = "latest";
+        "npm:@rivolink/leaf" = "latest";
         "npm:@sliday/tamp" = "latest";
         "npm:ctx7" = "latest";
         "go:github.com/go-delve/delve/cmd/dlv" = "latest";
