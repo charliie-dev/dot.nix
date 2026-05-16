@@ -50,6 +50,7 @@ alias unzip='ouch decompress'
 alias cc='claude --dangerously-skip-permissions'
 alias cct="claude-code-toggle"
 alias cmct="cmux claude-teams"
+alias cdx='codex --dangerously-bypass-approvals-and-sandbox'
 
 # Extanded Aliases
 # alias yarn='yarn --use-yarnrc "$XDG_CONFIG_HOME/yarn/config"'
