@@ -15,7 +15,9 @@
         "[](fg:surface0)"
         "$os"
         "$hostname"
+        "\${custom.repo_sep}"
         "$directory"
+        "\${custom.dir_non_repo}"
         # "\${custom.git_remote}"
         "$git_branch"
         "\${custom.git_worktree}"
@@ -123,11 +125,14 @@
         repo_root_style = "fg:flamingo bg:surface0";
         read_only_style = "fg:red bg:surface0";
         style = "fg:subtext0 bg:surface0";
-        repo_root_format = "[ · ](bg:surface0)[$before_root_path]($before_repo_root_style)[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style)";
-        format = "[ $read_only]($read_only_style)[$path]($style)";
+        # Leading " · " provided by custom.repo_sep so the parent-of-repo prefix can sit before it
+        repo_root_format = "[$before_root_path]($before_repo_root_style)[$repo_root]($repo_root_style)[$path]($style)[$read_only]($read_only_style)";
+        # Non-repo display handled by custom.dir_non_repo to enforce a 2-level path
+        format = "";
         home_symbol = " ~";
         read_only = " ";
-        truncation_length = 4;
+        truncation_length = 10;
+        truncate_to_repo = true;
         substitutions = {
           "Documents" = "󰈙 ";
           "Downloads" = " ";
@@ -182,6 +187,52 @@
         symbol = "󱘎 ";
         when = ''[ "$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null)" != "$(git rev-parse --path-format=absolute --git-dir 2>/dev/null)" ]'';
         require_repo = true;
+        ignore_timeout = true;
+      };
+
+      # Provides the directory module's leading separator when in a repo,
+      # and prepends the parent-of-repo (e.g. "platform/") only when sitting at the repo root.
+      custom.repo_sep = {
+        description = "Directory separator + parent of repo root (only at repo root)";
+        when = "git rev-parse --is-inside-work-tree 2>/dev/null";
+        command = ''
+          root=$(git rev-parse --show-toplevel 2>/dev/null)
+          if [ "$PWD" = "$root" ]; then
+            parent=$(dirname "$root")
+            case "$parent" in
+              "$HOME") printf '%s' '~/' ;;
+              "/") printf '%s' '/' ;;
+              *) printf '%s/' "$(basename "$parent")" ;;
+            esac
+          fi
+        '';
+        format = "[ · ](bg:surface0)[$output]($style)";
+        style = "fg:subtext0 bg:surface0";
+        require_repo = true;
+        ignore_timeout = true;
+      };
+
+      # Replaces the built-in directory module for non-repo paths: always shows last 2 levels.
+      custom.dir_non_repo = {
+        description = "Last 2 path components when not in a git repo";
+        when = "! git rev-parse --is-inside-work-tree 2>/dev/null";
+        command = ''
+          case "$PWD" in
+            "$HOME") printf '%s' '~' ;;
+            "/") printf '%s' '/' ;;
+            *)
+              parent=$(dirname "$PWD")
+              base=$(basename "$PWD")
+              case "$parent" in
+                "$HOME") printf '~/%s' "$base" ;;
+                "/") printf '/%s' "$base" ;;
+                *) printf '%s/%s' "$(basename "$parent")" "$base" ;;
+              esac
+              ;;
+          esac
+        '';
+        format = "[ · ](bg:surface0)[$output]($style)";
+        style = "fg:subtext0 bg:surface0";
         ignore_timeout = true;
       };
 
