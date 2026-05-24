@@ -341,7 +341,7 @@ lib.mkMerge [
       programs = {
         git.signing.key = "${config.sops.secrets.ssh_ed25519_pub.path}";
         git.settings.gpg.ssh.allowedSignersFile = "${config.sops.secrets.allowed_signers.path}";
-        ssh.matchBlocks."*".identityFile = "${config.sops.secrets.ssh_ed25519.path}";
+        ssh.settings."*".IdentityFile = "${config.sops.secrets.ssh_ed25519.path}";
         zsh.envExtra = ''
           # Load Doppler secrets (application-layer)
           if [ -r "${config.xdg.dataHome}/doppler/env" ]; then

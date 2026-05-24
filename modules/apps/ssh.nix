@@ -6,15 +6,15 @@ _: {
       # "${config.age.secrets.ssh_host_config.path}" # `sunlei/zsh-ssh` can't resolve absolute path
       "~/.ssh/host_configuration"
     ];
-    matchBlocks."*" = {
-      addKeysToAgent = "yes";
-      identitiesOnly = true;
-      compression = true;
-      forwardAgent = false;
-      hashKnownHosts = false;
-      # identityFile set by core.nix mkIf enableSecrets
-      serverAliveInterval = 300;
-      serverAliveCountMax = 10;
+    settings."*" = {
+      AddKeysToAgent = "yes";
+      IdentitiesOnly = true;
+      Compression = true;
+      ForwardAgent = false;
+      HashKnownHosts = false;
+      # IdentityFile set by core.nix mkIf enableSecrets
+      ServerAliveInterval = 300;
+      ServerAliveCountMax = 10;
     };
     enableDefaultConfig = false; # this option will be deprecated, so set it to false
   };
