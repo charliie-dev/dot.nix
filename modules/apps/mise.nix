@@ -12,6 +12,7 @@
         go = "latest";
         usage = "latest";
         cargo-binstall = "latest";
+        "npm:@colbymchenry/codegraph" = "latest";
         "npm:@google-cloud/backupdr-mcp" = "latest";
         "npm:@google-cloud/gcloud-mcp" = "latest";
         "npm:@google-cloud/observability-mcp" = "latest";
