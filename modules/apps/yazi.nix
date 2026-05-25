@@ -42,13 +42,15 @@
         prepend_fetchers = [
           {
             id = "git";
-            name = "*";
+            url = "*";
             run = "git";
+            group = "git";
           }
           {
             id = "git";
-            name = "*/";
+            url = "*/";
             run = "git";
+            group = "git";
           }
         ];
         prepend_previewers = [
@@ -65,7 +67,7 @@
             run = "ouch";
           }
           {
-            name = "*.md";
+            url = "*.md";
             run = ''
               piper -- CLICOLOR_FORCE=1 glow -w=$w -s=dark "$1"
             '';
@@ -83,7 +85,7 @@
             '';
           }
           {
-            name = "*.{parquet,xlsx,db,duckdb}";
+            url = "*.{parquet,xlsx,db,duckdb}";
             run = "duckdb";
           }
         ];
