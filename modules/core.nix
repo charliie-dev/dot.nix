@@ -307,8 +307,7 @@ lib.mkMerge [
     launchd.agents = (import "${src}/modules/services/colima.nix" { inherit config pkgs; }) // {
       nh-clean.config = {
         # launchd inherits a minimal PATH; nh shells out to `nix --version`.
-        EnvironmentVariables.PATH =
-          "/nix/var/nix/profiles/default/bin:${config.home.profileDirectory}/bin";
+        EnvironmentVariables.PATH = "/nix/var/nix/profiles/default/bin:${config.home.profileDirectory}/bin";
         # Upstream HM wraps extraArgs in shell single-quotes, so nh receives them as one
         # token and clap errors out. Override the wrapper to interpolate extraArgs unquoted.
         ProgramArguments = [
