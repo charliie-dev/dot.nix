@@ -304,13 +304,29 @@ lib.mkMerge [
     };
   }
   (lib.mkIf pkgs.stdenv.isDarwin {
-    launchd.agents = import "${src}/modules/services/colima.nix" { inherit config pkgs; };
+    launchd.agents = (import "${src}/modules/services/colima.nix" { inherit config pkgs; }) // {
+      nh-clean.config = {
+        # launchd inherits a minimal PATH; nh shells out to `nix --version`.
+        EnvironmentVariables.PATH =
+          "/nix/var/nix/profiles/default/bin:${config.home.profileDirectory}/bin";
+        # Upstream HM wraps extraArgs in shell single-quotes, so nh receives them as one
+        # token and clap errors out. Override the wrapper to interpolate extraArgs unquoted.
+        ProgramArguments = [
+          "/bin/sh"
+          "-c"
+          "/bin/wait4path /nix/store && exec ${pkgs.nh}/bin/nh clean user ${config.programs.nh.clean.extraArgs}"
+        ];
+      };
+    };
   })
   (lib.mkIf pkgs.stdenv.isLinux {
     home = {
       packages = [ pkgs.ghostty.terminfo ];
       sessionVariables.TERMINFO_DIRS = "${config.home.profileDirectory}/share/terminfo\${TERMINFO_DIRS:+:}\${TERMINFO_DIRS}:/usr/share/terminfo";
     };
+    # systemd user units don't source /etc/profile.d/nix.sh; nh shells out to `nix --version`.
+    systemd.user.services.nh-clean.Service.Environment =
+      "PATH=/nix/var/nix/profiles/default/bin:${config.home.profileDirectory}/bin";
   })
   (lib.mkIf enableSecrets (
     let
