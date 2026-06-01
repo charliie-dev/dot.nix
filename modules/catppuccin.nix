@@ -1,6 +1,11 @@
 {
   catppuccin = {
+    enable = true;
     # accent = "green";
+    # autoEnable preserves pre-migration behavior: only the ports
+    # explicitly enabled below are themed (no global auto-enrollment).
+    # enable is now a global toggle gating all ports.
+    autoEnable = false;
     flavor = "mocha";
     bat = {
       enable = true;
