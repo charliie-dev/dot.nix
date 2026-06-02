@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+#MISE description="Scan for known supply-chain-compromised packages (bumblebee + perplexityai threat_intel catalogs)"
+#MISE tools={ "go:github.com/perplexityai/bumblebee/cmd/bumblebee" = "latest" }
+#USAGE flag "--root <root>" help="Filesystem root to scan; defaults to home"
+#USAGE flag "--profile <profile>" help="Scan depth: baseline|project|deep" default="deep"
+#USAGE flag "--no-update" help="Skip catalog refresh; reuse cached copies"
+# shellcheck disable=SC2154 # usage_* vars are injected by mise USAGE
+set -euo pipefail
+
+ROOT="${usage_root:-$HOME}"
+PROFILE="${usage_profile:-deep}"
+REPO="perplexityai/bumblebee"
+CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/bumblebee"
+CATALOGS="$CACHE/catalogs"
+mkdir -p "$CATALOGS"
+# Prune old reports/logs so the cache doesn't grow unbounded across runs.
+find "$CACHE" -maxdepth 1 -type f \( -name 'findings-*.ndjson' -o -name 'scan-*.log' \) \
+  -mtime +30 -delete 2>/dev/null || true
+
+# 1. Refresh threat_intel catalogs (latest from the repo's default branch).
+if [ -z "${usage_no_update:-}" ]; then
+  echo "[INFO] Refreshing threat_intel catalogs from ${REPO}..."
+  if urls=$(curl -fsSL "https://api.github.com/repos/${REPO}/contents/threat_intel" \
+              | jq -r '.[] | select(.name | endswith(".json")) | .download_url'); then
+    for u in $urls; do
+      curl -fsSL "$u" -o "$CATALOGS/$(basename "$u")" && echo "  ok $(basename "$u")"
+    done
+  else
+    echo "[WARN] Catalog refresh failed; reusing cached copies." >&2
+  fi
+fi
+
+count=$(find "$CATALOGS" -name '*.json' | wc -l | tr -d ' ')
+[ "$count" -gt 0 ] || { echo "[ERROR] No catalogs in $CATALOGS" >&2; exit 1; }
+entries=$(jq -s '[.[].entries[]] | length' "$CATALOGS"/*.json 2>/dev/null || echo '?')
+echo "[INFO] ${count} catalogs, ${entries} indicators."
+
+# 2. Scan (findings-only: suppress the full inventory, keep catalog matches).
+ts=$(date +%Y%m%d-%H%M%S)
+report="$CACHE/findings-${ts}.ndjson"
+log="$CACHE/scan-${ts}.log"
+echo "[INFO] Scanning root=${ROOT} profile=${PROFILE} ..."
+bumblebee scan --profile "$PROFILE" --root "$ROOT" \
+  --exposure-catalog "$CATALOGS" --findings-only --max-duration 10m \
+  >"$report" 2>"$log" || true
+
+# 3. Report. A successful run logs "scan complete: ... status=complete"; if that
+# line is absent the scan errored (bad flag, crash) — treat it as an error, NOT a
+# clean result, so a failed scan can never masquerade as "no compromised packages".
+if ! grep -q 'scan complete:.*status=complete' "$log"; then
+  echo "[ERROR] bumblebee scan did not complete; see $log" >&2
+  tail -5 "$log" >&2
+  exit 2
+fi
+grep -o 'scan complete:.*' "$log" | tail -1 | sed 's/^/[SUMMARY] /' || true
+n=$(grep -c '"record_type":"finding"' "$report" || true)
+if [ "${n:-0}" -gt 0 ]; then
+  echo "[ALERT] ${n} finding(s) — possible compromised packages:" >&2
+  jq -rc 'select(.record_type=="finding")
+            | "  \(.severity)\t\(.ecosystem)\t\(.package_name)@\(.version)\t\(.source_file)"' \
+    "$report" >&2
+  echo "[INFO] Full report: $report" >&2
+  exit 1
+fi
+echo "[OK] No known compromised packages found. Report: ${report}"
+
+# vim: ft=sh
