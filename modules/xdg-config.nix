@@ -27,6 +27,10 @@
         recursive = true;
         source = "${src}/conf.d/glow";
       };
+      "hunk" = {
+        recursive = true;
+        source = "${src}/conf.d/hunk";
+      };
       "npm" = {
         recursive = true;
         source = "${src}/conf.d/npm";
