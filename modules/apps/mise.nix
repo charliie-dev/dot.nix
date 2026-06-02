@@ -22,6 +22,7 @@
         "npm:@rivolink/leaf" = "latest";
         "npm:@sliday/tamp" = "latest";
         "npm:ctx7" = "latest";
+        "npm:tokscale" = "latest";
         "go:github.com/go-delve/delve/cmd/dlv" = "latest";
         "go:mvdan.cc/gofumpt" = "latest";
         "go:golang.org/x/tools/cmd/goimports" = "latest";
