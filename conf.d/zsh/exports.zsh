@@ -49,6 +49,7 @@ export VISUAL=nvim
 export BUN_INSTALL="$XDG_DATA_HOME"/bun
 export TF_CLI_CONFIG_FILE="$XDG_CONFIG_HOME"/terraform/terraformrc
 export DOPPLER_CONFIG_DIR="$XDG_CONFIG_HOME"/doppler
+export HMD_CLI_CONFIG_DIR="$XDG_CONFIG_HOME"/hackmd
 
 
 # Disable Determinate Nix telemetry
