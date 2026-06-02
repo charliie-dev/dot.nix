@@ -13,10 +13,14 @@ in
   doppler = {
     packages = [ pkgs.doppler ];
 
-    # DAG entry name "setupSecrets" is the sops-nix home-manager module activation name
-    # Verify with: grep -r "entryAfter\|entryBefore\|activation" <sops-nix-src>
+    # "sops-nix" is the sops-nix home-manager module's activation entry name
+    # (renamed from the old "setupSecrets"). Verify with:
+    #   grep -r "entryAfter\|entryBefore\|activation" <sops-nix-src>
+    # Note: on Darwin sops-nix only launchctl-bootstraps its agent here; the
+    # actual decryption runs async via launchd, so this ordering does not
+    # guarantee a freshly-decrypted token within the same activation.
     activation = {
-      doppler-secrets = lib.hm.dag.entryAfter [ "setupSecrets" ] ''
+      doppler-secrets = lib.hm.dag.entryAfter [ "sops-nix" ] ''
         export DOPPLER_CONFIG_DIR="${config.xdg.configHome}/doppler"
         if [ -r "${dopplerTokenPath}" ]; then
           export DOPPLER_TOKEN="$(cat "${dopplerTokenPath}")"
