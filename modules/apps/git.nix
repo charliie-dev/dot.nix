@@ -4,6 +4,7 @@ _: {
     ignores = [
       ".env"
       ".DS_Store"
+      ".codegraph/"
     ];
     settings = {
       user = {
