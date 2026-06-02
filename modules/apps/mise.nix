@@ -25,11 +25,13 @@
         "npm:hunkdiff" = "latest";
         "npm:tokscale" = "latest";
         "go:github.com/go-delve/delve/cmd/dlv" = "latest";
-        "go:mvdan.cc/gofumpt" = "latest";
-        "go:golang.org/x/tools/cmd/goimports" = "latest";
         "go:github.com/golangci/golangci-lint/v2/cmd/golangci-lint" = "latest";
+        "go:github.com/perplexityai/bumblebee/cmd/bumblebee" = "latest";
+        "go:github.com/retlehs/quien" = "latest";
+        "go:golang.org/x/tools/cmd/goimports" = "latest";
         "go:golang.org/x/tools/gopls" = "latest";
         "go:golang.org/x/vuln/cmd/govulncheck" = "latest";
+        "go:mvdan.cc/gofumpt" = "latest";
       };
       # plugins = {
       #   # specify a custom repo url
