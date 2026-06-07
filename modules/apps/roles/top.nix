@@ -24,6 +24,7 @@ in
     ++ lib.optionals stdenv.isDarwin [
       colima # Container runtimes on macOS with minimal setup
       docker-client # Docker CLI (client only, no daemon)
+      docker-credential-helpers # docker-credential-osxkeychain (credsStore in ~/.config/docker/config.json)
       macpm # Perf monitoring CLI tool for Apple Silicon
     ];
 }

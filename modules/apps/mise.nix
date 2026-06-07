@@ -1,4 +1,9 @@
 {
+  pkgs,
+  lib,
+  ...
+}:
+{
   mise = {
     enable = true;
     enableZshIntegration = false; # self-definded smartcache in conf.d/zsh
@@ -12,18 +17,6 @@
         go = "latest";
         usage = "latest";
         cargo-binstall = "latest";
-        "npm:@colbymchenry/codegraph" = "latest";
-        "npm:@google-cloud/backupdr-mcp" = "latest";
-        "npm:@google-cloud/gcloud-mcp" = "latest";
-        "npm:@google-cloud/observability-mcp" = "latest";
-        "npm:@google-cloud/storage-mcp" = "latest";
-        "npm:@hackmd/hackmd-cli" = "latest";
-        "npm:@readwise/cli" = "latest";
-        "npm:@rivolink/leaf" = "latest";
-        "npm:@sliday/tamp" = "latest";
-        "npm:ctx7" = "latest";
-        "npm:hunkdiff" = "latest";
-        "npm:tokscale" = "latest";
         "go:github.com/go-delve/delve/cmd/dlv" = "latest";
         "go:github.com/golangci/golangci-lint/v2/cmd/golangci-lint" = "latest";
         "go:github.com/perplexityai/bumblebee/cmd/bumblebee" = "latest";
@@ -32,6 +25,31 @@
         "go:golang.org/x/tools/gopls" = "latest";
         "go:golang.org/x/vuln/cmd/govulncheck" = "latest";
         "go:mvdan.cc/gofumpt" = "latest";
+        "npm:@rivolink/leaf" = "latest";
+        "npm:hunkdiff" = "latest";
+      }
+      # Docker CLI plugins are managed by mise on macOS ONLY (the cli-plugins
+      # wiring lives in xdg-config.nix, also Darwin-gated). Linux hosts use the
+      # distro's system docker for the whole client+daemon stack, so mise must not
+      # manage compose/buildx there. buildx isn't in mise's registry, so its
+      # backend is named explicitly; compose resolves via the registry
+      # (aqua:docker/compose). nixpkgs lagged buildx (0.31.1 vs upstream 0.34.1),
+      # hence mise rather than a nix package.
+      // lib.optionalAttrs pkgs.stdenv.isDarwin {
+        "docker-compose" = "latest";
+        "aqua:docker/buildx" = "latest";
+
+        # code agents tools
+        "npm:@colbymchenry/codegraph" = "latest";
+        "npm:@google-cloud/backupdr-mcp" = "latest";
+        "npm:@google-cloud/gcloud-mcp" = "latest";
+        "npm:@google-cloud/observability-mcp" = "latest";
+        "npm:@google-cloud/storage-mcp" = "latest";
+        "npm:@hackmd/hackmd-cli" = "latest";
+        "npm:@readwise/cli" = "latest";
+        "npm:@sliday/tamp" = "latest";
+        "npm:ctx7" = "latest";
+        "npm:tokscale" = "latest";
       };
       # plugins = {
       #   # specify a custom repo url
