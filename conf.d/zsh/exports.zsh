@@ -51,7 +51,6 @@ export TF_CLI_CONFIG_FILE="$XDG_CONFIG_HOME"/terraform/terraformrc
 export DOPPLER_CONFIG_DIR="$XDG_CONFIG_HOME"/doppler
 export HMD_CLI_CONFIG_DIR="$XDG_CONFIG_HOME"/hackmd
 
-
 # Disable Determinate Nix telemetry
 # https://docs.determinate.systems/guides/telemetry/
 export NIX_SENTRY_ENDPOINT=""
@@ -74,10 +73,6 @@ export AZURE_CONFIG_DIR="$XDG_DATA_HOME"/azure
 
 # D2 ENV
 export D2_LAYOUT=tala
-
-# Claude Code
-export CLAUDE_CODE_ENABLE_TELEMETRY=0
-export DISABLE_TELEMETRY=1
 
 # zsh plugins options
 export ANTIDOTE_HOME="$XDG_CACHE_HOME"/antidote
