@@ -71,6 +71,13 @@
         jobs = 8;
         libc = "gnu"; # force glibc selection; mise's static-musl binary misdetects host libc
         paranoid = false;
+        # mise-versions.jdx.dev (the CDN that caches version listings) frequently
+        # 403s, spamming "outcome=failed status=403 fallback=true" warnings even
+        # though the source-direct fallback already succeeds. Disabling the host
+        # makes mise resolve versions straight from each backend's source, so
+        # `latest` keeps working without the noise. Trade-off: a few more direct
+        # GitHub/aqua calls on version lookup (verified harmless for buildx).
+        use_versions_host = false;
         task = {
           output = "keep-order";
         };
