@@ -109,6 +109,8 @@ add_path "$GOPATH"/bin
 add_path "$PNPM_HOME"
 add_path "$BUN_INSTALL"/bin
 (( $OSTYPE[(I)darwin] )) && add_path "/opt/homebrew/bin"
+# gcloud components (gke-gcloud-auth-plugin, credential helpers) live here, not symlinked into homebrew/bin
+(( $OSTYPE[(I)darwin] )) && add_path "/opt/homebrew/share/google-cloud-sdk/bin"
 
 # set cuda path if nvidia gpus exists
 if (( $+commands[nvidia-smi] )); then
