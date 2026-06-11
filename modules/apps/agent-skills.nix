@@ -1,4 +1,4 @@
-_:
+{ lib, ... }:
 # Declarative agent skills via Kyure-A/agent-skills-nix.
 # The homeManagerModule itself is wired in flake.nix (modules list +
 # extraSpecialArgs.inputs); this file only sets its options. The `input`
@@ -24,11 +24,40 @@ _:
     # Flat layout (<name>/SKILL.md), so subdir stays at the default ".".
     sources.local.path = ./skills;
 
-    # Pull every skill discovered in both sources.
-    skills.enableAll = [
-      "google"
-      "local"
-    ];
+    # Pull every local skill (flat layout, discoverable as-is).
+    skills.enableAll = [ "local" ];
+
+    # The google source nests every skill under skills/cloud/<name>, so the
+    # bundle lands them at skills/cloud/<name>/SKILL.md — one level too deep for
+    # Claude Code's skill discovery, which only scans skills/<name>/SKILL.md.
+    # So we DON'T enableAll "google" (that would re-create the invisible nested
+    # tree). Instead cherry-pick the wanted skills here: explicit selection keyed
+    # by the flat id we want (id = the attr name → dest = skills/<name>/), with
+    # `path` pointing at the real "cloud/<name>" location under the source subdir.
+    # To expose another google skill, add its name to this list.
+    skills.explicit =
+      lib.genAttrs
+        [
+          "bigquery-basics"
+          "cloud-run-basics"
+          "gemini-agents-api"
+          "gemini-api"
+          "gemini-interactions-api"
+          "gke-basics"
+          "google-cloud-networking-observability"
+          "google-cloud-recipe-auth"
+          "google-cloud-recipe-onboarding"
+          "google-cloud-waf-cost-optimization"
+          "google-cloud-waf-operational-excellence"
+          "google-cloud-waf-performance-optimization"
+          "google-cloud-waf-reliability"
+          "google-cloud-waf-security"
+          "google-cloud-waf-sustainability"
+        ]
+        (name: {
+          from = "google";
+          path = "cloud/${name}";
+        });
 
     # Keep the default structure = "symlink-tree": an activation script rsyncs
     # the built bundle into each dest. Do NOT use "link" — its home.file path
@@ -46,11 +75,7 @@ _:
     # Add a "/<name>" entry here before hand-dropping a new skill into a target.
     excludePatterns = [
       "/.system"
-      "/copilot-review-loop"
-      "/d2"
-      "/find-docs"
-      "/humanizer"
-      "/humanizer-zh-tw"
+      "/find-docs" # ctx7 setup auto-gen
     ];
 
     # dest must be an absolute path for the activation rsync; the literal $HOME
