@@ -1,5 +1,26 @@
 {
   "nodes": {
+    "agent-skills": {
+      "inputs": {
+        "home-manager": "home-manager",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1780896346,
+        "narHash": "sha256-WC5hQ0GOmFPKrlbit3vjjJMlltwI5vpWXsHj/n5NvVk=",
+        "owner": "Kyure-A",
+        "repo": "agent-skills-nix",
+        "rev": "61d701aa8fffd918d8d8c0ac4784bdbadf6ddd60",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Kyure-A",
+        "repo": "agent-skills-nix",
+        "type": "github"
+      }
+    },
     "catppuccin": {
       "inputs": {
         "nixpkgs": "nixpkgs"
@@ -113,7 +134,44 @@
         "url": "https://flakehub.com/f/cachix/git-hooks.nix/0.1.941"
       }
     },
+    "google-skills": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1781102053,
+        "narHash": "sha256-cCOg/V8/ejv4Q0nIxWVOJechwKHRDUXddcioFc6s+DI=",
+        "owner": "google",
+        "repo": "skills",
+        "rev": "6560fd51227b1873c108e3e2b87120979bcc1443",
+        "type": "github"
+      },
+      "original": {
+        "owner": "google",
+        "repo": "skills",
+        "type": "github"
+      }
+    },
     "home-manager": {
+      "inputs": {
+        "nixpkgs": [
+          "agent-skills",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1780885330,
+        "narHash": "sha256-aMA5oAq2Iv467U9s8YOb50DYQT9w0WJbyWqwlzHuLMs=",
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "rev": "4fe95527cbe952713318ada8a4d122e1a6ab120f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "type": "github"
+      }
+    },
+    "home-manager_2": {
       "inputs": {
         "nixpkgs": [
           "nixpkgs"
@@ -305,9 +363,11 @@
     },
     "root": {
       "inputs": {
+        "agent-skills": "agent-skills",
         "catppuccin": "catppuccin",
         "flake-compat": "flake-compat",
-        "home-manager": "home-manager",
+        "google-skills": "google-skills",
+        "home-manager": "home-manager_2",
         "nix-filter": "nix-filter",
         "nix-index-database": "nix-index-database",
         "nix-src": "nix-src",

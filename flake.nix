@@ -25,6 +25,18 @@
 
     nixgl.url = "github:nix-community/nixGL";
 
+    # Declarative agent skills (SKILL.md dirs) synced to claude/codex/copilot/
+    # opencode. google-skills is a plain skills repo (no flake.nix) consumed as
+    # a source via flake=false; agent-skills resolves it through specialArgs.inputs.
+    agent-skills = {
+      url = "github:Kyure-A/agent-skills-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    google-skills = {
+      url = "github:google/skills";
+      flake = false;
+    };
+
     catppuccin.url = "github:catppuccin/nix/main";
     nix-filter.url = "github:numtide/nix-filter";
     snitch.url = "github:karol-broda/snitch";
@@ -44,8 +56,9 @@
   };
 
   outputs =
-    {
+    inputs@{
       self,
+      agent-skills,
       sops-nix,
       catppuccin,
       flake-compat,
@@ -193,11 +206,12 @@
             config = pkgsConfig;
           };
           extraSpecialArgs = {
-            inherit src enableSecrets;
+            inherit src enableSecrets inputs;
             inherit (hostCfg) roles;
           };
           modules = [
             "${src}/modules/core.nix"
+            agent-skills.homeManagerModules.default
             sops-nix.homeManagerModules.sops
             catppuccin.homeModules.catppuccin
             nix-index-database.homeModules.nix-index
