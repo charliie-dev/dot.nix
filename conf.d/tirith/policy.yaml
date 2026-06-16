@@ -1,2 +1,11 @@
 severity_overrides:
   schemeless_to_sink: INFO
+
+# Trust Docker Hardened Images registry for the untrusted-registry rule only.
+# Trailing slash anchors the match to the registry host so tagged/digest refs
+# (dhi.io/lib/python:3.12, dhi.io/p@sha256:...) all match; other registries
+# (including notdhi.io.evil.com) still warn.
+allowlist_rules:
+  - rule_id: docker_untrusted_registry
+    patterns:
+      - dhi.io/
