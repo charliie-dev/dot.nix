@@ -102,28 +102,25 @@
             mise = mkBinaryStub prev "mise";
             topgrade = mkBinaryStub prev "topgrade";
           };
-          # Each overlay below disables checks on a single package that we're
-          # already forced to rebuild locally (determinate-nix override, src
-          # patch, etc.). Setting doCheck=false on a package that DOES
-          # substitute from cache.nixos.org would flip its hash and force a
-          # needless local rebuild — only add an overlay when the package is
-          # already cache-missing for some other reason.
-          # bat-extras.batman pulls nushell/fish/zsh in via nativeCheckInputs
-          # for its test suite; disabling doCheck drops them from the closure
-          # entirely so we never have to rebuild nushell locally. batman's
-          # installPhase is just `cp` — there is no real build to validate.
+          # General rule: doCheck=false is only worth setting on a package we
+          # are ALREADY forced to rebuild locally (e.g. the determinate-nix
+          # override below pulls nurl off cache). On a package that still
+          # substitutes from cache.nixos.org it just flips the hash and forces a
+          # needless local rebuild — which is why there is no neovim overlay:
+          # neovim-unwrapped is cached and a local rebuild is a heavy C compile.
+          #
+          # bat-extras.batman is the deliberate exception. Its derivation is
+          # `dontBuild = 1` with an installPhase of `cp` + wrapProgram, so the
+          # forced-local rebuild costs ~nothing. In return, doCheck=false drops
+          # nushell/fish/zsh (batman's nativeCheckInputs) so they never land in
+          # the /nix/store at all, even after a nixpkgs bump makes batman a
+          # cache miss. We don't use nushell and don't want it pulled in.
           batExtrasOverlay = _: prev: {
             bat-extras = prev.bat-extras // {
               batman = prev.bat-extras.batman.overrideAttrs (_: {
                 doCheck = false;
               });
             };
-          };
-          neovimOverlay = _: prev: {
-            neovim-unwrapped = prev.neovim-unwrapped.overrideAttrs (_: {
-              doCheck = false;
-              doInstallCheck = false;
-            });
           };
           determinateNixOverlay =
             _final: prev:
@@ -174,7 +171,6 @@
           overlays = [
             binaryStubsOverlay
             batExtrasOverlay
-            neovimOverlay
             determinateNixOverlay
           ]
           ++ (if isGpu then [ nixgl.overlay ] else [ ]);
