@@ -1,6 +1,10 @@
 {
   catppuccin = {
     enable = true;
+    # Pull whiskers-built ports (e.g. starship) from the official binary
+    # cache instead of compiling whiskers locally. Injects the substituter +
+    # key into nix.settings (merges with modules/nix-config.nix).
+    cache.enable = true;
     # accent = "green";
     # autoEnable preserves pre-migration behavior: only the ports
     # explicitly enabled below are themed (no global auto-enrollment).
