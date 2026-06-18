@@ -132,13 +132,12 @@
               # wasmtime (Rust) compile: enableWasm only powers `builtins.wasm`
               # (call WebAssembly modules during eval), which we never use, and
               # wasmtime is a custom determinate build that is never cached.
-              nixComponents =
-                (prev.extend nix-src.overlays.internal).nixComponents2.overrideScope (
-                  _finalC: prevC: {
-                    nix-expr = prevC.nix-expr.override { enableWasm = false; };
-                    nix-store = prevC.nix-store.override { enableWasm = false; };
-                  }
-                );
+              nixComponents = (prev.extend nix-src.overlays.internal).nixComponents2.overrideScope (
+                _finalC: prevC: {
+                  nix-expr = prevC.nix-expr.override { enableWasm = false; };
+                  nix-store = prevC.nix-store.override { enableWasm = false; };
+                }
+              );
               # Use nix-cli, not nix-everything: nix-cli deliberately excludes
               # the C++ test suite (nix-expr-tests, nix-functional-tests, …),
               # which is never cached for our build and OOM-kills low-memory
@@ -153,10 +152,11 @@
                 buildInputs = builtins.filter (
                   p: !(lib.hasInfix "sentry-native" (p.name or ""))
                 ) prevAttrs.buildInputs;
-                mesonFlags = builtins.filter (
-                  f: !(lib.hasInfix "sentry" f || lib.hasInfix "crashpad-handler" f)
-                ) prevAttrs.mesonFlags
-                ++ [ (lib.mesonEnable "sentry" false) ];
+                mesonFlags =
+                  builtins.filter (
+                    f: !(lib.hasInfix "sentry" f || lib.hasInfix "crashpad-handler" f)
+                  ) prevAttrs.mesonFlags
+                  ++ [ (lib.mesonEnable "sentry" false) ];
               });
             in
             {
