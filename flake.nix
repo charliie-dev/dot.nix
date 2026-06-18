@@ -46,13 +46,6 @@
       url = "github:DeterminateSystems/nix-src";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    # Used to re-evaluate nix-src flake outputs after locally patching
-    # tests/functional/json.sh for util-linux 2.42 compatibility.
-    flake-compat = {
-      url = "github:edolstra/flake-compat";
-      flake = false;
-    };
   };
 
   outputs =
@@ -61,7 +54,6 @@
       agent-skills,
       sops-nix,
       catppuccin,
-      flake-compat,
       home-manager,
       nix-filter,
       nix-index-database,
@@ -96,27 +88,6 @@
         let
           enableSecrets = hostCfg.enableSecrets or true;
           isGpu = hostCfg.gpu or false;
-          # Patch nix-src tests/functional/json.sh: util-linux 2.42's `script`
-          # rejects `script -e -q /dev/null -c CMD` (positional file before -c).
-          # Only the -c branch needs reordering — the no-flag branch takes
-          # `script ... file command ...`, which is BSD `script`'s required
-          # syntax and is never reached on Linux (acceptsCommandFlag=1 there).
-          # The grep assertion catches upstream drift loudly: if nix-src reflows
-          # whitespace or quoting, the sed silently no-ops and the build would
-          # fail 8 minutes later on the same json test — better to fail here.
-          nixSrcPatched = nixpkgs.legacyPackages.${hostCfg.system}.applyPatches {
-            name = "nix-src-utillinux-2.42-fix";
-            src = nix-src;
-            postPatch = ''
-              sed -i \
-                -e 's|script -e -q /dev/null -c "$(shellEscapeArray "$@")"|script -e -q -c "$(shellEscapeArray "$@")" /dev/null|' \
-                tests/functional/json.sh
-              grep -q 'script -e -q -c "$(shellEscapeArray "$@")" /dev/null' \
-                tests/functional/json.sh \
-                || { echo "nix-src json.sh patch did not match upstream — sed pattern needs updating" >&2; exit 1; }
-            '';
-          };
-          nixSrcRebuilt = (import flake-compat { src = nixSrcPatched; }).defaultNix;
           # Stub packages that delegate to upstream-tracked binaries kept in
           # $HOME/.local/share/<name>/bin/<name>. home-manager hardcodes
           # ${pkgs.<name>}/bin/<name> in places like `eval "$(.../mise activate zsh)"`,
@@ -157,7 +128,39 @@
           determinateNixOverlay =
             _final: prev:
             let
-              determinateNix = nixSrcRebuilt.packages.${hostCfg.system}.default;
+              # nix-src exposes its component scope as `nixComponents2` only via
+              # the `internal` overlay (the public `default` overlay just sets a
+              # nix-everything `nix`). Re-layer it onto our pkgs so components
+              # build against our nixpkgs, then override the scope to drop the
+              # wasmtime (Rust) compile: enableWasm only powers `builtins.wasm`
+              # (call WebAssembly modules during eval), which we never use, and
+              # wasmtime is a custom determinate build that is never cached.
+              nixComponents =
+                (prev.extend nix-src.overlays.internal).nixComponents2.overrideScope (
+                  _finalC: prevC: {
+                    nix-expr = prevC.nix-expr.override { enableWasm = false; };
+                    nix-store = prevC.nix-store.override { enableWasm = false; };
+                  }
+                );
+              # Use nix-cli, not nix-everything: nix-cli deliberately excludes
+              # the C++ test suite (nix-expr-tests, nix-functional-tests, …),
+              # which is never cached for our build and OOM-kills low-memory
+              # hosts. nix-cli is also how upstream nixpkgs defines `nix`.
+              #
+              # Drop Sentry crash-reporting: it pulls sentry-native (bundles
+              # crashpad) as an extra local C++ compile we don't want, and we
+              # already disable Determinate telemetry at runtime. Both the
+              # buildInput and the crashpad-handler mesonFlag must go — the flag
+              # embeds ${sentry-native}, which alone would force the build.
+              determinateNix = nixComponents.nix-cli.overrideAttrs (prevAttrs: {
+                buildInputs = builtins.filter (
+                  p: !(lib.hasInfix "sentry-native" (p.name or ""))
+                ) prevAttrs.buildInputs;
+                mesonFlags = builtins.filter (
+                  f: !(lib.hasInfix "sentry" f || lib.hasInfix "crashpad-handler" f)
+                ) prevAttrs.mesonFlags
+                ++ [ (lib.mesonEnable "sentry" false) ];
+              });
             in
             {
               determinate-nix = determinateNix;
