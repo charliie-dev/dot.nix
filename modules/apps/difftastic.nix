@@ -4,7 +4,7 @@
     enable = false;
     git = {
       enable = true;
-      diffToolMode = false;
+      mode = "external"; # "external" | "difftool" | "both"
     };
     options = {
       color = "always";
