@@ -33,6 +33,9 @@
       enable = true;
       # flavor = "macchiato"; # or frappe, macchiato, mocha
     };
+    television = {
+      enable = true;
+    };
     tmux = {
       enable = true;
       # flavor = "macchiato";
