@@ -17,6 +17,11 @@
         go = "latest";
         usage = "latest";
         cargo-binstall = "latest";
+        # shuck: shell linter/formatter/LSP server (Rust). cargo-binstall pulls the
+        # prebuilt cargo-dist release binary, so no rustc compile; arm64 linux
+        # (gnu+musl) and aarch64-darwin are both covered. Replaces the node-based
+        # bash-language-server in the node-free toolchain.
+        "cargo:shuck-cli" = "latest";
         "go:github.com/go-delve/delve/cmd/dlv" = "latest";
         "go:github.com/golangci/golangci-lint/v2/cmd/golangci-lint" = "latest";
         "go:github.com/perplexityai/bumblebee/cmd/bumblebee" = "latest";
@@ -80,6 +85,10 @@
         use_versions_host = false;
         task = {
           output = "keep-order";
+        };
+
+        cargo = {
+          binstall = true;
         };
 
         npm = {
