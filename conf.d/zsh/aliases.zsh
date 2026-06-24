@@ -113,4 +113,4 @@ alias dcstart='dcrun start ' # usage: dcstart container_name
 alias dcpull='dcrun pull' # usage: dcpull to pull all new images or dcpull container_name
 
 
-# vim: set ft=sh :
+# vim: set ft=zsh :

@@ -134,4 +134,4 @@ fi
 #   alias docker='podman'
 # fi
 
-# vim: set ft=sh :
+# vim: set ft=zsh :

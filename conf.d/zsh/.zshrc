@@ -7,4 +7,4 @@ source ~/.config/zsh/bindkeys.zsh
 source ~/.config/zsh/plugins.zsh
 source ~/.config/zsh/aliases.zsh
 
-# vim: set ft=sh :
+# vim: set ft=zsh :

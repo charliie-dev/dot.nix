@@ -13,3 +13,5 @@ hash -d state="$XDG_STATE_HOME"
 hash -d cache="$XDG_CACHE_HOME"
 hash -d nvim="$XDG_CONFIG_HOME"/nvim
 hash -d manager="$XDG_CONFIG_HOME"/home-manager
+
+# vim: set ft=zsh :

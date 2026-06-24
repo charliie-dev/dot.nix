@@ -82,3 +82,5 @@ zstyle ':completion:*:git-checkout:*' sort false
 
 # SSH completion: disable zsh's _ssh, let carapace handle it (with overlay for Host-only completion)
 compdef -d ssh scp rsync
+
+# vim: set ft=zsh :

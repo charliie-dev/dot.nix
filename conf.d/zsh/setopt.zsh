@@ -66,4 +66,4 @@ setopt PROMPT_SUBST
 # unsetopt MENU_COMPLETE
 # setopt AUTO_MENU
 
-# vim: set ft=sh :
+# vim: set ft=zsh :

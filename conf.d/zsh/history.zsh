@@ -6,3 +6,5 @@ SAVEHIST="10000"
 HISTFILE="$XDG_CACHE_HOME"/zsh/history
 export HISTFILE="$HISTFILE"
 mkdir -p "$(dirname "$HISTFILE")"
+
+# vim: set ft=zsh :
