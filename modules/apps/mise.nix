@@ -10,6 +10,13 @@
     globalConfig = {
       tools = {
         bun = "latest";
+        # aube: jdx's Rust npm pkg manager — the backend for `npm:` global tools
+        # (see npm.package_manager below). Declared here so the binary is present
+        # before any npm: tool tries to install through it. Lifecycle scripts are
+        # jailed by default; the current tool set was audited and none need a build
+        # approval (hunkdiff/oxfmt ship platform binaries via optionalDependencies;
+        # codegraph is pure JS; protobufjs/aws-sdk postinstalls are dev-only no-ops).
+        aube = "latest";
         python = "latest";
         uv = "latest";
         node = "latest";
@@ -92,7 +99,7 @@
         };
 
         npm = {
-          package_manager = "bun";
+          package_manager = "aube";
         };
 
         python = {

@@ -9,6 +9,10 @@
   xdg = {
     enable = true;
     configFile = {
+      # aube pkg-manager exemptions (allowlist + trust exclude) for the mise npm
+      # backend — see conf.d/aube/config.toml and modules/apps/mise.nix. Single
+      # file (not recursive) so HM doesn't claim the whole ~/.config/aube dir.
+      "aube/config.toml".source = "${src}/conf.d/aube/config.toml";
       "carapace/specs" = {
         recursive = true;
         source = "${src}/conf.d/carapace/specs";

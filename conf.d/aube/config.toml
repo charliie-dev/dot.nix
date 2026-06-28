@@ -1,0 +1,29 @@
+# aube package-manager config — consumed by the mise npm backend
+# (settings.npm.package_manager = "aube" in modules/apps/mise.nix). Linked to
+# ~/.config/aube/config.toml by modules/xdg-config.nix.
+#
+# allowedUnpopularPackages: the curated set of global CLI tools mise installs via
+# aube. They are niche (some <1000 weekly downloads) but explicitly vetted and
+# version-managed in mise.nix, so exempt them from aube's lowDownloadThreshold
+# typosquat gate. Any package NOT on this list still gets the popularity check.
+allowedUnpopularPackages = [
+  "@rivolink/leaf",
+  "hunkdiff",
+  "@colbymchenry/codegraph",
+  "@google-cloud/backupdr-mcp",
+  "@google-cloud/gcloud-mcp",
+  "@google-cloud/observability-mcp",
+  "@google-cloud/storage-mcp",
+  "@hackmd/hackmd-cli",
+  "@readwise/cli",
+  "@sliday/tamp",
+  "ctx7",
+  "tokscale",
+]
+
+# trustPolicyExclude: @hackmd/hackmd-cli pins hosted-git-info@6.1.3, published
+# before provenance attestation existed; a later 7.0.0 carries attestation, so
+# aube's no-downgrade trust policy flags 6.1.3 as a downgrade. It is a known-good
+# npm-ecosystem core package, so exempt it. OSV MAL-* malware checks are separate
+# and still apply.
+trustPolicyExclude = ["hosted-git-info"]
