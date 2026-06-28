@@ -317,14 +317,10 @@ lib.mkMerge [
         ];
       };
     };
-    # Pre-empt the setupLaunchAgents EIO race by booting out HM-owned agents first,
-    # so the subsequent bootstrap always sees a clean domain.
-    home.activation.unloadHMAgentsBeforeSetup = lib.hm.dag.entryBefore [ "setupLaunchAgents" ] ''
-      for label in $(/bin/launchctl print gui/$(id -u) 2>/dev/null \
-                     | grep -oE 'org\.nix-community\.home\.[a-zA-Z0-9._-]+' | sort -u); do
-        /bin/launchctl bootout "gui/$(id -u)/$label" 2>/dev/null || true
-      done
-    '';
+    # NOTE: the former `unloadHMAgentsBeforeSetup` pre-bootout workaround was
+    # removed — current home-manager's setupLaunchAgents is domain-aware and
+    # boots each agent out of its old domain before bootstrapping (the exact
+    # EIO race the workaround guarded against).
   })
   (lib.mkIf pkgs.stdenv.isLinux {
     home = {

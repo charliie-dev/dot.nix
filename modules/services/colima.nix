@@ -5,6 +5,10 @@ in
 {
   colima = {
     enable = true;
+    # Keep the option's `gui` domain default — do NOT move to `user`. The
+    # `--vm-type vz` backend (Apple Virtualization.framework) requires the
+    # graphical Aqua session; bootstrapping into the background `user` domain
+    # fails with `Bootstrap failed: 5: Input/output error`. Verified 2026-06-28.
     config = {
       Label = "com.github.abiosoft.colima";
       ProgramArguments = [
