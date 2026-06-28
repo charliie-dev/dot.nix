@@ -50,9 +50,9 @@
     yazi = {
       enable = true;
     };
-    zsh-syntax-highlighting = {
-      enable = true;
-      # flavor = "frappe";
-    };
+    # NOTE: no zsh-syntax-highlighting port — the active highlighter is
+    # fast-syntax-highlighting (loaded via antidote), which ignores
+    # ZSH_HIGHLIGHT_STYLES. Its Mocha theme lives in
+    # conf.d/zsh/fast-syntax-highlighting.zsh instead.
   };
 }

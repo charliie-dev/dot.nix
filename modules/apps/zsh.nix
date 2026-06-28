@@ -127,6 +127,7 @@ in
           "exports.zsh"
           # "history.zsh" # set in nix
           "functions.zsh"
+          "fast-syntax-highlighting.zsh"
           "plugins.zsh"
           "aliases.zsh"
           # "hashdirs.zsh" # set in nix
