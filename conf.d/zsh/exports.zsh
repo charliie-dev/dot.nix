@@ -50,6 +50,11 @@ export BUN_INSTALL="$XDG_DATA_HOME"/bun
 export TF_CLI_CONFIG_FILE="$XDG_CONFIG_HOME"/terraform/terraformrc
 export DOPPLER_CONFIG_DIR="$XDG_CONFIG_HOME"/doppler
 export HMD_CLI_CONFIG_DIR="$XDG_CONFIG_HOME"/hackmd
+# telemetry opt-out — env overrides any tool's saved choice. DO_NOT_TRACK is the
+# cross-tool standard (honored by codegraph + others); CODEGRAPH_TELEMETRY is
+# codegraph's own switch, kept explicit as a belt-and-suspenders.
+export DO_NOT_TRACK=1
+export CODEGRAPH_TELEMETRY=0
 
 # Disable Determinate Nix telemetry
 # https://docs.determinate.systems/guides/telemetry/
