@@ -78,5 +78,9 @@
     system = "x86_64-linux";
     enableSecrets = false;
   };
-  "charles@ra06-claude" = { sharedConfig = "charles@RDSrv01"; system = "x86_64-linux"; enableSecrets = false; };
+  "charles@ra06-claude" = {
+    sharedConfig = "charles@RDSrv01";
+    system = "x86_64-linux";
+    enableSecrets = false;
+  };
 }
