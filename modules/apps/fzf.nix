@@ -38,10 +38,10 @@
       "hl+" = "#f38ba8";
       selected-bg = "#45475a";
     };
-    changeDirWidgetCommand = "fd --type d"; # ALT-C
-    fileWidgetCommand = "fd --type f"; # CTRL-T
+    changeDirWidget.command = "fd --type d"; # ALT-C
+    fileWidget.command = "fd --type f"; # CTRL-T
     # CTRL-R
-    historyWidgetOptions = [
+    historyWidget.options = [
       "--sort"
       "--exact"
     ];
