@@ -3,21 +3,24 @@ set -e
 
 FORCE=0
 DRY_RUN=0
+ASSUME_YES=0
 PROTECTED='^(main|master|develop|dev)$'
 
 for arg in "$@"; do
     case "$arg" in
         -f|--force)   FORCE=1 ;;
         -n|--dry-run) DRY_RUN=1 ;;
+        -y|--yes)     ASSUME_YES=1 ;;
         -h|--help)
             cat <<EOF
-Usage: git sweep [-f|--force] [-n|--dry-run]
+Usage: git sweep [-f|--force] [-n|--dry-run] [-y|--yes]
 
 Delete local branches whose upstream is gone.
 
 Options:
   -f, --force     Force delete (use 'git branch -D'), needed for squash-merges
   -n, --dry-run   Show what would be deleted without deleting
+  -y, --yes       Skip confirmation (for non-interactive use, e.g. mise tasks)
   -h, --help      Show this help
 EOF
             exit 0
@@ -27,7 +30,7 @@ done
 
 git fetch -p
 
-branches=$(git branch -vv | awk '/: gone]/ {print $1}' | grep -vE "$PROTECTED" || true)
+branches=$(git branch -vv | awk '/: gone]/ { if ($1 == "*" || $1 == "+") print $2; else print $1 }' | grep -vE "$PROTECTED" || true)
 
 if [ "$branches" = "" ]; then
     echo "✓ No stale branches to clean."
@@ -42,13 +45,18 @@ if [ "$DRY_RUN" -eq 1 ]; then
     exit 0
 fi
 
-if [ "$FORCE" -eq 1 ]; then
-    printf "Proceed with FORCE delete? [y/N] "
+if [ "$ASSUME_YES" -eq 1 ]; then
+    ans=y
 else
-    printf "Proceed? [y/N] "
+    if [ "$FORCE" -eq 1 ]; then
+        printf "Proceed with FORCE delete? [y/N] "
+    else
+        printf "Proceed? [y/N] "
+    fi
+    # `read` returns non-zero on EOF (non-interactive stdin); guard so `set -e`
+    # doesn't abort the whole script and treat a plain no-op as a failure.
+    read -r ans || ans=""
 fi
-
-read -r ans
 if [ "$ans" != "y" ] && [ "$ans" != "Y" ]; then
     echo "Aborted."
     exit 0
@@ -57,4 +65,39 @@ fi
 flag="-d"
 [ "$FORCE" -eq 1 ] && flag="-D"
 
-echo "$branches" | xargs -n 1 git branch "$flag"
+skipped=""
+while IFS= read -r br; do
+    [ -z "$br" ] && continue
+
+    # A branch checked out in a linked worktree can't be deleted until the
+    # worktree is gone. Look it up in the porcelain listing (path may contain
+    # spaces, so slice after the "worktree " prefix rather than field-split).
+    wt=$(git worktree list --porcelain | awk -v b="refs/heads/$br" '
+        /^worktree / { p = substr($0, 10) }
+        $0 == "branch " b { print p; exit }')
+
+    if [ -n "$wt" ]; then
+        echo "  '$br' is checked out in worktree: $wt"
+        # No --force: git refuses to remove a dirty/locked worktree, which is
+        # exactly the safe behaviour we want (never discard uncommitted work).
+        if git worktree remove "$wt" 2>/dev/null; then
+            echo "    removed worktree"
+        else
+            echo "    ! worktree is dirty or locked; skipping '$br'"
+            echo "      resolve it then re-run, or: git worktree remove --force '$wt'"
+            skipped="$skipped $br"
+            continue
+        fi
+    fi
+
+    if ! git branch "$flag" "$br"; then
+        skipped="$skipped $br"
+    fi
+done <<EOF
+$branches
+EOF
+
+if [ -n "$skipped" ]; then
+    echo "Skipped (needs manual attention):$skipped"
+    exit 1
+fi
