@@ -7,11 +7,9 @@
       hosts = [ "https://github.com" ];
     };
     extensions = with pkgs; [
-      gh-actions-cache
       # gh-cal
       # gh-contribs
-      # github-copilot-cli
-      # gh-dash
+      gh-dash
       # gh-eco
       gh-f
       # gh-i
