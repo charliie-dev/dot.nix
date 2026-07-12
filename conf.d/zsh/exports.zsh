@@ -68,6 +68,7 @@ export SOPS_AGE_KEY_FILE="$XDG_CONFIG_HOME"/age/keys.txt
 export CLAUDE_CONFIG_DIR="$XDG_CONFIG_HOME"/claude
 export CODEX_HOME="$XDG_CONFIG_HOME"/codex
 export COPILOT_HOME="$XDG_CONFIG_HOME"/copilot
+export GROK_HOME="$XDG_CONFIG_HOME"/grok
 export MCP_REMOTE_CONFIG_DIR="$XDG_DATA_HOME"/mcp-auth
 
 # VPS
