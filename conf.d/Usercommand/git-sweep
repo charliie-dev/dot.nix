@@ -66,6 +66,11 @@ fi
 
 git fetch -p
 
+# Drop metadata for worktrees whose directory was removed by hand. Such a
+# stale entry would otherwise keep a branch "checked out" and block its
+# deletion below (see gh-poi #180/#181).
+git worktree prune
+
 branches=$(git branch -vv | awk '/: gone]/ { if ($1 == "*" || $1 == "+") print $2; else print $1 }' | grep -vE "$PROTECTED" || true)
 
 if [ "$branches" = "" ]; then
@@ -101,26 +106,62 @@ fi
 flag="-d"
 [ "$FORCE" -eq 1 ] && flag="-D"
 
+# Free the worktree (if any) holding a stale branch so it can be deleted.
+# Args: branch path is-main is-locked is-prunable. Returns non-zero when the
+# worktree can't be released safely, so the caller skips that branch.
+release_worktree() {
+    local br="$1" wt="$2" is_main="$3" is_locked="$4" is_prunable="$5"
+
+    if [ "$is_main" = "1" ]; then
+        echo "  '$br' is checked out in the main worktree; switch away to delete it"
+        return 1
+    fi
+    if [ "$is_locked" = "1" ]; then
+        echo "  '$br' is in a locked worktree ($wt); unlock it then re-run"
+        return 1
+    fi
+
+    echo "  '$br' is checked out in worktree: $wt"
+    if [ "$is_prunable" = "1" ]; then
+        git worktree prune
+        echo "    pruned stale worktree"
+        return 0
+    fi
+    # No --force: git refuses to remove a dirty worktree, which is exactly the
+    # safe behaviour we want (never discard uncommitted work).
+    if git worktree remove "$wt" 2>/dev/null; then
+        echo "    removed worktree"
+        return 0
+    fi
+    echo "    ! worktree is dirty; skipping '$br'"
+    echo "      resolve it then re-run, or: git worktree remove --force '$wt'"
+    return 1
+}
+
 skipped=""
 while IFS= read -r br; do
     [ -z "$br" ] && continue
 
-    # A branch checked out in a linked worktree can't be deleted until the
-    # worktree is gone. Look it up in the porcelain listing (path may contain
-    # spaces, so slice after the "worktree " prefix rather than field-split).
-    wt=$(git worktree list --porcelain | awk -v b="refs/heads/$br" '
-        /^worktree / { p = substr($0, 10) }
-        $0 == "branch " b { print p; exit }')
+    # Look up the worktree (if any) holding this branch and its porcelain
+    # flags, tab-separated: path, is-main, is-locked, is-prunable. Paragraph
+    # mode ($1 record = the main worktree) keeps the path intact even with
+    # spaces.
+    info=$(git worktree list --porcelain | awk -v b="branch refs/heads/$br" '
+        BEGIN { RS = ""; FS = "\n" }
+        {
+            path = ""; ismain = (NR == 1) ? 1 : 0; locked = 0; prunable = 0; hit = 0
+            for (i = 1; i <= NF; i++) {
+                if ($i ~ /^worktree /)     path = substr($i, 10)
+                else if ($i ~ /^locked/)   locked = 1
+                else if ($i ~ /^prunable/) prunable = 1
+                else if ($i == b)          hit = 1
+            }
+            if (hit) { printf "%s\t%d\t%d\t%d\n", path, ismain, locked, prunable; exit }
+        }')
 
-    if [ -n "$wt" ]; then
-        echo "  '$br' is checked out in worktree: $wt"
-        # No --force: git refuses to remove a dirty/locked worktree, which is
-        # exactly the safe behaviour we want (never discard uncommitted work).
-        if git worktree remove "$wt" 2>/dev/null; then
-            echo "    removed worktree"
-        else
-            echo "    ! worktree is dirty or locked; skipping '$br'"
-            echo "      resolve it then re-run, or: git worktree remove --force '$wt'"
+    if [ -n "$info" ]; then
+        IFS=$'\t' read -r wt is_main is_locked is_prunable <<<"$info"
+        if ! release_worktree "$br" "$wt" "$is_main" "$is_locked" "$is_prunable"; then
             skipped="$skipped $br"
             continue
         fi
