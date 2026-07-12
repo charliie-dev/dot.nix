@@ -15,10 +15,17 @@ for arg in "$@"; do
             cat <<EOF
 Usage: git sweep [-f|--force] [-n|--dry-run] [-y|--yes]
 
-Delete local branches whose upstream is gone.
+Delete stale local branches.
+
+On GitHub repos (origin on github.com, gh installed & authenticated) this
+delegates to 'gh poi', which decides by PR state — so it also catches
+squash/rebase merges and cleans up associated worktrees. On any other forge
+(or when gh is unavailable) it falls back to the git-native mechanism:
+branches whose upstream is gone.
 
 Options:
-  -f, --force     Force delete (use 'git branch -D'), needed for squash-merges
+  -f, --force     Force delete (git branch -D). Fallback path only; ignored
+                  on the gh poi path, which never force-deletes.
   -n, --dry-run   Show what would be deleted without deleting
   -y, --yes       Skip confirmation (for non-interactive use, e.g. mise tasks)
   -h, --help      Show this help
@@ -27,6 +34,35 @@ EOF
             ;;
     esac
 done
+
+# On GitHub, delegate to gh poi: it judges by PR state (squash/rebase aware)
+# and handles associated worktrees itself, which the git-native [gone] sweep
+# below cannot. Only github.com; anything else (GHE, GitLab, offline, or gh
+# not logged in) falls through to the fallback so the command always works.
+origin_url=$(git remote get-url origin 2>/dev/null || true)
+if [[ "$origin_url" == *github.com* ]] \
+    && command -v gh >/dev/null 2>&1 \
+    && gh auth status >/dev/null 2>&1; then
+    # Mirror the fallback's protected set regardless of the repo's lock state.
+    # Idempotent; ignore branches that don't exist locally.
+    gh poi lock main master develop dev >/dev/null 2>&1 || true
+
+    if [ "$DRY_RUN" -eq 1 ]; then
+        exec gh poi --scan deep --dry-run
+    fi
+    if [ "$ASSUME_YES" -eq 1 ]; then
+        exec gh poi --scan deep
+    fi
+    # Preview then confirm, matching the fallback UX.
+    gh poi --scan deep --dry-run
+    printf "Proceed with deletion via gh poi? [y/N] "
+    read -r ans || ans=""
+    if [ "$ans" != "y" ] && [ "$ans" != "Y" ]; then
+        echo "Aborted."
+        exit 0
+    fi
+    exec gh poi --scan deep
+fi
 
 git fetch -p
 
