@@ -331,6 +331,7 @@ lib.mkMerge [
     systemd.user.services.nh-clean.Service.Environment =
       "PATH=/nix/var/nix/profiles/default/bin:${config.home.profileDirectory}/bin";
   })
+  (import "${src}/modules/go-env.nix" { inherit config pkgs lib; })
   (lib.mkIf enableSecrets (
     let
       sopsConfig = import "${src}/modules/sops.nix" { inherit config src; };
