@@ -9,10 +9,6 @@
     withRuby = false;
     extraPackages = with pkgs; [
       # Dependent packages used by default plugins
-      doq # neogen docstring
-      # docformatter's dep untokenize is disabled on python3.14 (upstream
-      # untokenize#4); pin to python3.13 and expose the CLI on PATH
-      python313Packages.docformatter
       cargo
       clang
       cmake
