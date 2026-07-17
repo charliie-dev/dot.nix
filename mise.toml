@@ -30,4 +30,13 @@ run = [
   { task = "nix:daemon-restart" },
 ]
 
+# ==============================================================================
+#  CI — run the same gates as .github/workflows/ci.yml before pushing
+# ==============================================================================
+# `mise run ci` mirrors CI: formatting gate first (like the flake-check job),
+# then host eval (like eval-hosts, scoped to this system). `mise run fmt` fixes.
+[tasks.ci]
+description = "Run CI gates locally: ci:fmt then ci:eval"
+run = [{ task = "ci:fmt" }, { task = "ci:eval" }]
+
 # mise sync-transient-prompt: update colors in plugins.zsh after changing theme

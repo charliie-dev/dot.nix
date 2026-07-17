@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+#MISE description="CI host-eval gate: evaluate this system's homeConfigurations (non-gpu, non-shared)"
+#MISE raw=true
+# Mirrors the `eval-hosts` job in .github/workflows/ci.yml, restricted to the
+# current system so it runs offline on your machine. CI covers every system.
+set -uo pipefail
+
+sys=$(nix eval --impure --raw --expr 'builtins.currentSystem')
+hosts=$(nix eval --file hosts.nix --apply "
+  hosts: builtins.filter
+    (name: hosts.\${name}.system == \"$sys\" && !(hosts.\${name}.gpu or false) && !(hosts.\${name} ? sharedConfig))
+    (builtins.attrNames hosts)
+" --json) || { echo "[ERROR] nix eval of hosts.nix failed" >&2; exit 1; }
+
+count=$(jq 'length' <<<"$hosts")
+if [ "$count" -eq 0 ]; then
+  echo "[INFO] No hosts for $sys, skipping."
+  exit 0
+fi
+
+failed=0
+while IFS= read -r host; do
+  echo "[INFO] Evaluating $host ..."
+  if nix eval ".#homeConfigurations.\"$host\".activationPackage.drvPath" --raw >/dev/null; then
+    echo "  ✅ $host"
+  else
+    echo "  ❌ $host" >&2
+    failed=1
+  fi
+done < <(jq -r '.[]' <<<"$hosts")
+
+[ "$failed" -eq 0 ] || { echo "[ERROR] One or more host evaluations failed" >&2; exit 1; }
+echo "[OK] All $count host(s) evaluate."
+
+# vim: ft=sh

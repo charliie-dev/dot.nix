@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+#MISE description="CI formatting gate: build .#checks.<system>.formatting (treefmt, read-only)"
+#MISE raw=true
+# Mirrors the `flake-check` job in .github/workflows/ci.yml. Run `mise run fmt`
+# to auto-fix, this only reports — same as CI.
+set -euo pipefail
+
+sys=$(nix eval --impure --raw --expr 'builtins.currentSystem')
+echo "[INFO] Checking formatting for $sys ..."
+nix build ".#checks.$sys.formatting" --no-link
+echo "[OK] Formatting clean."
+
+# vim: ft=sh

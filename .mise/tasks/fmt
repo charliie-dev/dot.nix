@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+#MISE description="Auto-fix formatting with treefmt (nixfmt + deadnix) — run before committing"
+#MISE raw=true
+set -euo pipefail
+
+nix fmt
+
+# vim: ft=sh
