@@ -124,4 +124,13 @@ claude-code-toggle() {
     esac
 }
 
+# Claude Code 的 remote control 需要 feature-flag evaluation,而 DO_NOT_TRACK(exports.zsh
+# 裡的全域跨工具隱私標準)會一併停用它。只在 claude 執行時 unset DNT,全域 DNT 保留給
+# codegraph 等其他工具。claude 的隱私改靠 settings.json 的 DISABLE_ERROR_REPORTING;
+# 其 usage metrics 依官方說明不含程式碼/prompt/檔案路徑,屬低風險。
+# env 以 execvp 直接跑 PATH 上的 claude,不會遞迴回這個 function。
+claude() {
+    env -u DO_NOT_TRACK claude "$@"
+}
+
 # vim: set ft=zsh :

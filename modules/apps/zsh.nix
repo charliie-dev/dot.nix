@@ -138,6 +138,24 @@ in
       in
       builtins.concatStringsSep "\n" (readAll (commonFiles ++ darwinFiles));
     envExtra = ''
+      # Code Agents — 放在 .zshenv 層(envExtra),讓非互動 shell / IDE 內建終端
+      # 啟動的 agent 也解析到 XDG 路徑。用 nix 插值展開絕對路徑,不依賴
+      # runtime $XDG_CONFIG_HOME(它在互動層 exports.zsh 才設,.zshenv 時尚未存在)。
+      # GUI app(ChatGPT.app 的 codex、Aside daemon)另由 launchd brew-env 覆蓋。
+      export CLAUDE_CONFIG_DIR="${config.xdg.configHome}/claude"
+      export CODEX_HOME="${config.xdg.configHome}/codex"
+      export COPILOT_HOME="${config.xdg.configHome}/copilot"
+      export GROK_HOME="${config.xdg.configHome}/grok"
+      export MCP_REMOTE_CONFIG_DIR="${config.xdg.dataHome}/mcp-auth"
+      export ASIDE_HOME="${config.xdg.dataHome}/aside"
+      # grok 隱私釘子(env 優先序高於 config.toml,雙保險)
+      export GROK_TELEMETRY_ENABLED=0
+      export GROK_FEEDBACK_ENABLED=0
+      export GROK_TELEMETRY_TRACE_UPLOAD=0
+      export GROK_DISABLE_AUTOUPDATER=1
+      # copilot:關連外自動更新(brew cask 管版本);CLI 目前無 telemetry opt-out
+      export COPILOT_AUTO_UPDATE=0
+
       # AWS (non-secret)
       export AWS_DEFAULT_OUTPUT="json"
       export AWS_DATA_PATH="${config.xdg.dataHome}/aws"

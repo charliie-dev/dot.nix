@@ -64,12 +64,9 @@ export DETSYS_IDS_TELEMETRY="disabled"
 # Secrets Management
 export SOPS_AGE_KEY_FILE="$XDG_CONFIG_HOME"/age/keys.txt
 
-# Code Agents
-export CLAUDE_CONFIG_DIR="$XDG_CONFIG_HOME"/claude
-export CODEX_HOME="$XDG_CONFIG_HOME"/codex
-export COPILOT_HOME="$XDG_CONFIG_HOME"/copilot
-export GROK_HOME="$XDG_CONFIG_HOME"/grok
-export MCP_REMOTE_CONFIG_DIR="$XDG_DATA_HOME"/mcp-auth
+# Code Agents env → 已移至 zsh.nix `envExtra`(.zshenv 層),使非互動/GUI 啟動的
+# agent(ChatGPT.app 的 codex、Aside daemon)也能解析到 XDG 路徑;GUI app 再由
+# launchd brew-env(modules/services/brew-env.nix)以 launchctl setenv 覆蓋。
 
 # VPS
 export AWS_SHARED_CREDENTIALS_FILE="$XDG_CONFIG_HOME"/aws/credentials

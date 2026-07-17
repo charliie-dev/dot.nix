@@ -304,7 +304,9 @@ lib.mkMerge [
     };
   }
   (lib.mkIf pkgs.stdenv.isDarwin {
-    launchd.agents = (import "${src}/modules/services/colima.nix" { inherit config pkgs; }) // {
+    launchd.agents = (import "${src}/modules/services/colima.nix" { inherit config pkgs; })
+    // (import "${src}/modules/services/brew-env.nix" { inherit config pkgs; })
+    // {
       nh-clean.config = {
         # launchd inherits a minimal PATH; nh shells out to `nix --version`.
         EnvironmentVariables.PATH = "/nix/var/nix/profiles/default/bin:${config.home.profileDirectory}/bin";
