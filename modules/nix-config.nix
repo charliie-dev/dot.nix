@@ -20,7 +20,9 @@
       # Determinate Nix-only settings (require pkgs.determinate-nix)
       lazy-trees = true;
       eval-cores = 0;
-      # lazy-locks = true; # still being polished by DS, off by default
+      # lazy-locks = true; # keep off: true omits NAR hashes from flake.lock,
+      #   producing lock files that upstream/older Nix can't read (DS-only).
+      #   Default false writes full NAR hashes = portable; upside of true is tiny.
     };
     # use nh to clean
     # gc = {
