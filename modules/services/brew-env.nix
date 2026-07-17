@@ -7,7 +7,7 @@
 # 注意:launchctl setenv 只對「之後啟動」的程式生效 → 已開著的 app 需重啟才吃到。
 # 用 nix 插值展開絕對路徑,因為 launchd 環境沒有 $XDG_* 變數。
 # 未來其他 brew 工具要走 XDG 也往這裡加 setenv 即可。
-{ config, pkgs, ... }:
+{ config, ... }:
 {
   brew-env = {
     enable = true;

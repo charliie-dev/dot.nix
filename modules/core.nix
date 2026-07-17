@@ -304,21 +304,22 @@ lib.mkMerge [
     };
   }
   (lib.mkIf pkgs.stdenv.isDarwin {
-    launchd.agents = (import "${src}/modules/services/colima.nix" { inherit config pkgs; })
-    // (import "${src}/modules/services/brew-env.nix" { inherit config pkgs; })
-    // {
-      nh-clean.config = {
-        # launchd inherits a minimal PATH; nh shells out to `nix --version`.
-        EnvironmentVariables.PATH = "/nix/var/nix/profiles/default/bin:${config.home.profileDirectory}/bin";
-        # Upstream HM wraps extraArgs in shell single-quotes, so nh receives them as one
-        # token and clap errors out. Override the wrapper to interpolate extraArgs unquoted.
-        ProgramArguments = [
-          "/bin/sh"
-          "-c"
-          "/bin/wait4path /nix/store && exec ${pkgs.nh}/bin/nh clean user ${config.programs.nh.clean.extraArgs}"
-        ];
+    launchd.agents =
+      (import "${src}/modules/services/colima.nix" { inherit config pkgs; })
+      // (import "${src}/modules/services/brew-env.nix" { inherit config pkgs; })
+      // {
+        nh-clean.config = {
+          # launchd inherits a minimal PATH; nh shells out to `nix --version`.
+          EnvironmentVariables.PATH = "/nix/var/nix/profiles/default/bin:${config.home.profileDirectory}/bin";
+          # Upstream HM wraps extraArgs in shell single-quotes, so nh receives them as one
+          # token and clap errors out. Override the wrapper to interpolate extraArgs unquoted.
+          ProgramArguments = [
+            "/bin/sh"
+            "-c"
+            "/bin/wait4path /nix/store && exec ${pkgs.nh}/bin/nh clean user ${config.programs.nh.clean.extraArgs}"
+          ];
+        };
       };
-    };
     # NOTE: the former `unloadHMAgentsBeforeSetup` pre-bootout workaround was
     # removed — current home-manager's setupLaunchAgents is domain-aware and
     # boots each agent out of its old domain before bootstrapping (the exact
