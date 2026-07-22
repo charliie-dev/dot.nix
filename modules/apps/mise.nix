@@ -48,11 +48,13 @@
       # wiring lives in xdg-config.nix, also Darwin-gated). Linux hosts use the
       # distro's system docker for the whole client+daemon stack, so mise must not
       # manage compose/buildx there. buildx isn't in mise's registry, so its
-      # backend is named explicitly; compose resolves via the registry
-      # (aqua:docker/compose). nixpkgs lagged buildx (0.31.1 vs upstream 0.34.1),
-      # hence mise rather than a nix package.
+      # backend is named explicitly; compose's registry default moved from the
+      # deprecated aqua backend to github, so it's pinned to github:docker/compose
+      # to match (a bare "docker-compose" key still resolves to aqua and warns).
+      # nixpkgs lagged buildx (0.31.1 vs upstream 0.34.1), hence mise rather than
+      # a nix package.
       // lib.optionalAttrs pkgs.stdenv.isDarwin {
-        "docker-compose" = "latest";
+        "github:docker/compose" = "latest";
         "aqua:docker/buildx" = "latest";
 
         # code agents tools
