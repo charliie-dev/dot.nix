@@ -39,6 +39,10 @@
         "go:mvdan.cc/gofumpt" = "latest";
         "npm:@rivolink/leaf" = "latest";
         "npm:hunkdiff" = "latest";
+        "github:immanuwell/dockerfile-roast" = {
+          version = "latest";
+          exe = "droast";
+        };
       }
       # Docker CLI plugins are managed by mise on macOS ONLY (the cli-plugins
       # wiring lives in xdg-config.nix, also Darwin-gated). Linux hosts use the
