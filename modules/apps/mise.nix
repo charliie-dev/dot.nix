@@ -96,6 +96,8 @@
         gpg_verify = true;
         jobs = 8;
         libc = "gnu"; # force glibc selection; mise's static-musl binary misdetects host libc
+        # duration string, not integer — mise errors on `0` ("expected a string")
+        minimum_release_age = "0s";
         paranoid = false;
         # mise-versions.jdx.dev (the CDN that caches version listings) frequently
         # 403s, spamming "outcome=failed status=403 fallback=true" warnings even
