@@ -74,7 +74,6 @@
         "npm:@google-cloud/storage-mcp" = "latest";
         "npm:@hackmd/hackmd-cli" = "latest";
         "npm:@readwise/cli" = "latest";
-        "npm:@sliday/tamp" = "latest";
         "npm:ctx7" = "latest";
         "npm:tokscale" = "latest";
       };
