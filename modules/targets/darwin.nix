@@ -32,7 +32,7 @@
       "com.apple.Safari" = {
         IncludeDevelopMenu = true;
         AutoFillCreditCardData = false;
-        AutoFillPasswords = false;
+        AutoFillPasswords = true;
         AutoOpenSafeDownloads = false;
         ShowOverlayStatusBar = true;
       };
