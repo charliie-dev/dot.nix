@@ -48,6 +48,7 @@
         # (gnu+musl) and aarch64-darwin are both covered. Replaces the node-based
         # bash-language-server in the node-free toolchain.
         "cargo:shuck-cli" = "latest";
+        "cargo:tuicr" = "latest";
         "go:github.com/go-delve/delve/cmd/dlv" = "latest";
         "go:github.com/golangci/golangci-lint/v2/cmd/golangci-lint" = "latest";
         "go:github.com/perplexityai/bumblebee/cmd/bumblebee" = "latest";
