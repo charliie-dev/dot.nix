@@ -7,7 +7,6 @@
     git-ignore # Qucikly and easily fetch .gitignore templates from gitignore.io
     jq # JSON parser
     # ripsecrets # Prevent committing secret keys into your source code
-    # sd # Intuitive find & replace CLI (sed alternative)
     # xh # Friendly and fast tool for sending HTTP requests
     jless # JSON viewer designed for reading, exploring, and searching through JSON data
     witr # Why is this running?
@@ -18,6 +17,7 @@
     duf # Better df with a nicer table output
     procs # Modern replacement for ps written in Rust
     choose # Human-friendly alternative to cut and awk field picking
+    sd # Intuitive find & replace (sed alternative) for batch edits
 
     # yazi
     # ffmpeg # for video thumbnails
