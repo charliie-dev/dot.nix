@@ -15,11 +15,30 @@
         # before any npm: tool tries to install through it. Lifecycle scripts are
         # jailed by default; the current tool set was audited and none need a build
         # approval (hunkdiff/oxfmt ship platform binaries via optionalDependencies;
-        # codegraph is pure JS; protobufjs/aws-sdk postinstalls are dev-only no-ops).
+        # codegraph is pure JS; protobufjs/aws-sdk postinstalls are dev-only no-ops;
+        # nub's postinstall is only needed for install-as-root-then-drop-privileges,
+        # see its entry below).
         aube = "latest";
         python = "latest";
         uv = "latest";
         node = "latest";
+        # nub: Rust front-end for the Node toolchain — replaces npm/pnpm run, npx,
+        # nvm/fnm, tsx/ts-node and nodemon with one binary. Not a runtime: it
+        # provisions and execs real node, so `node` above is a hard dependency (the
+        # launcher is a shell script that execs `node`; without it you get
+        # "exec: node: not found"). Registry name resolves to npm:@nubjs/nub —
+        # do NOT write `npm:nub`, that name belongs to an unrelated 2013 package
+        # ("Uniqueness functions" by substack).
+        #
+        # It ships a postinstall, which aube jails. Harmless here: the script only
+        # chmod +x's the platform binary at install time for the container pattern
+        # where npm installs as root and the image then drops to a non-root user.
+        # When installer and user are the same person (mise on a workstation),
+        # bin/launch.js does the same chmod at runtime. Verified in an isolated
+        # MISE_DATA_DIR: nub/nubx 0.6.0 both report versions, `nub run` executes a
+        # package.json script, and `nub file.ts` transpiles and runs without a
+        # separate loader — all with the postinstall jailed.
+        nub = "latest";
         # ruby = "latest";
         go = "latest";
         usage = "latest";
