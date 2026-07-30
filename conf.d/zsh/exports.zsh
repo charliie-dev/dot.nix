@@ -73,6 +73,10 @@ export AWS_SHARED_CREDENTIALS_FILE="$XDG_CONFIG_HOME"/aws/credentials
 export AWS_CONFIG_FILE="$XDG_CONFIG_HOME"/aws/config
 export AWS_PROFILE="default"
 export AZURE_CONFIG_DIR="$XDG_DATA_HOME"/azure
+export OCI_CLI_CONFIG_FILE="$XDG_CONFIG_HOME"/oci/config
+export OCI_CLI_RC_FILE="$XDG_CONFIG_HOME"/oci/oci_cli_rc
+export OCI_CLI_PROFILE="pluto"
+export OCI_CLI_AUTH="security_token" # session token 登入(oci session authenticate)
 
 # D2 ENV
 export D2_LAYOUT=tala
