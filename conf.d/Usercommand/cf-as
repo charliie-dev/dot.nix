@@ -4,14 +4,14 @@
 # 用指定 Cloudflare 帳號的唯讀 token 跑一個命令。給的是目錄外的臨時查詢:
 #
 #   cf-as charliie flarectl dns list --zone charliie.dev
-#   cf-as nicsra   flarectl zone list
+#   cf-as anmo     flarectl zone list
 #
 # 只設唯讀 token。寫入一律走 docker repo 的 mise run cf:apply —— 寫入 token
 # 在 sops 裡,只在那個 task 的當次 process 解密,不進任何常駐 shell。
 #
 # 這裡的帳號->變數名對照與 docker/cloudflare/.mise/tasks/lib/cf-auth 重複了
 # 一次。刻意的:兩者住在不同 repo、生命週期不同(這支隨 home-manager 部署到
-# 每台機器,那支只在 docker repo 內),為了三行對照去建跨 repo 相依不划算。
+# 每台機器,那支只在 docker repo 內),為了兩行對照去建跨 repo 相依不划算。
 set -euo pipefail
 
 usage() {
@@ -21,7 +21,6 @@ usage() {
 帳號:
   charliie   charliie.dev   (charleschiu)
   anmo       anmo.tw        (AnmoAdmin)
-  nicsra     nicsra.moda    (NICS(RA), 共管)
 
 範例:
   cf-as charliie flarectl dns list --zone charliie.dev
@@ -35,10 +34,6 @@ shift
 case "$account" in
   charliie) ro_var=CF_TOKEN_CHARLIIE_RO; account_id=864dd04341d2aca5804853428630fbc4 ;;
   anmo)     ro_var=CF_TOKEN_ANMO_RO;     account_id="" ;;
-  # nicsra 的 account ID 不寫在 repo 裡(公務網域的識別資訊),與
-  # docker/cloudflare 的 lib/cf-auth 一致從 Doppler 注入。空值時下面的
-  # [ -n "$account_id" ] 會跳過 export,行為與 anmo 目前的情況相同。
-  nicsra)   ro_var=CF_TOKEN_NICSRA_RO;   account_id="${CF_ACCOUNT_ID_NICSRA:-}" ;;
   -h|--help) usage; exit 0 ;;
   *)
     echo "cf-as: 未知帳號 '$account'" >&2
