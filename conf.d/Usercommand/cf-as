@@ -35,7 +35,10 @@ shift
 case "$account" in
   charliie) ro_var=CF_TOKEN_CHARLIIE_RO; account_id=864dd04341d2aca5804853428630fbc4 ;;
   anmo)     ro_var=CF_TOKEN_ANMO_RO;     account_id="" ;;
-  nicsra)   ro_var=CF_TOKEN_NICSRA_RO;   account_id=e653d76ca78bf36c69ae0fdcac8a03ed ;;
+  # nicsra 的 account ID 不寫在 repo 裡(公務網域的識別資訊),與
+  # docker/cloudflare 的 lib/cf-auth 一致從 Doppler 注入。空值時下面的
+  # [ -n "$account_id" ] 會跳過 export,行為與 anmo 目前的情況相同。
+  nicsra)   ro_var=CF_TOKEN_NICSRA_RO;   account_id="${CF_ACCOUNT_ID_NICSRA:-}" ;;
   -h|--help) usage; exit 0 ;;
   *)
     echo "cf-as: 未知帳號 '$account'" >&2
