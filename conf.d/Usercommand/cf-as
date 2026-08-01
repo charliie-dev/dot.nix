@@ -33,7 +33,7 @@ shift
 
 case "$account" in
   charliie) ro_var=CF_TOKEN_CHARLIIE_RO; account_id=864dd04341d2aca5804853428630fbc4 ;;
-  anmo)     ro_var=CF_TOKEN_ANMO_RO;     account_id="" ;;
+  anmo)     ro_var=CF_TOKEN_ANMO_RO;     account_id=8970faafb1d450c722678d598a626820 ;;
   -h|--help) usage; exit 0 ;;
   *)
     echo "cf-as: 未知帳號 '$account'" >&2
