@@ -17,6 +17,7 @@ set -euo pipefail
 usage() {
   cat >&2 <<'EOF'
 用法: cf-as <account> <command...>
+（--help / -h 在帳號前後都可以）
 
 帳號:
   charliie   charliie.dev   (charleschiu)
@@ -42,6 +43,10 @@ case "$account" in
     ;;
 esac
 
+case "${1:-}" in
+  -h|--help) usage; exit 0 ;;
+esac
+
 [ $# -gt 0 ] || { echo "cf-as: 缺少要執行的命令" >&2; usage; exit 1; }
 
 token="${!ro_var:-}"
@@ -59,4 +64,4 @@ if [ -n "$account_id" ]; then
   export CLOUDFLARE_ACCOUNT_ID="$account_id"
 fi
 
-exec "$@"
+exec -- "$@"
