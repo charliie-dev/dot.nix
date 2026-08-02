@@ -9,6 +9,10 @@
 # 只設唯讀 token。寫入一律走 docker repo 的 mise run cf:apply —— 寫入 token
 # 在 sops 裡,只在那個 task 的當次 process 解密,不進任何常駐 shell。
 #
+# 注意:這支會 export CLOUDFLARE_ACCOUNT_ID。cf-terraforming 用 viper 把 --account 綁到這個
+# 變數,再跟 --zone 一起用會直接 log.Fatal("--account and --zone are mutually exclusive")。
+# 要用 cf-terraforming 抓 zone 層資源就別包在 cf-as 底下跑,走 home-lab 的 mise task。
+#
 # 這裡的帳號->變數名對照與 docker/cloudflare/.mise/tasks/lib/cf-auth 重複了
 # 一次。刻意的:兩者住在不同 repo、生命週期不同(這支隨 home-manager 部署到
 # 每台機器,那支只在 docker repo 內),為了兩行對照去建跨 repo 相依不划算。
