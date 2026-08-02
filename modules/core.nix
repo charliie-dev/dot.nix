@@ -332,12 +332,17 @@ lib.mkMerge [
       # Agents owned by upstream modules — only flip the wrapper off so they show
       # under their own name. All are `gui` domain, i.e. they start after GUI login,
       # by which point the (FileVault-encrypted) Nix Store volume is mounted.
-      // lib.genAttrs [
-        "git-maintenance-hourly"
-        "git-maintenance-daily"
-        "git-maintenance-weekly"
-        "sops-nix"
-      ] (_: { waitForNixStore = false; });
+      //
+        lib.genAttrs
+          [
+            "git-maintenance-hourly"
+            "git-maintenance-daily"
+            "git-maintenance-weekly"
+            "sops-nix"
+          ]
+          (_: {
+            waitForNixStore = false;
+          });
     # NOTE: the former `unloadHMAgentsBeforeSetup` pre-bootout workaround was
     # removed — current home-manager's setupLaunchAgents is domain-aware and
     # boots each agent out of its old domain before bootstrapping (the exact
