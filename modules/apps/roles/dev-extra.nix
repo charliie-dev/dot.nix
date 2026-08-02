@@ -10,8 +10,8 @@
 
     # Cloudflare。互動式 CLI,任何目錄都可能用到,所以取 latest 放這裡。
     # opentofu 與 cf-terraforming 刻意不放 —— 它們跟 tofu state 格式綁在
-    # 一起,鍵死在 docker/cloudflare 的 mise task header,免得 flake.lock
-    # 一更新就連帶升級 state。
+    # 一起,鍵死在 home-lab 的 cloudflare/.mise/tasks/cf/* 的 #MISE tools
+    # header,免得 flake.lock 一更新就連帶升級 state。
     flarectl # Cloudflare zone/DNS/firewall CLI
     wrangler # Cloudflare Workers/Pages/R2/KV/D1 CLI
 
