@@ -308,18 +308,32 @@ lib.mkMerge [
       (import "${src}/modules/services/colima.nix" { inherit config pkgs; })
       // (import "${src}/modules/services/brew-env.nix" { inherit config pkgs; })
       // {
-        nh-clean.config = {
-          # launchd inherits a minimal PATH; nh shells out to `nix --version`.
-          EnvironmentVariables.PATH = "/nix/var/nix/profiles/default/bin:${config.home.profileDirectory}/bin";
-          # Upstream HM wraps extraArgs in shell single-quotes, so nh receives them as one
-          # token and clap errors out. Override the wrapper to interpolate extraArgs unquoted.
-          ProgramArguments = [
-            "/bin/sh"
-            "-c"
-            "/bin/wait4path /nix/store && exec ${pkgs.nh}/bin/nh clean user ${config.programs.nh.clean.extraArgs}"
-          ];
+        nh-clean = {
+          # StartCalendarInterval only fires long after login, so the /bin/wait4path
+          # wrapper buys nothing and just hides the agent as "sh" in Login Items.
+          waitForNixStore = false;
+          config = {
+            # launchd inherits a minimal PATH; nh shells out to `nix --version`.
+            EnvironmentVariables.PATH = "/nix/var/nix/profiles/default/bin:${config.home.profileDirectory}/bin";
+            # Upstream HM wraps extraArgs in shell single-quotes, so nh receives them as one
+            # token and clap errors out. Override the wrapper to interpolate extraArgs unquoted.
+            ProgramArguments = [
+              "/bin/sh"
+              "-c"
+              "/bin/wait4path /nix/store && exec ${pkgs.nh}/bin/nh clean user ${config.programs.nh.clean.extraArgs}"
+            ];
+          };
         };
-      };
+      }
+      # Agents owned by upstream modules — only flip the wrapper off so they show
+      # under their own name. All are `gui` domain, i.e. they start after GUI login,
+      # by which point the (FileVault-encrypted) Nix Store volume is mounted.
+      // lib.genAttrs [
+        "git-maintenance-hourly"
+        "git-maintenance-daily"
+        "git-maintenance-weekly"
+        "sops-nix"
+      ] (_: { waitForNixStore = false; });
     # NOTE: the former `unloadHMAgentsBeforeSetup` pre-bootout workaround was
     # removed — current home-manager's setupLaunchAgents is domain-aware and
     # boots each agent out of its old domain before bootstrapping (the exact

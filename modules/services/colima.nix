@@ -5,6 +5,10 @@ in
 {
   colima = {
     enable = true;
+    # Show up as "colima" instead of "sh" in Login Items & Extensions. Safe because
+    # the agent lives in the `gui` domain (below), which only starts after GUI login,
+    # long after the Nix Store volume is mounted.
+    waitForNixStore = false;
     # Keep the option's `gui` domain default — do NOT move to `user`. The
     # `--vm-type vz` backend (Apple Virtualization.framework) requires the
     # graphical Aqua session; bootstrapping into the background `user` domain
