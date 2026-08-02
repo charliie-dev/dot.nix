@@ -54,12 +54,26 @@ esac
 [ $# -gt 0 ] || { echo "cf-as: 缺少要執行的命令" >&2; usage >&2; exit 1; }
 
 token="${!ro_var:-}"
-if [ -z "$token" ]; then
-  echo "cf-as: 環境變數 $ro_var 是空的" >&2
-  echo "       它應該由 Doppler 在 shell 啟動時注入(dot-nix/dev_personal)" >&2
-  echo "       修法: 開新 shell,或跑 home-manager switch 重新拉 Doppler" >&2
-  exit 1
-fi
+
+# 擋三種形狀:空值、全是空白、夾帶任何空白字元。Cloudflare API token 的字元集不含
+# 空白(provider 5.22 對 api_token 的驗證式是 ^[0-9A-Za-z\-_]{40,80}$),所以出現空白
+# 一定代表這份機密被填壞了。[ -z ] 只擋得住第一種:
+#   * 全空白會被當成有效值 export,把 Authorization 塌成裸 Bearer,直到 API 層才以
+#     認證失敗收場(Doppler 的 env 格式只轉義 \ 與 ",空白與換行原樣保留,而注入路徑
+#     是 zsh.envExtra 的 set -a + source,雙引號裡的真換行會原封不動留著)
+#   * 夾帶換行或 CR 的 token 會讓 Go 的 net/http 在連線前就以
+#     `net/http: invalid header field value for "Authorization"` 失敗,訊息指不到
+#     Doppler 也指不到呼叫端
+# 刻意只驗證、不 trim 後照用 —— 靜默改掉一份壞掉的憑證,只會讓「為什麼認證失敗」更難查。
+# 語意與 home-lab cloudflare/.mise/tasks/lib/cf-auth 的 cf_token_is_valid 一致。
+case "$token" in
+  "" | *[[:space:]]*)
+    echo "cf-as: 環境變數 $ro_var 不是合法的 token(空值、全空白,或夾帶空白字元)" >&2
+    echo "       它應該由 Doppler 在 shell 啟動時注入(dot-nix/dev_personal)" >&2
+    echo "       修法: 開新 shell,或跑 home-manager switch 重新拉 Doppler" >&2
+    exit 1
+    ;;
+esac
 
 export CF_API_TOKEN="$token"
 export CLOUDFLARE_API_TOKEN="$token"
