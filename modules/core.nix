@@ -315,13 +315,17 @@ lib.mkMerge [
           config = {
             # launchd inherits a minimal PATH; nh shells out to `nix --version`.
             EnvironmentVariables.PATH = "/nix/var/nix/profiles/default/bin:${config.home.profileDirectory}/bin";
-            # Upstream HM wraps extraArgs in shell single-quotes, so nh receives them as one
-            # token and clap errors out. Override the wrapper to interpolate extraArgs unquoted.
-            ProgramArguments = [
-              "/bin/sh"
-              "-c"
-              "/bin/wait4path /nix/store && exec ${pkgs.nh}/bin/nh clean user ${config.programs.nh.clean.extraArgs}"
-            ];
+            # Upstream HM passes extraArgs as one list element, which HM then shell-quotes
+            # into a single token and clap errors out. mkForce (listOf merges by
+            # concatenation, so a plain definition would append) with the args split.
+            ProgramArguments = lib.mkForce (
+              [
+                "${pkgs.nh}/bin/nh"
+                "clean"
+                "user"
+              ]
+              ++ lib.splitString " " config.programs.nh.clean.extraArgs
+            );
           };
         };
       }
