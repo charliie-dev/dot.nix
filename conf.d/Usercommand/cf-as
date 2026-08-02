@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# cf-as <account> <command...>
+#
+# 用指定 Cloudflare 帳號的唯讀 token 跑一個命令。給的是目錄外的臨時查詢:
+#
+#   cf-as charliie flarectl dns list --zone charliie.dev
+#   cf-as anmo     flarectl zone list
+#
+# 只設唯讀 token。寫入一律走 home-lab repo 的 mise run cf:apply —— 寫入 token
+# 在 sops 裡,只在那個 task 的當次 process 解密,不進任何常駐 shell。
+#
+# 注意:這支會 export CLOUDFLARE_ACCOUNT_ID。cf-terraforming 用 viper 把 --account 綁到這個
+# 變數,再跟 --zone 一起用會直接 log.Fatal("--account and --zone are mutually exclusive")。
+# 要用 cf-terraforming 抓 zone 層資源就別包在 cf-as 底下跑,走 home-lab 的 mise task。
+#
+# 這裡的帳號->變數名對照與 home-lab 的 cloudflare/.mise/tasks/lib/cf-auth
+# 重複了一次。刻意的:兩者住在不同 repo、生命週期不同(這支隨 home-manager 部署到
+# 每台機器,那支只在 home-lab repo 內),為了兩行對照去建跨 repo 相依不划算。
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+用法: cf-as <account> <command...>
+（--help / -h 在帳號前後都可以）
+
+帳號:
+  charliie   charliie.dev   (charleschiu)
+  anmo       anmo.tw        (AnmoAdmin)
+
+範例:
+  cf-as charliie flarectl dns list --zone charliie.dev
+EOF
+}
+
+account="${1:-}"
+[ -n "$account" ] || { usage >&2; exit 1; }
+shift
+
+case "$account" in
+  charliie) ro_var=CF_TOKEN_CHARLIIE_RO; account_id=864dd04341d2aca5804853428630fbc4 ;;
+  anmo)     ro_var=CF_TOKEN_ANMO_RO;     account_id=8970faafb1d450c722678d598a626820 ;;
+  -h|--help) usage; exit 0 ;;
+  *)
+    echo "cf-as: 未知帳號 '$account'" >&2
+    usage >&2
+    exit 1
+    ;;
+esac
+
+case "${1:-}" in
+  -h|--help) usage; exit 0 ;;
+esac
+
+[ $# -gt 0 ] || { echo "cf-as: 缺少要執行的命令" >&2; usage >&2; exit 1; }
+
+token="${!ro_var:-}"
+if [ -z "$token" ]; then
+  echo "cf-as: 環境變數 $ro_var 是空的" >&2
+  echo "       它應該由 Doppler 在 shell 啟動時注入(dot-nix/dev_personal)" >&2
+  echo "       修法: 開新 shell,或跑 home-manager switch 重新拉 Doppler" >&2
+  exit 1
+fi
+
+export CF_API_TOKEN="$token"
+export CLOUDFLARE_API_TOKEN="$token"
+if [ -n "$account_id" ]; then
+  export CF_ACCOUNT_ID="$account_id"
+  export CLOUDFLARE_ACCOUNT_ID="$account_id"
+fi
+
+exec -- "$@"
