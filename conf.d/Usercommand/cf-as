@@ -19,7 +19,7 @@
 set -euo pipefail
 
 usage() {
-  cat >&2 <<'EOF'
+  cat <<'EOF'
 用法: cf-as <account> <command...>
 （--help / -h 在帳號前後都可以）
 
@@ -33,7 +33,7 @@ EOF
 }
 
 account="${1:-}"
-[ -n "$account" ] || { usage; exit 1; }
+[ -n "$account" ] || { usage >&2; exit 1; }
 shift
 
 case "$account" in
@@ -42,7 +42,7 @@ case "$account" in
   -h|--help) usage; exit 0 ;;
   *)
     echo "cf-as: 未知帳號 '$account'" >&2
-    usage
+    usage >&2
     exit 1
     ;;
 esac
@@ -51,7 +51,7 @@ case "${1:-}" in
   -h|--help) usage; exit 0 ;;
 esac
 
-[ $# -gt 0 ] || { echo "cf-as: 缺少要執行的命令" >&2; usage; exit 1; }
+[ $# -gt 0 ] || { echo "cf-as: 缺少要執行的命令" >&2; usage >&2; exit 1; }
 
 token="${!ro_var:-}"
 if [ -z "$token" ]; then
