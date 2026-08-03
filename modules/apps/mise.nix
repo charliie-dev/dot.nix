@@ -147,13 +147,11 @@
           "~/.config/mise"
           "~/.config/nvim"
           "~/.config/home-manager"
-          # pluto 的 stacks 樹。沒有這條的話每個 stack 的 mise.toml 都要各自
-          # 信任一次,pluto 上就累積了十幾條 ~/.local/state/mise/trusted-configs
-          # 記錄,每新增一個 stack 還要再手動加一次。
+          # 四台主機的 stacks 樹(pluto / ra-lab / dcf-dev / anmo,各 19 個 stack)。
+          # 沒有這條的話每個 stack 的 mise.toml 都要各自信任一次,pluto 上就累積了
+          # 十幾條 ~/.local/state/mise/trusted-configs 記錄,每新增一個 stack 還要
+          # 再手動加一次。
           "/opt/stacks"
-          # dcf-dev 還在用舊路徑(3 個 stack),四台統一到 /opt/stacks 之前不能刪。
-          # pluto 已經搬走,anmo 與 ra-lab 兩個路徑都沒有。
-          "/etc/docker/composes"
           "~/Workspace"
           "~/Work"
         ];
