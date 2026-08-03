@@ -147,10 +147,6 @@
           "~/.config/mise"
           "~/.config/nvim"
           "~/.config/home-manager"
-          # 四台主機的 stacks 樹(pluto / ra-lab / dcf-dev / anmo,各 19 個 stack)。
-          # 沒有這條的話每個 stack 的 mise.toml 都要各自信任一次,pluto 上就累積了
-          # 十幾條 ~/.local/state/mise/trusted-configs 記錄,每新增一個 stack 還要
-          # 再手動加一次。
           "/opt/stacks"
           "~/Workspace"
           "~/Work"
