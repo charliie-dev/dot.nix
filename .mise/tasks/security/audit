@@ -17,21 +17,86 @@ mkdir -p "$CATALOGS"
 find "$CACHE" -maxdepth 1 -type f \( -name 'findings-*.ndjson' -o -name 'scan-*.log' \) \
   -mtime +30 -delete 2>/dev/null || true
 
-# 1. Refresh threat_intel catalogs (latest from the repo's default branch).
+work=$(mktemp -d "${CACHE}/work-XXXXXX")
+trap 'rm -rf "$work"' EXIT
+mkdir -p "$work/staging" "$work/probe-root" "$work/probe-catalog"
+
+# Whether a catalog is usable is decided by the binary itself, never by a
+# hardcoded schema_version — that would quarantine every catalog the day
+# upstream ships a parser update. A scan over an empty root costs ~ms.
+catalog_compatible() {
+  rm -f "$work/probe-catalog"/*.json
+  cp "$1" "$work/probe-catalog/" || return 1
+  # Grep a log rather than piping: under `set -o pipefail` the scan's own exit
+  # code would mask grep's, making every catalog look compatible.
+  bumblebee scan --profile baseline --root "$work/probe-root" \
+    --exposure-catalog "$work/probe-catalog" --findings-only --max-duration 30s \
+    >/dev/null 2>"$work/probe.log" || true
+  ! grep -q 'unsupported exposure catalog' "$work/probe.log"
+}
+
+# How far back through one catalog's history to look for a parseable revision.
+HISTORY_DEPTH=20
+
+# Prefer the authenticated `gh api` (5000 req/hr) over anonymous curl
+# (60 req/hr shared per IP) so a busy day doesn't starve the refresh.
+api_get() {
+  if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
+    gh api "$1" 2>/dev/null
+  else
+    curl -fsSL "https://api.github.com/$1"
+  fi
+}
+
+try_install() {
+  tmp="$work/staging/$1"
+  curl -fsSL "https://raw.githubusercontent.com/${REPO}/${2}/threat_intel/${1}" -o "$tmp" || return 1
+  catalog_compatible "$tmp" || return 1
+  mv "$tmp" "$CATALOGS/$1"
+}
+
+# Install the newest revision of one catalog this binary can actually parse:
+# the default branch first, then back through that file's own history. Upstream
+# bumps catalog schemas on main ahead of tagged releases, so pinning everything
+# to the release tag would silently drop catalogs added since that tag.
+install_catalog() {
+  try_install "$1" main && { echo "  ok $1"; return 0; }
+  for sha in $(api_get "repos/${REPO}/commits?path=threat_intel/${1}&per_page=${HISTORY_DEPTH}" \
+                 | jq -r '.[].sha' 2>/dev/null); do
+    try_install "$1" "$sha" && { echo "  ok $1 (revision ${sha:0:8}; main copy unreadable)"; return 0; }
+  done
+  echo "  skip $1 (no revision in last ${HISTORY_DEPTH} commits is readable; keeping cached copy)" >&2
+  return 1
+}
+
+# 1. Refresh threat_intel catalogs.
 if [ -z "${usage_no_update:-}" ]; then
   echo "[INFO] Refreshing threat_intel catalogs from ${REPO}..."
-  if urls=$(curl -fsSL "https://api.github.com/repos/${REPO}/contents/threat_intel" \
-              | jq -r '.[] | select(.name | endswith(".json")) | .download_url'); then
-    for u in $urls; do
-      curl -fsSL "$u" -o "$CATALOGS/$(basename "$u")" && echo "  ok $(basename "$u")"
+  if names=$(api_get "repos/${REPO}/contents/threat_intel?ref=main" \
+               | jq -r '.[] | select(.name | endswith(".json")) | .name' 2>/dev/null) \
+     && [ -n "$names" ]; then
+    for f in $names; do
+      install_catalog "$f" || true
     done
   else
     echo "[WARN] Catalog refresh failed; reusing cached copies." >&2
   fi
 fi
 
-count=$(find "$CATALOGS" -name '*.json' | wc -l | tr -d ' ')
-[ "$count" -gt 0 ] || { echo "[ERROR] No catalogs in $CATALOGS" >&2; exit 1; }
+# Quarantine any cached catalog this binary cannot parse, regardless of whether
+# the refresh above ran or succeeded — a stale/bad cache must never reach the
+# scan below (it hard-fails there instead of degrading gracefully).
+for f in "$CATALOGS"/*.json; do
+  [ -e "$f" ] || continue
+  if ! catalog_compatible "$f"; then
+    sv=$(jq -r '.schema_version // "unknown"' "$f" 2>/dev/null)
+    echo "[WARN] quarantining $(basename "$f") (schema_version $sv unreadable by this binary)" >&2
+    mv "$f" "$f.incompatible"
+  fi
+done
+
+count=$(find "$CATALOGS" -maxdepth 1 -name '*.json' | wc -l | tr -d ' ')
+[ "$count" -gt 0 ] || { echo "[ERROR] No compatible catalogs in $CATALOGS" >&2; exit 1; }
 entries=$(jq -s '[.[].entries[]] | length' "$CATALOGS"/*.json 2>/dev/null || echo '?')
 echo "[INFO] ${count} catalogs, ${entries} indicators."
 
