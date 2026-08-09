@@ -1,8 +1,29 @@
-_: {
-  ssh = {
+{
+  config,
+  lib,
+  ...
+}:
+{
+  home = {
+    activation.sshControlDir = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      mkdir -p "${config.xdg.cacheHome}/ssh"
+      chmod 700 "${config.xdg.cacheHome}/ssh"
+    '';
+
+    # This include is evaluated before the encrypted host configuration. OpenSSH
+    # uses the first value it obtains, so it overrides the legacy per-host
+    # ~/.ssh/sockets ControlPath without duplicating every secret host block.
+    file.".ssh/config.d/home-manager.conf".text = ''
+      Host *
+        ControlPath ~/.cache/ssh/%C
+    '';
+  };
+
+  programs.ssh = {
     enable = true;
     includes = [
       "~/.ssh/override_config"
+      "~/.ssh/config.d/home-manager.conf"
       # "${config.age.secrets.ssh_host_config.path}" # `sunlei/zsh-ssh` can't resolve absolute path
       "~/.ssh/host_configuration"
     ];

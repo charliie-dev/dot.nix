@@ -21,6 +21,7 @@ let
     && !(builtins.elem name [
       "default.nix"
       "catppuccin.nix"
+      "ssh.nix"
     ])
     && !(lib.hasPrefix "_" name)
   ) (builtins.readDir ./.);
@@ -45,7 +46,10 @@ let
 in
 {
   # Full app modules live beside the fragments but bypass programs.* wrapping.
-  imports = [ ./catppuccin.nix ];
+  imports = [
+    ./catppuccin.nix
+    ./ssh.nix
+  ];
 
   home.packages = lib.unique (common_apps ++ rolePackages);
   programs = lib.mkMerge (map loadApp (builtins.attrNames appFiles));
