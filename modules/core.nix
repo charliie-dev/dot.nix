@@ -54,6 +54,7 @@ lib.mkMerge [
 
     home = {
       packages = merged_pkgs;
+      preferXdgDirectories = true;
       shell.enableZshIntegration = true;
       sessionPath = [
         "/nix/var/nix/profiles/default/bin"
@@ -81,7 +82,10 @@ lib.mkMerge [
         GOPRIVATE = "github.com/nics-dp";
         _JAVA_OPTIONS = "-Djava.util.prefs.userRoot=${config.xdg.configHome}/java";
         DVDCSS_CACHE = "${config.xdg.dataHome}/dvdcss";
-        NPM_CONFIG_USERCONFIG = "${config.xdg.configHome}/npm/npmrc";
+        # programs.npm currently produces $HOME//.config here when XDG mode is
+        # enabled. Keep the native settings/file generation, but normalize the
+        # exported path until the upstream module drops the extra slash.
+        NPM_CONFIG_USERCONFIG = lib.mkForce "${config.xdg.configHome}/npm/npmrc";
         PNPM_HOME = "${config.xdg.dataHome}/pnpm";
         DOCKER_CONFIG = "${config.xdg.configHome}/docker";
         FFMPEG_DATADIR = "${config.xdg.configHome}/ffmpeg";
@@ -149,9 +153,6 @@ lib.mkMerge [
             plugin_cache_dir   = "$HOME/.local/share/terraform/plugin-cache"
             disable_checkpoint = true
           '';
-        };
-        ".config/tirith/policy.yaml" = {
-          source = "${src}/conf.d/tirith/policy.yaml";
         };
         "self-made commands" = {
           enable = true;

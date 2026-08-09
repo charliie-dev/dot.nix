@@ -33,10 +33,6 @@
         recursive = true;
         source = "${src}/conf.d/hunk";
       };
-      "npm" = {
-        recursive = true;
-        source = "${src}/conf.d/npm";
-      };
       "tombi" = {
         recursive = true;
         source = "${src}/conf.d/tombi";
