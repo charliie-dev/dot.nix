@@ -11,6 +11,7 @@
       "top"
     ];
     homeDirectory = "/Users/charles";
+    enableSecrets = true;
   };
   # home-manager switch uses hostname with .local suffix on macOS
   "charles@24041-LABNB01.local" = {
@@ -25,11 +26,13 @@
       "top"
     ];
     homeDirectory = "/home/charles";
+    enableSecrets = true;
   };
   "charles@pluto" = {
     system = "aarch64-linux";
     roles = [ "dev-core" ];
     homeDirectory = "/home/charles";
+    enableSecrets = true;
     silent = true;
   };
   "charles@tmp-gpu" = {
@@ -42,6 +45,7 @@
     ];
     homeDirectory = "/home/charles";
     gpu = true;
+    enableSecrets = true;
     silent = true;
   };
 
@@ -50,6 +54,7 @@
     system = "x86_64-linux";
     roles = [ "dev-core" ];
     homeDirectory = "/home/charles";
+    enableSecrets = true;
     silent = true;
   };
   # Shared aliases — reuse RDSrv01's eval result

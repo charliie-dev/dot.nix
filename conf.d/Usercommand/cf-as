@@ -1,85 +1,26 @@
 #!/usr/bin/env bash
 # cf-as <account> <command...>
-#
-# 用指定 Cloudflare 帳號的唯讀 token 跑一個命令。給的是目錄外的臨時查詢:
-#
-#   cf-as charliie flarectl dns list --zone charliie.dev
-#   cf-as anmo     flarectl zone list
-#
-# 只設唯讀 token。寫入一律走 home-lab repo 的 mise run cf:apply —— 寫入 token
-# 在 sops 裡,只在那個 task 的當次 process 解密,不進任何常駐 shell。
-#
-# 注意:這支會 export CLOUDFLARE_ACCOUNT_ID。cf-terraforming 用 viper 把 --account 綁到這個
-# 變數,再跟 --zone 一起用會直接 log.Fatal("--account and --zone are mutually exclusive")。
-# 要用 cf-terraforming 抓 zone 層資源就別包在 cf-as 底下跑,走 home-lab 的 mise task。
-#
-# 這裡的帳號->變數名對照與 home-lab 的 cloudflare/.mise/tasks/lib/cf-auth
-# 重複了一次。刻意的:兩者住在不同 repo、生命週期不同(這支隨 home-manager 部署到
-# 每台機器,那支只在 home-lab repo 內),為了兩行對照去建跨 repo 相依不划算。
+# Enter one fixed process-scoped Doppler profile; callers cannot select a
+# project, config, or secret name.
 set -euo pipefail
 
 usage() {
   cat <<'EOF'
-用法: cf-as <account> <command...>
-（--help / -h 在帳號前後都可以）
-
-帳號:
-  charliie   charliie.dev   (charleschiu)
-  anmo       anmo.tw        (AnmoAdmin)
-
-範例:
-  cf-as charliie flarectl dns list --zone charliie.dev
+用法: cf-as <charliie|anmo> <command...>
 EOF
 }
 
 account="${1:-}"
 [ -n "$account" ] || { usage >&2; exit 1; }
 shift
-
 case "$account" in
-  charliie) ro_var=CF_TOKEN_CHARLIIE_RO; account_id=864dd04341d2aca5804853428630fbc4 ;;
-  anmo)     ro_var=CF_TOKEN_ANMO_RO;     account_id=8970faafb1d450c722678d598a626820 ;;
+  charliie) profile=cloudflare-charliie ;;
+  anmo) profile=cloudflare-anmo ;;
   -h|--help) usage; exit 0 ;;
-  *)
-    echo "cf-as: 未知帳號 '$account'" >&2
-    usage >&2
-    exit 1
-    ;;
+  *) echo "cf-as: 未知帳號 '$account'" >&2; usage >&2; exit 1 ;;
 esac
-
 case "${1:-}" in
   -h|--help) usage; exit 0 ;;
 esac
-
-[ $# -gt 0 ] || { echo "cf-as: 缺少要執行的命令" >&2; usage >&2; exit 1; }
-
-token="${!ro_var:-}"
-
-# 擋三種形狀:空值、全是空白、夾帶任何空白字元。Cloudflare API token 的字元集不含
-# 空白(provider 5.22 對 api_token 的驗證式是 ^[0-9A-Za-z\-_]{40,80}$),所以出現空白
-# 一定代表這份機密被填壞了。[ -z ] 只擋得住第一種:
-#   * 全空白會被當成有效值 export,把 Authorization 塌成裸 Bearer,直到 API 層才以
-#     認證失敗收場(Doppler 的 env 格式只轉義 \ 與 ",空白與換行原樣保留,而注入路徑
-#     是 zsh.envExtra 的 set -a + source,雙引號裡的真換行會原封不動留著)
-#   * 夾帶換行或 CR 的 token 會讓 Go 的 net/http 在連線前就以
-#     `net/http: invalid header field value for "Authorization"` 失敗,訊息指不到
-#     Doppler 也指不到呼叫端
-# 刻意只驗證、不 trim 後照用 —— 靜默改掉一份壞掉的憑證,只會讓「為什麼認證失敗」更難查。
-# 語意與 home-lab cloudflare/.mise/tasks/lib/cf-auth 的 cf_token_is_valid 一致。
-case "$token" in
-  "" | *[[:space:]]*)
-    echo "cf-as: 環境變數 $ro_var 不是合法的 token(空值、全空白,或夾帶空白字元)" >&2
-    echo "       它應該由 Doppler 在 shell 啟動時注入(dot-nix/dev_personal)" >&2
-    echo "       修法: 開新 shell,或跑 home-manager switch 重新拉 Doppler" >&2
-    exit 1
-    ;;
-esac
-
-export CF_API_TOKEN="$token"
-export CLOUDFLARE_API_TOKEN="$token"
-if [ -n "$account_id" ]; then
-  export CF_ACCOUNT_ID="$account_id"
-  export CLOUDFLARE_ACCOUNT_ID="$account_id"
-fi
-
-exec -- "$@"
+[ "$#" -gt 0 ] || { echo "cf-as: 缺少要執行的命令" >&2; exit 1; }
+exec doppler-run "$profile" -- "$@"

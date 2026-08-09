@@ -4,6 +4,44 @@
   lib,
   ...
 }:
+let
+  upstreamSopsProgram = config.launchd.agents.sops-nix.config.Program;
+  sopsLocked = pkgs.writeShellApplication {
+    name = "sops-nix-locked";
+    runtimeInputs = [ pkgs.python3 ];
+    text = ''
+      export PATH="/usr/bin:/bin:$PATH"
+            exec python3 - ${lib.escapeShellArg "${config.xdg.cacheHome}/sops-nix/decrypt.lock"} \
+              ${lib.escapeShellArg upstreamSopsProgram} <<'PY'
+      import fcntl
+      import os
+      import stat
+      import sys
+
+      lock_path, program = sys.argv[1:]
+      parent = os.path.dirname(lock_path)
+      os.makedirs(parent, mode=0o700, exist_ok=True)
+      st = os.lstat(parent)
+      if stat.S_ISLNK(st.st_mode) or not stat.S_ISDIR(st.st_mode):
+          raise SystemExit("sops-nix lock directory has an unsafe type")
+      if st.st_uid != os.getuid() or stat.S_IMODE(st.st_mode) & 0o077:
+          raise SystemExit("sops-nix lock directory has unsafe ownership or mode")
+      flags = os.O_RDWR | os.O_CREAT | getattr(os, "O_NOFOLLOW", 0)
+      fd = os.open(lock_path, flags, 0o600)
+      try:
+          fst = os.fstat(fd)
+          if not stat.S_ISREG(fst.st_mode) or fst.st_uid != os.getuid():
+              raise SystemExit("sops-nix lock file has an unsafe type or owner")
+          os.fchmod(fd, 0o600)
+          os.set_inheritable(fd, True)
+          fcntl.flock(fd, fcntl.LOCK_EX)
+          os.execv(program, [program])
+      finally:
+          os.close(fd)
+      PY
+    '';
+  };
+in
 lib.mkIf pkgs.stdenv.isDarwin {
   targets.darwin = {
     # Homebrew manages all GUI applications.
@@ -85,8 +123,25 @@ lib.mkIf pkgs.stdenv.isDarwin {
         );
       };
     };
-    # sops-nix stays in the GUI domain and skips the wait wrapper.
-    sops-nix.waitForNixStore = false;
+    # Disable the upstream asynchronous agent. The distinct login agent and
+    # activation node both execute this same lock-serialized decrypt path.
+    sops-nix = {
+      enable = lib.mkForce false;
+      waitForNixStore = false;
+    };
+    sops-nix-sync = {
+      enable = true;
+      domain = "gui";
+      waitForNixStore = false;
+      config = {
+        Program = "${sopsLocked}/bin/sops-nix-locked";
+        EnvironmentVariables = config.launchd.agents.sops-nix.config.EnvironmentVariables;
+        KeepAlive = false;
+        RunAtLoad = true;
+        StandardOutPath = "${config.home.homeDirectory}/Library/Logs/SopsNix/stdout";
+        StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/SopsNix/stderr";
+      };
+    };
   }
   //
     lib.genAttrs

@@ -76,7 +76,7 @@
       mkHost =
         _name: hostCfg:
         let
-          enableSecrets = hostCfg.enableSecrets or true;
+          enableSecrets = hostCfg.enableSecrets or false;
           isGpu = hostCfg.gpu or false;
           # Stub packages that delegate to upstream-tracked binaries kept in
           # $HOME/.local/share/<name>/bin/<name>. home-manager hardcodes

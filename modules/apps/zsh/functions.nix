@@ -162,6 +162,10 @@
       esac
     '';
 
+    grok = ''
+      command grok-azure "$@"
+    '';
+
     # Claude Code remote control needs feature-flag evaluation. Keep the global
     # DNT policy for other tools, but remove it only for this executable.
     claude = ''
