@@ -4,7 +4,6 @@
     enable = true;
     gitCredentialHelper = {
       enable = true;
-      hosts = [ "https://github.com" ];
     };
     extensions = with pkgs; [
       # gh-cal
@@ -21,7 +20,7 @@
     settings = {
       git_protocol = "ssh";
       editor = "nvim";
-      aliases = { };
+      telemetry = "disabled";
     };
   };
 }

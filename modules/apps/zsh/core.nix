@@ -50,22 +50,20 @@ in
   # Exported only for zsh sessions. Cross-shell variables belong in
   # home.sessionVariables in modules/core.nix.
   sessionVariables = {
-    NODE_REPL_HISTORY = "";
+    NODE_REPL_HISTORY = "${config.xdg.stateHome}/node_repl_history";
     PYTHONSTARTUP = "${config.xdg.configHome}/python/pythonrc";
     PSQL_HISTORY = "${config.xdg.stateHome}/psql_history";
-    LESS = "--ignore-case --raw-control-chars";
     LC_COLLATE = "C";
   };
 
   # Plugin state does not need to leak into child-process environments.
   localVariables = {
     ZSH_SMARTCACHE_DIR = "${config.xdg.cacheHome}/zsh/smartcache";
-    ZSH_AUTOSUGGEST_USE_ASYNC = "true";
   };
 
   history = {
-    path = "${config.xdg.cacheHome}/zsh/history";
-    size = 20000;
+    path = "${config.xdg.stateHome}/zsh/history";
+    size = 120000;
     save = 100000;
     append = false;
     extended = true;
@@ -80,8 +78,6 @@ in
 
   setOptions = [
     "NO_beep"
-    "hist_fcntl_lock"
-    "inc_append_history"
     "inc_append_history_time"
     "hist_reduce_blanks"
     "hist_verify"

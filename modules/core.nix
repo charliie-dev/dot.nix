@@ -86,8 +86,6 @@
       BUNDLE_USER_CACHE = "${config.xdg.cacheHome}/bundle";
       BUNDLE_USER_PLUGIN = "${config.xdg.dataHome}/bundle";
       PARALLEL_HOME = "${config.xdg.configHome}/parallel";
-      EDITOR = "nvim";
-      VISUAL = "nvim";
       BUN_INSTALL = "${config.xdg.dataHome}/bun";
       D2_LAYOUT = "tala";
       TF_CLI_CONFIG_FILE = "${config.xdg.configHome}/terraform/terraformrc";
@@ -150,6 +148,14 @@
 
         # Tool data dirs
         mkdir -p ${config.xdg.dataHome}/dotnet
+      '';
+      migrateZshHistory = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        zsh_history_legacy="${config.xdg.cacheHome}/zsh/history"
+        zsh_history_target="${config.xdg.stateHome}/zsh/history"
+        if [ -f "$zsh_history_legacy" ] && [ ! -e "$zsh_history_target" ]; then
+          mkdir -p "$(dirname "$zsh_history_target")"
+          cp -p "$zsh_history_legacy" "$zsh_history_target"
+        fi
       '';
       terraformPluginCache = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         mkdir -p "${config.xdg.dataHome}/terraform/plugin-cache"

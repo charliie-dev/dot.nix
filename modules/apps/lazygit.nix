@@ -1,20 +1,20 @@
 {
   lazygit = {
     enable = true;
-    enableZshIntegration = false; # it will have parsing error when true
+    enableZshIntegration = false; # custom `lg` alias lives in modules/apps/zsh/aliases.nix
     # shellWrapperName = "lg";
     settings = {
       gui = {
         language = "en";
-        timeFormat = "2022-11-03 15:04"; # https://pkg.go.dev/time#Time.Format
+        timeFormat = "2006-01-02 15:04"; # https://pkg.go.dev/time#Time.Format
         shortTimeFormat = "15:04";
         showRandomTip = false;
         nerdFontsVersion = "3";
       };
       git = {
-        pagers = [
+        diffRenderers = [
           {
-            pager = "delta --dark --paging=never";
+            command = "delta --dark --paging=never";
             colorArg = "always";
           }
         ];

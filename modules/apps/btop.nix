@@ -7,7 +7,7 @@
       vim_keys = true;
 
       #* Update time in milliseconds, recommended 2000 ms or above for better sample times for graphs.
-      update_ms = 100;
+      update_ms = 2000;
 
       #* Show processes as a tree.
       proc_tree = true;

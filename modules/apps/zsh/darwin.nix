@@ -8,7 +8,6 @@
 lib.mkIf pkgs.stdenv.isDarwin {
   sessionVariables = {
     COLIMA_HOME = "${config.xdg.dataHome}/colima";
-    DOCKER_HOST = "unix://${config.xdg.dataHome}/colima/default/docker.sock";
     CLICOLOR = "1";
     LSCOLORS = "Gxfxcxdxbxegedabagacad";
     GREP_COLOR = "3;33";

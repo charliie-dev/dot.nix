@@ -1,7 +1,7 @@
 {
   fzf = {
     enable = true;
-    # enableZshIntegration = true;
+    enableZshIntegration = false;
     # defaultCommand = ""
     defaultOptions = [
       "--reverse --margin=3% --style=full"

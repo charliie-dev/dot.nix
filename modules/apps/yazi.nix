@@ -27,27 +27,15 @@
         show_hidden = true;
         sort_by = "natural";
         sort_dir_first = true;
-        prepend_keymap = [
-          {
-            on = [
-              "R"
-              "D"
-            ];
-            run = "plugin sudo -- remove --permanently";
-            desc = "sudo delete";
-          }
-        ];
       };
       plugin = {
         prepend_fetchers = [
           {
-            id = "git";
             url = "*";
             run = "git";
             group = "git";
           }
           {
-            id = "git";
             url = "*/";
             run = "git";
             group = "git";
@@ -115,6 +103,14 @@
 
     keymap = {
       mgr.prepend_keymap = [
+        {
+          on = [
+            "R"
+            "D"
+          ];
+          run = "plugin sudo -- remove --permanently";
+          desc = "sudo delete";
+        }
         {
           on = "T";
           run = "plugin toggle-pane max-preview";

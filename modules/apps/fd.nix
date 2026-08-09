@@ -4,7 +4,6 @@
     hidden = true;
     ignores = [
       ".git/"
-      "/mnt/c/"
     ];
     # extraOptions = [ ];
   };

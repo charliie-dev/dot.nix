@@ -70,8 +70,7 @@
       # backend is named explicitly; compose's registry default moved from the
       # deprecated aqua backend to github, so it's pinned to github:docker/compose
       # to match (a bare "docker-compose" key still resolves to aqua and warns).
-      # nixpkgs lagged buildx (0.31.1 vs upstream 0.34.1), hence mise rather than
-      # a nix package.
+      # nixpkgs can lag upstream buildx, hence mise rather than a nix package.
       // lib.optionalAttrs pkgs.stdenv.isDarwin {
         "github:docker/compose" = "latest";
         "aqua:docker/buildx" = "latest";

@@ -19,7 +19,7 @@ _: {
         untrackedcache = true;
         # fscache = true; # speed up git on Windows_NT
         # preloadindex = true; # speed up git on Windows_NT
-        tabwidth = 4;
+        whitespace = "blank-at-eol,blank-at-eof,space-before-tab,tabwidth=4";
         autocrlf = false; # set to true if on Windows_NT
       };
       # dont use this, this will cause some cli use ssh over https, but those
@@ -34,7 +34,7 @@ _: {
         auto = 256;
       };
       pretty = {
-        slog = "format:'%C(bold red)%h%Creset %C(bold cyan)<%an>%Creset %C(yellow)%d%Creset %s %Cgreen(%cr)' --abbrev-commit --date=relative";
+        slog = "format:%C(bold red)%h%Creset %C(bold cyan)<%an>%Creset %C(yellow)%d%Creset %s %Cgreen(%cr)";
       };
       merge = {
         tool = "nvimdiff3";
@@ -84,9 +84,6 @@ _: {
         condition = "hasconfig:remote.*.url:git@github.com:nics-tw/**";
         path = "~/.config/git/config-work";
       }
-    ];
-    attributes = [
-      "*.pdf diff=pdf"
     ];
     # Git extension for versioning large files
     lfs = {

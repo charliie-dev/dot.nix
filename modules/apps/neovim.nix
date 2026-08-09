@@ -2,6 +2,7 @@
 {
   neovim = {
     enable = true;
+    defaultEditor = true;
     sideloadInitLua = true;
     # package = pkgs.neovim-nightly;
     withNodeJs = true;
@@ -73,10 +74,6 @@
         pkgs.libcxx
       ]}"
     ];
-    extraPython3Packages =
-      pyPkgs: with pyPkgs; [
-        pynvim
-      ];
     extraLuaPackages =
       luajitPackages: with luajitPackages; [
         fzf-lua

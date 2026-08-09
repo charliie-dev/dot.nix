@@ -70,13 +70,10 @@
         assume_yes = true;
 
         # Whether to ask what to do after a step fails (default: true)
-        # ask_retry = false;
+        ask_retry = false;
 
         # Number of times to automatically retry a step when it fails (default: 0)
         # auto_retry = 0;
-
-        # Same as ask_retry = false (default: false) - legacy
-        no_retry = true;
 
         # Show the reason for skipped steps (default: false)
         # This has no effect if the "only" option is specified
@@ -97,8 +94,8 @@
         # Send a notification for every step (default: false)
         # notify_each_step = false
 
-        # Skip sending a notification at the end of a run (default: false)
-        skip_notify = true;
+        # When to send a notification at the end of a run
+        notify_end = "never";
 
         # The Bash-it branch to update (default: "stable")
         # bashit_branch = "stable"
@@ -156,9 +153,6 @@
       python = {
         # enable_pip_review = true                         ###disabled by default
         # enable_pip_review_local = true                   ###disabled by default
-        enable_pipupgrade = true; # ##disabled by default
-        pipupgrade_arguments = "-y -u --pip-path pip"; # ##disabled by default
-
         # For the poetry step, by default, Topgrade skips its update if poetry is not
         # installed with the official script. This configuration entry forces Topgrade
         # to run the update in this case.

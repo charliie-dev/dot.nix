@@ -1,7 +1,7 @@
 {
   herdr = {
     enable = true;
-    # package 使用預設 pkgs.herdr (0.7.3)
+    # package 使用預設 pkgs.herdr
     settings = {
       onboarding = false;
 

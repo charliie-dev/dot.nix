@@ -61,7 +61,7 @@
         'if mise tasks ls --no-header 2>/dev/null | awk "{print \$1}" | grep -qx "$word"; then
           mise tasks info "$word"
         else
-          mise shell-alias ls 2>/dev/null | awk -v n="$word" "\$1==n {for(i=2;i<=NF;i++) printf \"%s \",\$i; print \"\"}"
+          mise shell-alias ls --no-header 2>/dev/null | awk -v n="$word" "\$1==n {for(i=2;i<=NF;i++) printf \"%s \",\$i; print \"\"}"
         fi'
 
       # Carapace grouping and git ordering.
@@ -70,9 +70,9 @@
       zstyle ':completion:*:git-checkout:*' sort false
     '')
 
-    (lib.mkOrder 1050 ''
-      # Disable zsh's built-in SSH completers after compinit; carapace supplies
-      # these commands, including the Host-only overlay.
+    (lib.mkOrder 950 ''
+      # Disable zsh's built-in SSH completers after compinit, but before
+      # carapace registers the custom specs and Host-only overlay.
       compdef -d ssh scp rsync
     '')
   ];

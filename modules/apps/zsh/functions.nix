@@ -60,6 +60,7 @@
 
     mr = ''
       local name="$1"
+      local cmd
       [[ -z "$name" ]] && {
         echo "usage: mr <task|shell-alias> [args...]"
         return 1
@@ -69,11 +70,9 @@
       if mise tasks ls --no-header 2>/dev/null | awk '{print $1}' | grep -qx "$name"; then
         print -s "mise run $name $*"
         mise run "$name" "$@"
-      elif mise shell-alias ls 2>/dev/null | awk '{print $1}' | grep -qx "$name"; then
-        local cmd
-        cmd=$(mise shell-alias ls 2>/dev/null | awk -v n="$name" '$1==n {$1=""; print substr($0,2)}')
+      elif cmd=$(mise shell-alias get "$name" 2>/dev/null); then
         print -s "$name $*"
-        eval "$cmd" "$@"
+        eval "$cmd ''${(q)@}"
       else
         echo "mr: unknown task or shell-alias: $name" >&2
         return 1
@@ -95,7 +94,7 @@
         tdisp+=("''${(r:28:)name} -- $rest")
       done
 
-      for line in ''${(f)"$(mise shell-alias ls 2>/dev/null | awk '{
+      for line in ''${(f)"$(mise shell-alias ls --no-header 2>/dev/null | awk '{
           match($0, /[[:space:]]+/)
           print substr($0,1,RSTART-1) "\t" substr($0,RSTART+RLENGTH)
       }')"}; do

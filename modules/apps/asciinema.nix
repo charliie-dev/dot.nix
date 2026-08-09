@@ -3,7 +3,7 @@
     enable = true;
     settings = {
       session = {
-        capture_input = true;
+        capture_input = false;
         capture_env = "SHELL,TERM,USER";
         prefix_key = "^a";
         pause_key = "^p";
