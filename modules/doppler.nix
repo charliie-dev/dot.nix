@@ -2,6 +2,7 @@
   config,
   pkgs,
   lib,
+  enableSecrets ? false,
   ...
 }:
 let
@@ -9,8 +10,8 @@ let
   # Must match sops.nix doppler_token.path
   dopplerTokenPath = "${dopplerDir}/token";
 in
-{
-  doppler = {
+lib.mkIf enableSecrets {
+  home = {
     packages = [ pkgs.doppler ];
 
     # "sops-nix" is the sops-nix home-manager module's activation entry name
@@ -39,4 +40,13 @@ in
       '';
     };
   };
+
+  programs.zsh.envExtra = ''
+    # Load Doppler secrets (application-layer)
+    if [ -r "${dopplerDir}/env" ]; then
+      set -a
+      source "${dopplerDir}/env"
+      set +a
+    fi
+  '';
 }

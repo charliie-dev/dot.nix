@@ -79,7 +79,7 @@
           # $HOME/.local/share/<name>/bin/<name>. home-manager hardcodes
           # ${pkgs.<name>}/bin/<name> in places like `eval "$(.../mise activate zsh)"`,
           # so we keep a tiny Nix-managed wrapper for each tool and let the
-          # DAG hooks in core.nix sync the actual binary with each switch.
+          # Runtime DAG modules sync the actual binary with each switch.
           mkBinaryStub =
             prev: name:
             prev.writeShellScriptBin name ''
@@ -197,6 +197,11 @@
           };
           modules = [
             "${src}/modules/core.nix"
+            "${src}/modules/platform.nix"
+            "${src}/modules/runtime/mise.nix"
+            "${src}/modules/runtime/neovim.nix"
+            "${src}/modules/runtime/topgrade.nix"
+            "${src}/modules/doppler.nix"
             sops-nix.homeManagerModules.sops
             catppuccin.homeModules.catppuccin
             nix-index-database.homeModules.nix-index

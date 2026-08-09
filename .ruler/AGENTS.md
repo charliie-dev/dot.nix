@@ -4,7 +4,8 @@ Nix Home-Manager dotfiles repo — manages dev environments across macOS/Linux u
 
 - `flake.nix` - Inputs and homeConfigurations per host
 - `hosts.nix` - Declarative host registry (system, roles, targets, sharedConfig)
-- `modules/core.nix` - Aggregates all programs; each app has its own module
+- `modules/core.nix` - Aggregates program fragments and owns shared Home Manager policy
+- `modules/runtime/*.nix` - App-specific activation hooks; `modules/platform.nix` owns OS-specific services
 - Role-based packages: hosts.nix defines roles → `modules/apps/roles/*.nix`
 - DAG activation: `lib.hm.dag.entryAfter ["writeBoundary"]`
 - Custom scripts: `conf.d/Usercommand/` → `~/.local/bin`
@@ -17,6 +18,6 @@ Nix Home-Manager dotfiles repo — manages dev environments across macOS/Linux u
 - Program-generated shell integrations: `modules/apps/<program>.nix`
 - macOS GUI/launchd environment: `modules/services/brew-env.nix` (not shell RC)
 - Generated Zsh RC files are `.zshenv`, `.zprofile`, and `.zshrc`; do not reintroduce runtime `conf.d/zsh/*.zsh` sources.
-- Exception: the secret-gated Doppler loader remains as `programs.zsh.envExtra` in `modules/core.nix`.
+- Exception: the secret-gated Doppler loader is `programs.zsh.envExtra` in `modules/doppler.nix`.
 
 Keep it simple: max 3 levels of indentation. Never break existing functionality.

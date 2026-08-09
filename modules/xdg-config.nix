@@ -41,6 +41,11 @@
         recursive = true;
         source = "${src}/conf.d/wget";
       };
+      "parallel/will-cite".text = "";
+      "terraform/terraformrc".text = ''
+        plugin_cache_dir   = "$HOME/.local/share/terraform/plugin-cache"
+        disable_checkpoint = true
+      '';
       # generate a separate file for the lua cpath/path
       # this must be imported by the init.lua file
       "nvim/lua/hm-generated.lua".text = config.programs.neovim.initLua;
