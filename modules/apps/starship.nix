@@ -302,7 +302,7 @@
         style = "bg:surface0";
         format = "[ · ](bg:surface0)[$symbol($subscription)]($style)";
         subscription_aliases = {
-          "Azure_nics2" = "NICS";
+          "Azure_nics" = "NICS";
         };
       };
 
