@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #MISE description="Compile ruler to AGENTS.md"
 
-bunx @intellectronica/ruler apply
+npx --yes @intellectronica/ruler apply
 
 # vim: ft=sh

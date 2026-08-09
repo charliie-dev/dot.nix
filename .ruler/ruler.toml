@@ -5,10 +5,6 @@
 # Uses case-insensitive substring matching
 default_agents = ["claude", "codex", "opencode"]
 
-# Enable nested rule loading from nested .ruler directories
-# When enabled, ruler will search for and process .ruler directories throughout the project hierarchy
-nested = true
-
 # --- Global MCP Server Configuration ---
 [mcp]
 # Enable/disable MCP propagation globally (default: true)
@@ -20,6 +16,10 @@ enabled = false
 enabled = true
 # Write managed entries to .git/info/exclude instead of .gitignore (default: false)
 local = false
+
+# Generated agent files are disposable; .ruler/ is the source of truth.
+[backup]
+enabled = false
 
 # --- Agent Specific Configurations ---
 [agents.claude]
