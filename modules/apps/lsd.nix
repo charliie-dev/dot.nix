@@ -1,7 +1,7 @@
 {
   lsd = {
     enable = true;
-    enableZshIntegration = false; # self-definded smartcache in conf.d/zsh
+    enableZshIntegration = false; # custom aliases live in modules/apps/zsh/aliases.nix
     # icons = {};
     settings = {
       classic = false;

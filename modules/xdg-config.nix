@@ -60,7 +60,7 @@
     # Docker CLI plugins live in mise (see modules/apps/mise.nix). The `docker
     # compose` / `docker buildx` subcommands only resolve when a `docker-<cmd>`
     # binary sits in docker's cli-plugins dir (DOCKER_CONFIG=$XDG_CONFIG_HOME/docker
-    # per conf.d/zsh/exports.zsh), so point user-dir plugins there. docker derives
+    # per home.sessionVariables), so point user-dir plugins there. docker derives
     # the subcommand from the symlink filename (docker-compose -> "compose").
     #
     # macOS ONLY. This is the colima-based docker host. Linux hosts use system

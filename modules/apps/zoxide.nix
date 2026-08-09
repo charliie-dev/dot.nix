@@ -1,9 +1,9 @@
 {
   zoxide = {
     enable = true;
-    enableZshIntegration = false; # self-definded smartcache in conf.d/zsh
+    enableZshIntegration = false; # cached by modules/apps/zsh/integrations.nix
     # options = [
-    #   # self-definded smartcache in conf.d/zsh
+    #   # cached by modules/apps/zsh/integrations.nix
     #   "--cmd cd"
     # ];
   };

@@ -6,7 +6,7 @@
 {
   mise = {
     enable = true;
-    enableZshIntegration = false; # self-definded smartcache in conf.d/zsh
+    enableZshIntegration = false; # cached by modules/apps/zsh/integrations.nix
     globalConfig = {
       tools = {
         bun = "latest";

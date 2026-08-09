@@ -57,10 +57,82 @@ lib.mkMerge [
       shell.enableZshIntegration = true;
       sessionPath = [
         "/nix/var/nix/profiles/default/bin"
+        "${config.home.homeDirectory}/.local/bin"
+        "${config.xdg.dataHome}/cargo/bin"
+        "${config.xdg.dataHome}/go/bin"
+        "${config.xdg.dataHome}/pnpm"
         "${config.home.homeDirectory}/.local/share/mise/bin"
         "${config.home.homeDirectory}/.local/share/topgrade/bin"
+      ]
+      ++ lib.optionals pkgs.stdenv.isDarwin [
+        "/opt/homebrew/bin"
+        # gcloud components such as gke-gcloud-auth-plugin are not linked into
+        # Homebrew's bin directory.
+        "/opt/homebrew/share/google-cloud-sdk/bin"
       ];
       sessionVariables = {
+        # XDG-aware tool homes shared by macOS and Linux.
+        WGETRC = "${config.xdg.configHome}/wget/wgetrc";
+        CARGO_HOME = "${config.xdg.dataHome}/cargo";
+        RUSTUP_HOME = "${config.xdg.dataHome}/rustup";
+        GOPATH = "${config.xdg.dataHome}/go";
+        GOMODCACHE = "${config.xdg.cacheHome}/go/mod";
+        GONOPROXY = "github.com/nics-dp";
+        GOPRIVATE = "github.com/nics-dp";
+        _JAVA_OPTIONS = "-Djava.util.prefs.userRoot=${config.xdg.configHome}/java";
+        DVDCSS_CACHE = "${config.xdg.dataHome}/dvdcss";
+        NPM_CONFIG_USERCONFIG = "${config.xdg.configHome}/npm/npmrc";
+        PNPM_HOME = "${config.xdg.dataHome}/pnpm";
+        DOCKER_CONFIG = "${config.xdg.configHome}/docker";
+        FFMPEG_DATADIR = "${config.xdg.configHome}/ffmpeg";
+        ANSIBLE_CONFIG = "${config.xdg.configHome}/ansible/ansible.cfg";
+        GNUPGHOME = "${config.xdg.dataHome}/gnupg";
+        DOTNET_CLI_HOME = "${config.xdg.dataHome}/dotnet";
+        IPYTHONDIR = "${config.xdg.configHome}/ipython";
+        JUPYTER_CONFIG_DIR = "${config.xdg.configHome}/jupyter";
+        BUNDLE_USER_CONFIG = "${config.xdg.configHome}/bundle";
+        BUNDLE_USER_CACHE = "${config.xdg.cacheHome}/bundle";
+        BUNDLE_USER_PLUGIN = "${config.xdg.dataHome}/bundle";
+        PARALLEL_HOME = "${config.xdg.configHome}/parallel";
+        EDITOR = "nvim";
+        VISUAL = "nvim";
+        BUN_INSTALL = "${config.xdg.dataHome}/bun";
+        D2_LAYOUT = "tala";
+        TF_CLI_CONFIG_FILE = "${config.xdg.configHome}/terraform/terraformrc";
+        DOPPLER_CONFIG_DIR = "${config.xdg.configHome}/doppler";
+        HMD_CLI_CONFIG_DIR = "${config.xdg.configHome}/hackmd";
+        SOPS_AGE_KEY_FILE = "${config.xdg.configHome}/age/keys.txt";
+
+        # Code agents and their privacy/update policy. macOS GUI processes get
+        # the required subset from the brew-env launchd adapter as well.
+        CLAUDE_CONFIG_DIR = "${config.xdg.configHome}/claude";
+        CODEX_HOME = "${config.xdg.configHome}/codex";
+        COPILOT_HOME = "${config.xdg.configHome}/copilot";
+        GROK_HOME = "${config.xdg.configHome}/grok";
+        MCP_REMOTE_CONFIG_DIR = "${config.xdg.dataHome}/mcp-auth";
+        ASIDE_HOME = "${config.xdg.dataHome}/aside";
+        PI_CODING_AGENT_DIR = "${config.xdg.configHome}/pi";
+        PI_CODING_AGENT_SESSION_DIR = "${config.xdg.dataHome}/pi/sessions";
+        GROK_TELEMETRY_ENABLED = "0";
+        GROK_FEEDBACK_ENABLED = "0";
+        GROK_TELEMETRY_TRACE_UPLOAD = "0";
+        GROK_DISABLE_AUTOUPDATER = "1";
+        COPILOT_AUTO_UPDATE = "0";
+        DO_NOT_TRACK = "1";
+        CODEGRAPH_TELEMETRY = "0";
+        CODEGRAPH_NO_UPDATE_CHECK = "1";
+
+        # Cloud CLIs.
+        AWS_SHARED_CREDENTIALS_FILE = "${config.xdg.configHome}/aws/credentials";
+        AWS_CONFIG_FILE = "${config.xdg.configHome}/aws/config";
+        AWS_CLI_SESSION_ID_DISABLED = "true";
+        AWS_DEFAULT_OUTPUT = "json";
+        AZURE_CONFIG_DIR = "${config.xdg.dataHome}/azure";
+        OCI_CLI_CONFIG_FILE = "${config.xdg.configHome}/oci/config";
+        OCI_CLI_RC_FILE = "${config.xdg.configHome}/oci/oci_cli_rc";
+        OCI_CLI_PROFILE = "pluto";
+        OCI_CLI_AUTH = "security_token";
+
         # Disable Determinate Nix telemetry
         # https://docs.determinate.systems/guides/telemetry/
         NIX_SENTRY_ENDPOINT = "";
@@ -114,7 +186,6 @@ lib.mkMerge [
 
           # Tool data dirs
           mkdir -p ${config.xdg.dataHome}/dotnet
-          mkdir -p ${config.xdg.dataHome}/aws
         '';
         topgradeCopy = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
           if [ ! -f ${config.xdg.configHome}/topgrade.d/disable.toml ]; then
@@ -351,13 +422,16 @@ lib.mkMerge [
   (lib.mkIf pkgs.stdenv.isLinux {
     home = {
       packages = [ pkgs.ghostty.terminfo ];
-      sessionVariables.TERMINFO_DIRS = "${config.home.profileDirectory}/share/terminfo\${TERMINFO_DIRS:+:}\${TERMINFO_DIRS}:/usr/share/terminfo";
+      sessionVariables = {
+        TERMINFO_DIRS = "${config.home.profileDirectory}/share/terminfo\${TERMINFO_DIRS:+:}\${TERMINFO_DIRS}:/usr/share/terminfo";
+        GTK_RC_FILES = "${config.xdg.configHome}/gtk-1.0/gtkrc";
+        GTK2_RC_FILES = "${config.xdg.configHome}/gtk-2.0/gtkrc";
+      };
     };
     # systemd user units don't source /etc/profile.d/nix.sh; nh shells out to `nix --version`.
     systemd.user.services.nh-clean.Service.Environment =
       "PATH=/nix/var/nix/profiles/default/bin:${config.home.profileDirectory}/bin";
   })
-  (import "${src}/modules/go-env.nix" { inherit config pkgs lib; })
   (lib.mkIf enableSecrets (
     let
       sopsConfig = import "${src}/modules/sops.nix" { inherit config src; };

@@ -3,7 +3,7 @@
   starship = {
     enable = true;
     configPath = "${config.xdg.configHome}/starship/starship.toml";
-    enableZshIntegration = false; # self-definded smartcache in conf.d/zsh
+    enableZshIntegration = false; # cached by modules/apps/zsh/integrations.nix
     enableIonIntegration = false;
     settings = {
       add_newline = true;
