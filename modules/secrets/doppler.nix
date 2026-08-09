@@ -7,7 +7,7 @@
 }:
 let
   dopplerDir = "${config.xdg.dataHome}/doppler";
-  # Must match sops.nix doppler_token.path
+  # Must match the sibling sops.nix doppler_token.path.
   dopplerTokenPath = "${dopplerDir}/token";
 in
 lib.mkIf enableSecrets {

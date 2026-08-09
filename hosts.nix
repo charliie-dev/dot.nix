@@ -1,6 +1,7 @@
 # hosts.nix — All host definitions in one place
 # enableSecrets: per-host flag, set to false for first-time deploys on new machines
 # sharedConfig: point to another host name to reuse its homeManagerConfiguration
+# gpu: enable the nixGL/NVIDIA variant of the generic Linux platform
 {
   "charles@24041-LABNB01" = {
     system = "aarch64-darwin";
@@ -10,7 +11,6 @@
       "top"
     ];
     homeDirectory = "/Users/charles";
-    target = "darwin";
   };
   # home-manager switch uses hostname with .local suffix on macOS
   "charles@24041-LABNB01.local" = {
@@ -25,7 +25,6 @@
       "top"
     ];
     homeDirectory = "/home/charles";
-    target = "genericLinux";
   };
   "charles@pluto" = {
     system = "aarch64-linux";
@@ -42,7 +41,6 @@
       "nvidia-gpu"
     ];
     homeDirectory = "/home/charles";
-    target = "genericLinux-gpu";
     gpu = true;
     silent = true;
   };
@@ -52,7 +50,6 @@
     system = "x86_64-linux";
     roles = [ "dev-core" ];
     homeDirectory = "/home/charles";
-    target = "genericLinux";
     silent = true;
   };
   # Shared aliases — reuse RDSrv01's eval result

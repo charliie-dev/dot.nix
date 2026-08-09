@@ -1,9 +1,15 @@
-{ config, pkgs, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 let
   logDir = "${config.home.homeDirectory}/Library/Logs/colima";
 in
-{
-  colima = {
+# Colima is the Darwin Docker host; Linux uses its system Docker service.
+lib.mkIf pkgs.stdenv.isDarwin {
+  launchd.agents.colima = {
     enable = true;
     # Show up as "colima" instead of "sh" in Login Items & Extensions. Safe because
     # the agent lives in the `gui` domain (below), which only starts after GUI login,

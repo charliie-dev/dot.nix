@@ -5,6 +5,7 @@
   enableSecrets ? false,
   ...
 }:
+# Secret declarations and their Git/SSH consumers share one feature gate.
 lib.mkIf enableSecrets {
   sops = {
     defaultSopsFile = "${src}/conf.d/sops/secrets.yaml";

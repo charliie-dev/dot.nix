@@ -37,7 +37,7 @@
   };
 
   outputs =
-    inputs@{
+    {
       self,
       sops-nix,
       catppuccin,
@@ -166,23 +166,6 @@
           }
           // (if isGpu then { nvidia.acceptLicense = true; } else { });
 
-          targetModule =
-            if hostCfg ? target then
-              (
-                if hostCfg.target == "genericLinux-gpu" then
-                  {
-                    targets.genericLinux =
-                      (import "${src}/modules/targets/genericLinux-gpu.nix" { inherit nixgl; }).genericLinux;
-                  }
-                else
-                  {
-                    targets.${hostCfg.target} =
-                      (import "${src}/modules/targets/${hostCfg.target}.nix").${hostCfg.target};
-                  }
-              )
-            else
-              { };
-
           silentModule = if hostCfg.silent or false then { news.display = "silent"; } else { };
         in
         home-manager.lib.homeManagerConfiguration {
@@ -192,17 +175,12 @@
             config = pkgsConfig;
           };
           extraSpecialArgs = {
-            inherit src enableSecrets inputs;
+            inherit src enableSecrets nixgl;
+            gpuEnabled = isGpu;
             inherit (hostCfg) roles;
           };
           modules = [
-            "${src}/modules/core.nix"
-            "${src}/modules/platform.nix"
-            "${src}/modules/runtime/mise.nix"
-            "${src}/modules/runtime/neovim.nix"
-            "${src}/modules/runtime/topgrade.nix"
-            "${src}/modules/doppler.nix"
-            "${src}/modules/sops.nix"
+            "${src}/modules/default.nix"
             sops-nix.homeManagerModules.sops
             catppuccin.homeModules.catppuccin
             nix-index-database.homeModules.nix-index
@@ -215,7 +193,6 @@
                   stateVersion = hm_ver;
                 };
               }
-              // targetModule
               // silentModule
             )
           ];
