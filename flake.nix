@@ -28,7 +28,6 @@
     catppuccin.url = "github:catppuccin/nix/main";
     nix-filter.url = "github:numtide/nix-filter";
     snitch.url = "github:karol-broda/snitch";
-    systems.url = "github:nix-systems/default";
 
     nix-src = {
       url = "github:DeterminateSystems/nix-src";
@@ -48,12 +47,16 @@
       nixgl,
       nixpkgs,
       snitch,
-      systems,
       treefmt-nix,
       ...
     }:
     let
-      eachSystem = f: nixpkgs.lib.genAttrs (import systems) (system: f nixpkgs.legacyPackages.${system});
+      systems = [
+        "aarch64-darwin"
+        "aarch64-linux"
+        "x86_64-linux"
+      ];
+      eachSystem = f: nixpkgs.lib.genAttrs systems (system: f nixpkgs.legacyPackages.${system});
       treefmtEval = eachSystem (pkgs: treefmt-nix.lib.evalModule pkgs ./treefmt.nix);
       inherit (nixpkgs) lib;
 
