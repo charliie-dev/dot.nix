@@ -1,87 +1,100 @@
-{ pkgs, lib, ... }:
+{
+  pkgs,
+  # lib,
+  ...
+}:
 {
   neovim = {
     enable = true;
     defaultEditor = true;
-    sideloadInitLua = true;
+    sideloadInitLua = false;
     # package = pkgs.neovim-nightly;
-    withNodeJs = true;
-    withPython3 = true;
+
+    # Remote plugins are disabled by the Neovim configuration. Go and Node.js
+    # remain packaged for deterministic bootstrap; Python is provided by mise.
+    withNodeJs = false;
+    withPython3 = false;
     withRuby = false;
+
     extraPackages = with pkgs; [
-      # Dependent packages used by default plugins
+      # Native plugin and parser builds
       cargo
-      clang
-      cmake
-      gcc
       gnumake
       go
-      ninja
-      pkg-config
-      lua5_1
-      luajitPackages.luarocks-nix
-      tree-sitter # Parser generator tool and an incremental parsing library
+      nodejs
+      stdenv.cc
+      tree-sitter
 
-      # nix language server, formatter, linter
-      # alejandra # The Uncompromising Nix Code Formatter
-      deadnix # Scan Nix files for dead code
-      nil # NIx Language server
-      nixfmt # Official formatter for Nix code
-      statix # lints and suggestions for the nix
+      # Nix language servers, formatter, and linters
+      deadnix
+      nil
+      nixd
+      nixfmt
+      statix
 
+      # Keep these candidates until their absence is confirmed in daily use.
+      # clang
+      # cmake
+      # gcc
+      # ninja
+      # pkg-config
+      # lua5_1
+      # luajitPackages.luarocks-nix
     ];
-    extraWrapperArgs = [
-      "--suffix"
-      "LIBRARY_PATH"
-      ":"
-      "${lib.makeLibraryPath [
-        # manylinux
-        pkgs.bzip2
-        pkgs.curl
-        pkgs.libsodium
-        pkgs.libssh
-        pkgs.libxml2
-        pkgs.openssl
-        pkgs.stdenv.cc.cc
-        pkgs.stdenv.cc.cc.lib
-        pkgs.util-linux
-        pkgs.xz
-        pkgs.zlib
-        pkgs.zstd
-        # Packages not included in `nix-ld`'s NixOSModule
-        pkgs.glib
-        pkgs.libcxx
-      ]}"
-      "--suffix"
-      "PKG_CONFIG_PATH"
-      ":"
-      "${lib.makeSearchPathOutput "dev" "lib/pkgconfig" [
-        # manylinux
-        pkgs.bzip2
-        pkgs.curl
-        pkgs.libsodium
-        pkgs.libssh
-        pkgs.libxml2
-        pkgs.openssl
-        pkgs.stdenv.cc.cc
-        pkgs.stdenv.cc.cc.lib
-        pkgs.util-linux
-        pkgs.xz
-        pkgs.zlib
-        pkgs.zstd
-        # Packages not included in `nix-ld`'s NixOSModule
-        pkgs.glib
-        pkgs.libcxx
-      ]}"
-    ];
-    extraLuaPackages =
-      luajitPackages: with luajitPackages; [
-        fzf-lua
-        fzy
-        luasnip
-        luv
-        sqlite
-        jsregexp # for luasnip
-      ];
+
+    # Native plugin builds currently do not need these wrapper paths. Keep the
+    # previous configuration available until that is confirmed in daily use.
+    # extraWrapperArgs = [
+    #   "--suffix"
+    #   "LIBRARY_PATH"
+    #   ":"
+    #   "${lib.makeLibraryPath [
+    #     pkgs.bzip2
+    #     pkgs.curl
+    #     pkgs.libsodium
+    #     pkgs.libssh
+    #     pkgs.libxml2
+    #     pkgs.openssl
+    #     pkgs.stdenv.cc.cc
+    #     pkgs.stdenv.cc.cc.lib
+    #     pkgs.util-linux
+    #     pkgs.xz
+    #     pkgs.zlib
+    #     pkgs.zstd
+    #     pkgs.glib
+    #     pkgs.libcxx
+    #   ]}"
+    #   "--suffix"
+    #   "PKG_CONFIG_PATH"
+    #   ":"
+    #   "${lib.makeSearchPathOutput "dev" "lib/pkgconfig" [
+    #     pkgs.bzip2
+    #     pkgs.curl
+    #     pkgs.libsodium
+    #     pkgs.libssh
+    #     pkgs.libxml2
+    #     pkgs.openssl
+    #     pkgs.stdenv.cc.cc
+    #     pkgs.stdenv.cc.cc.lib
+    #     pkgs.util-linux
+    #     pkgs.xz
+    #     pkgs.zlib
+    #     pkgs.zstd
+    #     pkgs.glib
+    #     pkgs.libcxx
+    #   ]}"
+    # ];
+
+    # lazy.nvim owns these Lua dependencies. Keep this list until the external
+    # plugin builds have been confirmed without Home Manager's Lua environment.
+    # extraLuaPackages =
+    #   luajitPackages: with luajitPackages; [
+    #     fzf-lua
+    #     fzy
+    #     luasnip
+    #     luv
+    #     sqlite
+    #     jsregexp
+    #   ];
   };
 }
