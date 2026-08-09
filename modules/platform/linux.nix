@@ -31,11 +31,7 @@ lib.mkIf pkgs.stdenv.isLinux {
 
   home = {
     packages = [ pkgs.ghostty.terminfo ];
-    sessionVariables = {
-      TERMINFO_DIRS = config.systemd.user.sessionVariables.TERMINFO_DIRS;
-      GTK_RC_FILES = "${config.xdg.configHome}/gtk-1.0/gtkrc";
-      GTK2_RC_FILES = "${config.xdg.configHome}/gtk-2.0/gtkrc";
-    };
+    sessionVariables.TERMINFO_DIRS = config.systemd.user.sessionVariables.TERMINFO_DIRS;
   };
 
   # systemd user units don't source /etc/profile.d/nix.sh; nh shells out to `nix --version`.

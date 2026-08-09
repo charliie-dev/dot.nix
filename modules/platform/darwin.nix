@@ -6,6 +6,7 @@
 }:
 lib.mkIf pkgs.stdenv.isDarwin {
   targets.darwin = {
+    # Homebrew manages all GUI applications.
     copyApps.enable = false;
     linkApps.enable = false;
     # null or one of "Bing", "DuckDuckGo", "Ecosia", "Google", "Yahoo"
@@ -64,8 +65,9 @@ lib.mkIf pkgs.stdenv.isDarwin {
 
   launchd.agents = {
     nh-clean = {
-      # StartCalendarInterval only fires long after login, so the /bin/wait4path
-      # wrapper buys nothing and just hides the agent as "sh" in Login Items.
+      # This scheduled background job runs after login; skip the wait wrapper so
+      # Login Items shows its agent name instead of "sh".
+      domain = "user";
       waitForNixStore = false;
       config = {
         # launchd inherits a minimal PATH; nh shells out to `nix --version`.
@@ -83,19 +85,20 @@ lib.mkIf pkgs.stdenv.isDarwin {
         );
       };
     };
+    # sops-nix stays in the GUI domain and skips the wait wrapper.
+    sops-nix.waitForNixStore = false;
   }
-  # Agents owned by upstream modules — only flip the wrapper off so they show
-  # under their own name. All are `gui` domain, i.e. they start after GUI login,
-  # by which point the (FileVault-encrypted) Nix Store volume is mounted.
   //
     lib.genAttrs
       [
         "git-maintenance-hourly"
         "git-maintenance-daily"
         "git-maintenance-weekly"
-        "sops-nix"
       ]
       (_: {
+        # These scheduled jobs run after login; avoid the wait wrapper so Login
+        # Items shows each agent name instead of "sh".
+        domain = "user";
         waitForNixStore = false;
       });
 

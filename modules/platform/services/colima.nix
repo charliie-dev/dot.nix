@@ -30,11 +30,13 @@ lib.mkIf pkgs.stdenv.isDarwin {
     };
   };
 
-  # services.colima only forwards DOCKER_CONFIG when programs.docker-cli is
-  # enabled. Our mutable config.json is managed by modules/runtime/docker.nix so
-  # docker login can update it; make the launch agent use that same XDG path.
-  launchd.agents.colima-default.config.EnvironmentVariables.DOCKER_CONFIG =
-    "${config.xdg.configHome}/docker";
+  launchd.agents.colima-default = {
+    # Colima uses the GUI domain for VZ; skip the wrapper so it appears under its own name.
+    waitForNixStore = false;
+    # services.colima only forwards DOCKER_CONFIG when programs.docker-cli is
+    # enabled. Use the mutable XDG config managed by modules/runtime/docker.nix.
+    config.EnvironmentVariables.DOCKER_CONFIG = "${config.xdg.configHome}/docker";
+  };
 
   # launchd does not create parents for StandardOutPath. Ensure the native
   # module's default $XDG_STATE_HOME/colima/default.log can be opened before the
