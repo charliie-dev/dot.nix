@@ -8,6 +8,5 @@
     ./runtime/topgrade.nix
     ./secrets/doppler.nix
     ./secrets/sops.nix
-    ./catppuccin.nix
   ];
 }

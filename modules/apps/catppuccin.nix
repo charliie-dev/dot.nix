@@ -1,3 +1,4 @@
+# Cross-program theme configuration; imported as a full module by apps/default.nix.
 {
   catppuccin = {
     enable = true;

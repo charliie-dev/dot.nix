@@ -16,7 +16,13 @@ let
   # <name>.nix returns { <name> = { ... }; }; helpers prefix with `_`.
   appFiles = lib.filterAttrs (
     name: type:
-    type == "regular" && lib.hasSuffix ".nix" name && name != "default.nix" && !(lib.hasPrefix "_" name)
+    type == "regular"
+    && lib.hasSuffix ".nix" name
+    && !(builtins.elem name [
+      "default.nix"
+      "catppuccin.nix"
+    ])
+    && !(lib.hasPrefix "_" name)
   ) (builtins.readDir ./.);
   appArgs = {
     inherit
@@ -38,6 +44,9 @@ let
       throw "modules/apps/${filename}: expected non-empty attrset, got ${builtins.typeOf app}";
 in
 {
+  # Full app modules live beside the fragments but bypass programs.* wrapping.
+  imports = [ ./catppuccin.nix ];
+
   home.packages = lib.unique (common_apps ++ rolePackages);
   programs = lib.mkMerge (map loadApp (builtins.attrNames appFiles));
 }

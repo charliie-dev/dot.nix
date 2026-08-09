@@ -6,7 +6,7 @@ Nix Home-Manager dotfiles repo — manages dev environments across macOS/Linux u
 - `hosts.nix` - Declarative host registry (system, roles, gpu, sharedConfig)
 - `modules/default.nix` - Entry point for all local Home Manager modules
 - `modules/core.nix` - Shared Nix, XDG, environment, PATH, and Home Manager policy
-- `modules/apps/default.nix` - Aggregates program fragments and role-based packages
+- `modules/apps/default.nix` - Aggregates program fragments, full app modules, and role-based packages
 - `modules/runtime/*.nix` - App-specific activation hooks
 - `modules/platform/*.nix` - OS targets, runtime integration, and platform services
 - `modules/secrets/*.nix` - Secret-gated SOPS and Doppler integration
