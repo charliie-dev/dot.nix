@@ -32,7 +32,7 @@ lib.mkIf pkgs.stdenv.isLinux {
   home = {
     packages = [ pkgs.ghostty.terminfo ];
     sessionVariables = {
-      TERMINFO_DIRS = "${config.home.profileDirectory}/share/terminfo\${TERMINFO_DIRS:+:}\${TERMINFO_DIRS}:/usr/share/terminfo";
+      TERMINFO_DIRS = config.systemd.user.sessionVariables.TERMINFO_DIRS;
       GTK_RC_FILES = "${config.xdg.configHome}/gtk-1.0/gtkrc";
       GTK2_RC_FILES = "${config.xdg.configHome}/gtk-2.0/gtkrc";
     };
