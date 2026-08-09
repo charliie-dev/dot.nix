@@ -1,54 +1,48 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   ...
 }:
-let
-  logDir = "${config.home.homeDirectory}/Library/Logs/colima";
-in
+
 # Colima is the Darwin Docker host; Linux uses its system Docker service.
 lib.mkIf pkgs.stdenv.isDarwin {
-  launchd.agents.colima = {
+  services.colima = {
     enable = true;
-    # Show up as "colima" instead of "sh" in Login Items & Extensions. Safe because
-    # the agent lives in the `gui` domain (below), which only starts after GUI login,
-    # long after the Nix Store volume is mounted.
-    waitForNixStore = false;
-    # Keep the option's `gui` domain default — do NOT move to `user`. The
-    # `--vm-type vz` backend (Apple Virtualization.framework) requires the
-    # graphical Aqua session; bootstrapping into the background `user` domain
-    # fails with `Bootstrap failed: 5: Input/output error`. Verified 2026-06-28.
-    config = {
-      Label = "com.github.abiosoft.colima";
-      ProgramArguments = [
-        "${pkgs.colima}/bin/colima"
-        "start"
-        "--foreground"
-        "--cpu"
-        "6"
-        "--memory"
-        "12"
-        "--disk"
-        "100"
-        "--vm-type"
-        "vz"
-        "--mount-type"
-        "virtiofs"
-        "--mount-inotify"
-      ];
-      EnvironmentVariables = {
-        PATH = "${pkgs.colima}/bin:${pkgs.docker-client}/bin:/usr/bin:/bin:/usr/sbin:/sbin";
-        COLIMA_HOME = "${config.xdg.dataHome}/colima";
-        DOCKER_CONFIG = "${config.xdg.configHome}/docker";
+
+    profiles.default = {
+      isActive = true;
+      isService = true;
+      # The active Docker context selects Colima. Avoid an environment variable
+      # that would override all contexts and remain stale across VM migrations.
+      setDockerHost = false;
+
+      settings = {
+        cpu = 6;
+        memory = 12;
+        disk = 100;
+        runtime = "docker";
+        kubernetes.enabled = false;
+        vmType = "vz";
+        mountType = "virtiofs";
+        mountInotify = true;
       };
-      RunAtLoad = true;
-      KeepAlive = {
-        SuccessfulExit = false;
-      };
-      ThrottleInterval = 60;
-      StandardOutPath = "${logDir}/colima.log";
-      StandardErrorPath = "${logDir}/colima.log";
     };
   };
+
+  # services.colima only forwards DOCKER_CONFIG when programs.docker-cli is
+  # enabled. Our mutable config.json is managed by modules/runtime/docker.nix so
+  # docker login can update it; make the launch agent use that same XDG path.
+  launchd.agents.colima-default.config.EnvironmentVariables.DOCKER_CONFIG =
+    "${config.xdg.configHome}/docker";
+
+  # launchd does not create parents for StandardOutPath. Ensure the native
+  # module's default $XDG_STATE_HOME/colima/default.log can be opened before the
+  # agent is bootstrapped.
+  home.activation.colimaStateDir =
+    lib.hm.dag.entryBetween [ "setupLaunchAgents" ] [ "writeBoundary" ]
+      ''
+        mkdir -p "${config.xdg.stateHome}/colima"
+        chmod 700 "${config.xdg.stateHome}/colima"
+      '';
 }
