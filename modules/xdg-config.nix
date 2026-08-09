@@ -17,10 +17,6 @@
         recursive = true;
         source = "${src}/conf.d/carapace/specs";
       };
-      "conda" = {
-        recursive = true;
-        source = "${src}/conf.d/conda";
-      };
       "python" = {
         recursive = true;
         source = "${src}/conf.d/python";

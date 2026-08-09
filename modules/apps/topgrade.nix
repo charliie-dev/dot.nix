@@ -144,8 +144,6 @@
         "antidote" = "~/.local/state/nix/profile/share/antidote/antidote update";
         # "home-manager cleanup" =
         #   "nix-collect-garbage -d && nix-env --delete-generations old && nix-store --gc && nix-store --optimise";
-        # "micromamba" = "micromamba self-update";
-        # "zsh_recompile" = "source ~/.config/home-manager/conf.d/zsh/functions.zsh && zsh_recompile";
         "determinate-nixd upgrade" = "sudo determinate-nixd upgrade";
       };
 
@@ -167,19 +165,6 @@
         #
         # (default: false)
         # poetry_force_self_update = true
-      };
-
-      conda = {
-        # # Additional named conda environments to update (`conda env update -n env_name`)
-        # env_names = [
-        #   "Toolbox"
-        #   "PyTorch"
-        # ];
-        # # Additional conda environment paths to update (`conda env update -p env_path`)
-        # env_paths = [
-        #   "~/webserver/.conda/"
-        #   "~/experiments/.conda/"
-        # ];
       };
 
       composer = {

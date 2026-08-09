@@ -339,15 +339,6 @@
         symbol = "󰌠 ";
       };
 
-      conda = {
-        disabled = true;
-        style = "dimmed green";
-        format = "[$symbol$environment]($style) ";
-        symbol = " ";
-        truncation_length = 1;
-        ignore_base = false;
-      };
-
       shell = {
         disabled = true;
         fish_indicator = "󰈺";
