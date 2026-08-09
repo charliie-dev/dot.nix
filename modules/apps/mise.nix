@@ -65,8 +65,8 @@
         };
       }
       # Docker CLI plugins are managed by mise on macOS ONLY (the cli-plugins
-      # wiring lives in xdg-config.nix, also Darwin-gated). Linux hosts use the
-      # distro's system docker for the whole client+daemon stack, so mise must not
+      # wiring lives in modules/runtime/mise.nix, also Darwin-gated). Linux hosts
+      # use the distro's system docker for the whole client+daemon stack, so mise must not
       # manage compose/buildx there. buildx isn't in mise's registry, so its
       # backend is named explicitly; compose's registry default moved from the
       # deprecated aqua backend to github, so it's pinned to github:docker/compose

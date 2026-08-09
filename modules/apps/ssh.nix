@@ -12,7 +12,7 @@ _: {
       Compression = true;
       ForwardAgent = false;
       HashKnownHosts = false;
-      # IdentityFile set by core.nix mkIf enableSecrets
+      # IdentityFile is set by modules/sops.nix when secrets are enabled.
       ServerAliveInterval = 300;
       ServerAliveCountMax = 10;
     };

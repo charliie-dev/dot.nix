@@ -28,14 +28,23 @@ lib.mkIf enableSecrets {
           mkdir -p "${dopplerDir}"
           chmod 700 "${dopplerDir}"
           (
+            set -eu
             umask 077
-            ${pkgs.doppler}/bin/doppler secrets download \
+            tmp=$(mktemp "${dopplerDir}/.env.XXXXXX")
+            trap 'rm -f "$tmp"' EXIT HUP INT TERM
+            if ${pkgs.doppler}/bin/doppler secrets download \
               --project dot-nix \
               --config dev_personal \
               --no-file \
-              --format=env > "${dopplerDir}/env" 2>/dev/null || true
+              --format=env > "$tmp" 2>/dev/null \
+              && [ -s "$tmp" ]; then
+              chmod 600 "$tmp"
+              mv -f "$tmp" "${dopplerDir}/env"
+              trap - EXIT HUP INT TERM
+            else
+              echo "doppler secrets: download failed; keeping existing env" >&2
+            fi
           )
-          chmod 600 "${dopplerDir}/env"
         fi
       '';
     };

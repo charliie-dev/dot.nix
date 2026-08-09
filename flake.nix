@@ -202,6 +202,7 @@
             "${src}/modules/runtime/neovim.nix"
             "${src}/modules/runtime/topgrade.nix"
             "${src}/modules/doppler.nix"
+            "${src}/modules/sops.nix"
             sops-nix.homeManagerModules.sops
             catppuccin.homeModules.catppuccin
             nix-index-database.homeModules.nix-index

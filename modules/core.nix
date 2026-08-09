@@ -4,7 +4,6 @@
   lib,
   src,
   roles ? [ ],
-  enableSecrets ? false,
   ...
 }:
 let
@@ -43,7 +42,34 @@ let
 in
 lib.mkMerge [
   {
-    inherit (import "${src}/modules/nix-config.nix" { inherit pkgs; }) nix;
+    nix = {
+      package = pkgs.determinate-nix;
+      checkConfig = true;
+      settings = {
+        experimental-features = [
+          "nix-command"
+          "flakes"
+        ];
+        use-xdg-base-directories = true;
+        cores = 0;
+        max-jobs = 10;
+        auto-optimise-store = true;
+        warn-dirty = false;
+        http-connections = 50;
+
+        # Determinate Nix-only settings (require pkgs.determinate-nix)
+        lazy-trees = true;
+        eval-cores = 0;
+        # lazy-locks = true; # keep off: true omits NAR hashes from flake.lock,
+        #   producing lock files that upstream/older Nix can't read (DS-only).
+        #   Default false writes full NAR hashes = portable; upside of true is tiny.
+      };
+      # use nh to clean
+      # gc = {
+      #   automatic = false;
+      #   options = "--delete-older-than 7d --max-freed $((1 * 1024**3))";
+      # };
+    };
 
     manual = {
       manpages.enable = false;
@@ -162,20 +188,52 @@ lib.mkMerge [
           # Tool data dirs
           mkdir -p ${config.xdg.dataHome}/dotnet
         '';
+        terraformPluginCache = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+          mkdir -p "${config.xdg.dataHome}/terraform/plugin-cache"
+        '';
       };
     };
 
-    inherit
-      (import "${src}/modules/xdg-config.nix" {
-        inherit
-          config
-          pkgs
-          lib
-          src
-          ;
-      })
-      xdg
-      ;
+    xdg = {
+      enable = true;
+      configFile = {
+        # aube pkg-manager exemptions (allowlist + trust exclude) for the mise npm
+        # backend — see conf.d/aube/config.toml and modules/apps/mise.nix. Single
+        # file (not recursive) so HM doesn't claim the whole ~/.config/aube dir.
+        "aube/config.toml".source = "${src}/conf.d/aube/config.toml";
+        "carapace/specs" = {
+          recursive = true;
+          source = "${src}/conf.d/carapace/specs";
+        };
+        "python" = {
+          recursive = true;
+          source = "${src}/conf.d/python";
+        };
+        "ghostty" = {
+          recursive = true;
+          source = "${src}/conf.d/ghostty";
+        };
+        "glow" = {
+          recursive = true;
+          source = "${src}/conf.d/glow";
+        };
+        "hunk" = {
+          recursive = true;
+          source = "${src}/conf.d/hunk";
+        };
+        "tombi/config.toml".source = "${src}/conf.d/tombi/config.toml";
+        "wget" = {
+          recursive = true;
+          source = "${src}/conf.d/wget";
+        };
+        "parallel/will-cite".text = "";
+        "terraform/terraformrc".text = ''
+          plugin_cache_dir   = "${config.xdg.dataHome}/terraform/plugin-cache"
+          disable_checkpoint = true
+        '';
+      };
+    };
+
     inherit (import "${src}/modules/catppuccin.nix") catppuccin;
 
     programs = lib.mkMerge appModules;
@@ -184,31 +242,4 @@ lib.mkMerge [
       inherit (import "${src}/modules/services/home-manager.nix" { }) home-manager;
     };
   }
-  (lib.mkIf enableSecrets (
-    let
-      sopsConfig = import "${src}/modules/sops.nix" { inherit config src; };
-    in
-    {
-      inherit (sopsConfig) sops;
-
-      home.activation.ssh = lib.hm.dag.entryAfter [ "reloadSystemd" ] ''
-        if [ -f ${config.home.homeDirectory}/.ssh/id_ed25519.pub ]; then
-          if [ ! -f ${config.home.homeDirectory}/.ssh/authorized_keys ]; then
-            touch ${config.home.homeDirectory}/.ssh/authorized_keys
-          fi
-          # Compare key type + body (cols 1-2), ignoring the comment field
-          read -r ktype kbody _ < ${config.home.homeDirectory}/.ssh/id_ed25519.pub
-          if ! grep -qF "$ktype $kbody" ${config.home.homeDirectory}/.ssh/authorized_keys; then
-            cat ${config.home.homeDirectory}/.ssh/id_ed25519.pub >> ${config.home.homeDirectory}/.ssh/authorized_keys
-          fi
-        fi
-      '';
-
-      programs = {
-        git.signing.key = "${config.sops.secrets.ssh_ed25519_pub.path}";
-        git.settings.gpg.ssh.allowedSignersFile = "${config.sops.secrets.allowed_signers.path}";
-        ssh.settings."*".IdentityFile = "${config.sops.secrets.ssh_ed25519.path}";
-      };
-    }
-  ))
 ]
