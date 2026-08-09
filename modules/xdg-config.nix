@@ -45,10 +45,6 @@
         recursive = true;
         source = "${src}/conf.d/wget";
       };
-      # "yarn" = {
-      #   recursive = true;
-      #   source = "${src}/conf.d/yarn";
-      # };
       # generate a separate file for the lua cpath/path
       # this must be imported by the init.lua file
       "nvim/lua/hm-generated.lua".text = config.programs.neovim.initLua;
