@@ -56,6 +56,9 @@
       }
     ];
     extraConfig = ''
+      # Append the Catppuccin host module after plugins have initialized.
+      set -ag status-right "#{E:@catppuccin_status_host}"
+
       # Allow Vim to receive modifier keys: Shift, Control, Alt.
       setw -g xterm-keys on
 

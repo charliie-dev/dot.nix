@@ -40,8 +40,7 @@
       enable = true;
       # flavor = "macchiato";
       extraConfig = ''
-        set -g @catppuccin_window_tabs_enabled on
-        set -g @catppuccin_host "on"
+        set -g @catppuccin_window_status_style "rounded"
       '';
     };
     vivid = {
