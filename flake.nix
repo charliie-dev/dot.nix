@@ -202,7 +202,22 @@
       directHosts = lib.filterAttrs (_: h: !(h ? sharedConfig)) hosts;
       sharedHosts = lib.filterAttrs (_: h: h ? sharedConfig) hosts;
       directConfigs = builtins.mapAttrs mkHost directHosts;
-      sharedConfigs = lib.mapAttrs (_: hostCfg: directConfigs.${hostCfg.sharedConfig}) sharedHosts;
+      sharedConfigs = lib.mapAttrs (
+        name: hostCfg:
+        let
+          baseName = hostCfg.sharedConfig;
+          baseHost =
+            directHosts.${baseName} or (throw "shared host ${name}: ${baseName} is not a direct host");
+          overrides = builtins.removeAttrs hostCfg [ "sharedConfig" ];
+          effectiveOverrides = lib.filterAttrs (
+            key: value: !(builtins.hasAttr key baseHost) || baseHost.${key} != value
+          ) overrides;
+        in
+        if effectiveOverrides == { } then
+          directConfigs.${baseName}
+        else
+          mkHost name (baseHost // effectiveOverrides)
+      ) sharedHosts;
     in
     {
       formatter = eachSystem (pkgs: treefmtEval.${pkgs.stdenv.hostPlatform.system}.config.build.wrapper);
