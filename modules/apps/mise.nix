@@ -96,6 +96,7 @@
         "npm:@readwise/cli" = "latest";
         "npm:ctx7" = "latest";
         "npm:tokscale" = "latest";
+        "npm:@earendil-works/pi-coding-agent" = "latest";
       };
       # plugins = {
       #   # specify a custom repo url
