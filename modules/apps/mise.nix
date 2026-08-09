@@ -9,7 +9,6 @@
     enableZshIntegration = false; # cached by modules/apps/zsh/integrations.nix
     globalConfig = {
       tools = {
-        bun = "latest";
         # aube: jdx's Rust npm pkg manager — the backend for `npm:` global tools
         # (see npm.package_manager below). Declared here so the binary is present
         # before any npm: tool tries to install through it. Lifecycle scripts are
