@@ -25,86 +25,52 @@ let
         import argparse
         import fcntl
         import os
+        import pwd
         import re
         import stat
         import subprocess
-        import tempfile
 
         PIN = ${builtins.toJSON pinnedFingerprint}
         PUBLIC_KEY_TARGET = ${builtins.toJSON publicKeyTarget}
+        HOME_DIR = ${builtins.toJSON config.home.homeDirectory}
         SSH_KEYGEN = ${builtins.toJSON "${pkgs.openssh}/bin/ssh-keygen"}
-        BEGIN = ("# BEGIN home-manager managed key " + PIN).encode()
-        END = ("# END home-manager managed key " + PIN).encode()
         FINGERPRINT_RE = re.compile(r"^SHA256:[0-9A-Za-z+/]+={0,2}$")
+        RECORD_RE = re.compile(
+            rb"^[ \t]*ssh-ed25519[ \t]+([^ \t]+)(?:[ \t]+[\t -~]*)?$"
+        )
+        MAX_RECORD_BYTES = 4096
+        TARGET_MODES = {0o600, 0o644}
+        TEST_ALLOW_USER_ANCESTORS = False
+        TEST_HOOK = lambda event: None
+
+        class ShortWrite(Exception):
+            def __init__(self, written):
+                super().__init__("short append")
+                self.written = written
 
         def fail(message):
             raise SystemExit("authorized_keys: " + message)
 
-        def validate_dir(path, enabled, dry_run):
-            try:
-                st = os.lstat(path)
-            except FileNotFoundError:
-                if not enabled:
-                    return False
-                if dry_run:
-                    fail("SSH directory would need creation before key validation")
-                os.mkdir(path, 0o700)
-                st = os.lstat(path)
-            if stat.S_ISLNK(st.st_mode) or not stat.S_ISDIR(st.st_mode):
-                fail("SSH directory has an unsafe type")
-            if st.st_uid != os.getuid() or stat.S_IMODE(st.st_mode) & 0o022:
-                fail("SSH directory has unsafe ownership or mode")
-            return True
+        def require_primitives():
+            required = ("O_NOFOLLOW", "O_DIRECTORY", "O_APPEND")
+            if any(not getattr(os, name, 0) for name in required):
+                fail("required safe filesystem primitives are unavailable")
+            if not hasattr(fcntl, "flock"):
+                fail("required file locking primitive is unavailable")
 
-        def read_regular(path, allowed_modes, missing_ok=False):
-            flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
-            try:
-                fd = os.open(path, flags)
-            except FileNotFoundError:
-                if missing_ok:
-                    return None, b""
-                fail("required key file is missing")
-            except OSError:
-                fail("file cannot be opened without following links")
-            try:
-                st = os.fstat(fd)
-                if not stat.S_ISREG(st.st_mode):
-                    fail("file has an unsafe type")
-                if st.st_uid != os.getuid() or stat.S_IMODE(st.st_mode) not in allowed_modes:
-                    fail("file has unsafe ownership or mode")
-                chunks = []
-                while True:
-                    chunk = os.read(fd, 65536)
-                    if not chunk:
-                        break
-                    chunks.append(chunk)
-                return st, b"".join(chunks)
-            finally:
-                os.close(fd)
+        def validate_regular(st, modes, label):
+            if not stat.S_ISREG(st.st_mode) or st.st_uid != os.getuid():
+                fail(label + " has an unsafe type or owner")
+            if st.st_nlink != 1 or stat.S_IMODE(st.st_mode) not in modes:
+                fail(label + " has an unsafe link count or mode")
 
-        def read_expected_link(path, expected_target, allowed_modes):
-            try:
-                link_st = os.lstat(path)
-            except OSError:
-                fail("required deployment link is unavailable")
-            if not stat.S_ISLNK(link_st.st_mode) or link_st.st_uid != os.getuid():
-                fail("deployment path is not the expected owned symlink")
-            try:
-                link_value = os.readlink(path)
-            except OSError:
-                fail("deployment link cannot be read safely")
-            if link_value != expected_target:
-                fail("deployment link has an unexpected target")
-            return read_regular(expected_target, allowed_modes)
-
-        def fingerprint(record):
-            complete_record = record.rstrip(b"\r\n")
-            if not complete_record.strip():
+        def fingerprint_record(record):
+            if not record:
                 return None
             try:
                 result = subprocess.run(
                     [SSH_KEYGEN, "-E", "sha256", "-lf", "-"],
-                    input=complete_record + b"\n",
+                    input=record + b"\n",
                     stdout=subprocess.PIPE,
                     stderr=subprocess.DEVNULL,
                     check=False,
@@ -124,65 +90,304 @@ let
                 return None
             return fields[1]
 
-        def split_lines(data):
-            return data.splitlines(keepends=True)
+        def valid_content_bytes(content):
+            if not content or len(content) > MAX_RECORD_BYTES:
+                return False
+            return not any(byte < 0x20 and byte != 0x09 or byte == 0x7f for byte in content)
 
-        def locate_block(lines):
-            begins = [i for i, line in enumerate(lines) if line.rstrip(b"\r\n") == BEGIN]
-            ends = [i for i, line in enumerate(lines) if line.rstrip(b"\r\n") == END]
-            if not begins and not ends:
+        def parse_unrestricted(content, canonical_blob):
+            if not valid_content_bytes(content):
+                return False
+            match = RECORD_RE.fullmatch(content)
+            if match is None or match.group(1) != canonical_blob:
+                return False
+            return fingerprint_record(content) == PIN
+
+        def validate_canonical_bytes(data):
+            if data.endswith(b"\r\n"):
+                content = data[:-2]
+            elif data.endswith(b"\n"):
+                content = data[:-1]
+            else:
+                content = data
+            if b"\r" in content or b"\n" in content or not valid_content_bytes(content):
+                fail("decrypted public key has invalid record bytes")
+            match = RECORD_RE.fullmatch(content)
+            if match is None or not content.lstrip(b" \t").startswith(b"ssh-ed25519"):
+                fail("decrypted public key is not an unrestricted ssh-ed25519 record")
+            if fingerprint_record(content) != PIN:
+                fail("decrypted public key does not match the pinned fingerprint")
+            return content, match.group(1)
+
+        def available_bytes(data, canonical_blob):
+            records = data.split(b"\n")
+            last = len(records) - 1
+            for index, raw in enumerate(records):
+                terminated = index < last
+                content = raw[:-1] if terminated and raw.endswith(b"\r") else raw
+                if parse_unrestricted(content, canonical_blob):
+                    return True
+            return False
+
+        def append_payload(last_byte, canonical):
+            separator = b"" if not last_byte or last_byte == b"\n" else b"\n"
+            return separator + canonical + b"\n"
+
+        def write_once(fd, payload, writer=os.write):
+            while True:
+                try:
+                    written = writer(fd, payload)
+                    break
+                except InterruptedError:
+                    continue
+            if written != len(payload):
+                raise ShortWrite(written)
+            return written
+
+        def read_regular_path(path, modes):
+            try:
+                fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+            except OSError:
+                fail("required key file cannot be opened safely")
+            try:
+                st = os.fstat(fd)
+                validate_regular(st, modes, "required key file")
+                chunks = []
+                while True:
+                    chunk = os.read(fd, 65536)
+                    if not chunk:
+                        break
+                    chunks.append(chunk)
+                return b"".join(chunks)
+            finally:
+                os.close(fd)
+
+        def read_expected_link(path, expected_target, allowed_modes):
+            try:
+                link_st = os.lstat(path)
+            except OSError:
+                fail("required deployment link is unavailable")
+            if not stat.S_ISLNK(link_st.st_mode) or link_st.st_uid != os.getuid():
+                fail("deployment path is not the expected owned symlink")
+            try:
+                link_value = os.readlink(path)
+            except OSError:
+                fail("deployment link cannot be read safely")
+            if link_value != expected_target:
+                fail("deployment link has an unexpected target")
+            return read_regular_path(expected_target, allowed_modes)
+
+        def entry_stat(directory_fd, name, missing_ok=False):
+            try:
+                return os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+            except FileNotFoundError:
+                if missing_ok:
+                    return None
+                fail("managed file is missing")
+            except OSError:
+                fail("managed file cannot be inspected safely")
+
+        def same_entry(directory_fd, name, st):
+            current = entry_stat(directory_fd, name, True)
+            return current is not None and (current.st_dev, current.st_ino) == (st.st_dev, st.st_ino)
+
+        def open_home_ssh(target):
+            expected = os.path.join(HOME_DIR, ".ssh", "authorized_keys")
+            if os.path.normpath(target) != expected or os.environ.get("HOME") != HOME_DIR:
+                fail("managed path is outside the authoritative home")
+            try:
+                authoritative = pwd.getpwuid(os.getuid()).pw_dir
+            except KeyError:
+                fail("current user has no authoritative home")
+            if authoritative != HOME_DIR:
+                fail("configured and authoritative homes differ")
+
+            flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+            directory_fd = os.open("/", flags)
+            try:
+                parts = [part for part in HOME_DIR.split("/") if part]
+                for index, part in enumerate(parts):
+                    next_fd = os.open(part, flags, dir_fd=directory_fd)
+                    os.close(directory_fd)
+                    directory_fd = next_fd
+                    st = os.fstat(directory_fd)
+                    final = index == len(parts) - 1
+                    if final:
+                        allowed_owners = {os.getuid()}
+                    else:
+                        allowed_owners = {0}
+                        if TEST_ALLOW_USER_ANCESTORS:
+                            allowed_owners.add(os.getuid())
+                    if st.st_uid not in allowed_owners or stat.S_IMODE(st.st_mode) & 0o022:
+                        fail("home path has unsafe ownership or mode")
+                home_st = os.fstat(directory_fd)
+                if home_st.st_uid != os.getuid():
+                    fail("home directory has an unsafe owner")
+                ssh_fd = os.open(".ssh", flags, dir_fd=directory_fd)
+            except OSError:
+                os.close(directory_fd)
+                fail("home path cannot be opened without following links")
+            os.close(directory_fd)
+            ssh_st = os.fstat(ssh_fd)
+            if ssh_st.st_uid != os.getuid() or stat.S_IMODE(ssh_st.st_mode) != 0o700:
+                os.close(ssh_fd)
+                fail("SSH directory has unsafe ownership or mode")
+            return ssh_fd
+
+        def scan_fd(fd, canonical_blob):
+            os.lseek(fd, 0, os.SEEK_SET)
+            available = False
+            record = bytearray()
+            oversized = False
+            last_byte = b""
+            while True:
+                chunk = os.read(fd, 65536)
+                if not chunk:
+                    break
+                last_byte = chunk[-1:]
+                for byte in chunk:
+                    if byte == 0x0a:
+                        content = bytes(record[:-1] if record.endswith(b"\r") else record)
+                        if not oversized and parse_unrestricted(content, canonical_blob):
+                            available = True
+                        record.clear()
+                        oversized = False
+                    elif not oversized:
+                        record.append(byte)
+                        if len(record) > MAX_RECORD_BYTES + 1:
+                            record.clear()
+                            oversized = True
+            if record and not oversized and parse_unrestricted(bytes(record), canonical_blob):
+                available = True
+            return available, last_byte
+
+        def open_read_entry(ssh_fd, name, canonical_blob, missing_ok):
+            before = entry_stat(ssh_fd, name, missing_ok)
+            if before is None:
                 return None
-            if len(begins) != 1 or len(ends) != 1 or begins[0] >= ends[0]:
-                fail("managed markers are malformed or overlapping")
-            start, finish = begins[0], ends[0]
-            records = [line for line in lines[start + 1:finish] if line.strip()]
-            if len(records) != 1 or fingerprint(records[0]) != PIN:
-                fail("managed block must contain exactly the pinned key")
-            return start, finish, records[0]
+            try:
+                fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW, dir_fd=ssh_fd)
+            except OSError:
+                fail("authorized_keys cannot be opened safely")
+            try:
+                opened = os.fstat(fd)
+                validate_regular(opened, TARGET_MODES, "authorized_keys")
+                if (opened.st_dev, opened.st_ino) != (before.st_dev, before.st_ino):
+                    fail("authorized_keys changed during safe open")
+                available, last_byte = scan_fd(fd, canonical_blob)
+                after = os.fstat(fd)
+                validate_regular(after, TARGET_MODES, "authorized_keys")
+                if not same_entry(ssh_fd, name, after):
+                    fail("authorized_keys changed during safe read")
+                return available, last_byte
+            finally:
+                os.close(fd)
 
-        def transform(data, enabled, canonical):
-            lines = split_lines(data)
-            block = locate_block(lines)
-            outside_indexes = set(range(len(lines)))
-            managed_record = None
-            if block:
-                start, finish, managed_record = block
-                outside_indexes.difference_update(range(start, finish + 1))
-            matches = [(i, lines[i]) for i in sorted(outside_indexes) if fingerprint(lines[i]) == PIN]
-            variants = {line.rstrip(b"\r\n") for _, line in matches}
-            if len(variants) > 1:
-                fail("differing matching legacy records require manual resolution")
-            if block and variants and next(iter(variants)) != managed_record.rstrip(b"\r\n"):
-                fail("managed and legacy matching records differ")
+        def open_lock(ssh_fd, name):
+            flags = os.O_RDWR | os.O_NOFOLLOW
+            try:
+                fd = os.open(name, flags | os.O_CREAT | os.O_EXCL, 0o600, dir_fd=ssh_fd)
+            except FileExistsError:
+                try:
+                    fd = os.open(name, flags, dir_fd=ssh_fd)
+                except OSError:
+                    fail("lock file cannot be opened safely")
+            except OSError:
+                fail("lock file cannot be created safely")
+            st = os.fstat(fd)
+            validate_regular(st, {0o600}, "lock file")
+            if not same_entry(ssh_fd, name, st):
+                os.close(fd)
+                fail("lock file changed during safe open")
+            fcntl.flock(fd, fcntl.LOCK_EX)
+            st = os.fstat(fd)
+            validate_regular(st, {0o600}, "lock file")
+            if not same_entry(ssh_fd, name, st):
+                os.close(fd)
+                fail("lock file changed while locking")
+            return fd
 
-            # A disabled host never removes an existing record: the pinned key is
-            # also the SSH login key, so pruning it here could lock out a host
-            # whose SSH baseline is deliberately disabled.
-            if not enabled:
-                return data
+        def open_append_target(ssh_fd, name):
+            flags = os.O_RDWR | os.O_APPEND | os.O_NOFOLLOW
+            created = False
+            try:
+                fd = os.open(name, flags, dir_fd=ssh_fd)
+            except FileNotFoundError:
+                try:
+                    fd = os.open(name, flags | os.O_CREAT | os.O_EXCL, 0o600, dir_fd=ssh_fd)
+                    created = True
+                except FileExistsError:
+                    try:
+                        fd = os.open(name, flags, dir_fd=ssh_fd)
+                    except OSError:
+                        fail("authorized_keys changed during creation")
+                except OSError:
+                    fail("authorized_keys cannot be created safely")
+            except OSError:
+                fail("authorized_keys cannot be opened safely")
+            st = os.fstat(fd)
+            validate_regular(st, TARGET_MODES, "authorized_keys")
+            if not same_entry(ssh_fd, name, st):
+                os.close(fd)
+                fail("authorized_keys changed during append open")
+            return fd, created
 
-            remove = {i for i, _ in matches}
-            if block:
-                start, finish, _ = block
-                remove.update(range(start, finish + 1))
-            remaining = b"".join(line for i, line in enumerate(lines) if i not in remove)
+        def sync_created_directory(ssh_fd):
+            try:
+                os.fsync(ssh_fd)
+            except OSError:
+                fail("SSH directory cannot be synchronized")
 
-            record = managed_record
-            if record is None and matches:
-                record = matches[0][1]
-            if record is None:
-                record = canonical
-            record = record.rstrip(b"\r\n") + b"\n"
-            managed = BEGIN + b"\n" + record + END + b"\n"
-            if block:
-                prefix = b"".join(lines[:block[0]])
-                suffix = b"".join(lines[block[1] + 1:] if block else [])
-                suffix = b"".join(
-                    line for line in split_lines(suffix) if fingerprint(line) != PIN
-                )
-                return prefix + managed + suffix
-            separator = b"" if not remaining or remaining.endswith(b"\n") else b"\n"
-            return remaining + separator + managed
+        def manage_authorized(target, canonical_data, dry_run):
+            require_primitives()
+            canonical, canonical_blob = validate_canonical_bytes(canonical_data)
+            ssh_fd = open_home_ssh(target)
+            name = "authorized_keys"
+            try:
+                observed = open_read_entry(ssh_fd, name, canonical_blob, True)
+                if observed is not None and observed[0]:
+                    return "no-op"
+                if dry_run:
+                    return "would append"
+
+                lock_fd = open_lock(ssh_fd, name + ".lock")
+                try:
+                    target_fd, created = open_append_target(ssh_fd, name)
+                    try:
+                        target_st = os.fstat(target_fd)
+                        available, last_byte = scan_fd(target_fd, canonical_blob)
+                        TEST_HOOK("before-write")
+                        if not same_entry(ssh_fd, name, target_st):
+                            fail("authorized_keys changed before append")
+                        if available:
+                            return "no-op"
+                        payload = append_payload(last_byte, canonical)
+                        try:
+                            write_once(target_fd, payload)
+                        except ShortWrite:
+                            os.fsync(target_fd)
+                            if created:
+                                sync_created_directory(ssh_fd)
+                            fail("append was incomplete")
+                        except OSError:
+                            if created:
+                                sync_created_directory(ssh_fd)
+                            fail("append failed")
+                        os.fsync(target_fd)
+                        if created:
+                            sync_created_directory(ssh_fd)
+                    finally:
+                        os.close(target_fd)
+                    TEST_HOOK("before-final-read")
+                    final = open_read_entry(ssh_fd, name, canonical_blob, False)
+                    if not final[0]:
+                        fail("final safe read did not observe the pinned key")
+                    TEST_HOOK("after-final-read")
+                    return "appended"
+                finally:
+                    os.close(lock_fd)
+            finally:
+                os.close(ssh_fd)
 
         def main():
             parser = argparse.ArgumentParser()
@@ -191,65 +396,14 @@ let
             parser.add_argument("--authorized", required=True)
             parser.add_argument("--public-key")
             args = parser.parse_args()
-            parent = os.path.dirname(args.authorized)
-            if not validate_dir(parent, args.enabled, args.dry_run):
+            if not args.enabled:
                 return
-
-            canonical = None
-            if args.enabled:
-                _, public = read_expected_link(args.public_key, PUBLIC_KEY_TARGET, {0o644})
-                records = [line for line in split_lines(public) if line.strip()]
-                if len(records) != 1 or fingerprint(records[0]) != PIN:
-                    fail("decrypted public key does not match the pinned fingerprint")
-                canonical = records[0]
-
-            original_st, original = read_regular(args.authorized, {0o600, 0o644}, True)
-            updated = transform(original, args.enabled, canonical)
-            if updated == original or args.dry_run:
-                return
-
-            lock_path = args.authorized + ".lock"
-            lock_flags = os.O_RDWR | os.O_CREAT | getattr(os, "O_NOFOLLOW", 0)
-            lock_fd = os.open(lock_path, lock_flags, 0o600)
-            try:
-                lock_st = os.fstat(lock_fd)
-                if not stat.S_ISREG(lock_st.st_mode) or lock_st.st_uid != os.getuid():
-                    fail("lock file has unsafe ownership or type")
-                os.fchmod(lock_fd, 0o600)
-                fcntl.flock(lock_fd, fcntl.LOCK_EX)
-                current_st, current = read_regular(args.authorized, {0o600, 0o644}, True)
-                original_id = None if original_st is None else (original_st.st_dev, original_st.st_ino)
-                current_id = None if current_st is None else (current_st.st_dev, current_st.st_ino)
-                if current_id != original_id or current != original:
-                    fail("concurrent external edit detected")
-                fd, temporary = tempfile.mkstemp(prefix=".authorized_keys.", dir=parent)
-                try:
-                    os.fchmod(fd, 0o600)
-                    os.write(fd, updated)
-                    os.fsync(fd)
-                    os.close(fd)
-                    fd = -1
-                    verify_st, verify = read_regular(args.authorized, {0o600, 0o644}, True)
-                    verify_id = None if verify_st is None else (verify_st.st_dev, verify_st.st_ino)
-                    if verify_id != original_id or verify != original:
-                        fail("concurrent external edit detected")
-                    os.replace(temporary, args.authorized)
-                    temporary = None
-                    directory_fd = os.open(parent, os.O_RDONLY)
-                    try:
-                        os.fsync(directory_fd)
-                    finally:
-                        os.close(directory_fd)
-                finally:
-                    if fd >= 0:
-                        os.close(fd)
-                    if temporary is not None:
-                        try:
-                            os.unlink(temporary)
-                        except FileNotFoundError:
-                            pass
-            finally:
-                os.close(lock_fd)
+            require_primitives()
+            public = read_expected_link(args.public_key, PUBLIC_KEY_TARGET, {0o644})
+            canonical, _ = validate_canonical_bytes(public)
+            result = manage_authorized(args.authorized, canonical, args.dry_run)
+            if args.dry_run:
+                print(result)
 
         if __name__ == "__main__":
             main()
@@ -315,12 +469,8 @@ lib.mkMerge [
       else
         lib.hm.dag.entryAfter [ "writeBoundary" ] "";
     home.activation.authorizedKeys = lib.hm.dag.entryAfter [ "sops-nix-sync" ] ''
-      dry_run=
-      if [ -n "''${DRY_RUN_CMD:-}" ]; then
-        dry_run=--dry-run
-      fi
-      ${authorizedKeysManager}/bin/manage-authorized-keys \
-        $dry_run ${activationArgs} \
+      $DRY_RUN_CMD ${authorizedKeysManager}/bin/manage-authorized-keys \
+        ${activationArgs} \
         --authorized ${lib.escapeShellArg authorizedKeys}
     '';
   }
