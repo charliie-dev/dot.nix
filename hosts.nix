@@ -1,5 +1,6 @@
 # hosts.nix — All host definitions in one place
-# enableSecrets: per-host flag, set to false for first-time deploys on new machines
+# enableSecrets: application secrets (Doppler token and process-scoped wrappers)
+# enableSshSecrets: SOPS SSH baseline; defaults to enableSecrets when unspecified
 # sharedConfig: point to another host name to reuse its homeManagerConfiguration
 # gpu: enable the nixGL/NVIDIA variant of the generic Linux platform
 {
@@ -54,21 +55,25 @@
     system = "x86_64-linux";
     roles = [ "dev-core" ];
     homeDirectory = "/home/charles";
-    enableSecrets = true;
+    enableSecrets = false;
+    enableSshSecrets = true;
     silent = true;
   };
-  # Shared aliases — reuse RDSrv01's eval result
+  # Shared aliases — application secrets stay off while the SSH baseline is inherited.
   "charles@ra-lab" = {
     sharedConfig = "charles@RDSrv01";
     system = "x86_64-linux";
+    enableSecrets = false;
   };
   "charles@nate-test" = {
     sharedConfig = "charles@RDSrv01";
     system = "x86_64-linux";
+    enableSecrets = false;
   };
   "charles@testvm" = {
     sharedConfig = "charles@RDSrv01";
     system = "x86_64-linux";
+    enableSecrets = false;
   };
   "charles@dcf-dev" = {
     sharedConfig = "charles@RDSrv01";

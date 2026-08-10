@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  enableSshSecrets ? false,
   ...
 }:
 {
@@ -24,7 +25,9 @@
     includes = [
       "~/.ssh/override_config"
       "~/.ssh/config.d/home-manager.conf"
-      # "${config.age.secrets.ssh_host_config.path}" # `sunlei/zsh-ssh` can't resolve absolute path
+    ]
+    ++ lib.optionals enableSshSecrets [
+      # `sunlei/zsh-ssh` cannot resolve an absolute deployment path.
       "~/.ssh/host_configuration"
     ];
     settings."*" = {

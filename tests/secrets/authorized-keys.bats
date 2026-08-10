@@ -60,8 +60,10 @@ PY
   grep -Fq '[SSH_KEYGEN, "-E", "sha256", "-lf", "-"]' "$MODULE"
   grep -Fq 'input=complete_record + b"\n"' "$MODULE"
   grep -Fq 'stderr=subprocess.DEVNULL' "$MODULE"
-  ! grep -q 'shell=True' "$MODULE"
-  ! grep -q 'KEY_PREFIXES' "$MODULE"
+  run grep -q 'shell=True' "$MODULE"
+  [ "$status" -eq 1 ]
+  run grep -q 'KEY_PREFIXES' "$MODULE"
+  [ "$status" -eq 1 ]
 }
 
 @test "quoted option fake key token cannot hide the actual pinned identity" {
@@ -142,7 +144,7 @@ PY
   [ "$dry_line" -lt "$lock_line" ]
 }
 
-@test "disabled invocation does not require decrypted public material" {
-  grep -q 'activationArgs = lib.optionalString enableSecrets' "$MODULE"
+@test "SSH-disabled invocation does not require decrypted public material" {
+  grep -q 'activationArgs = lib.optionalString enableSshSecrets' "$MODULE"
   grep -q 'if args.enabled:' "$MODULE"
 }

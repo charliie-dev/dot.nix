@@ -2,9 +2,12 @@
   config,
   pkgs,
   lib,
+  enableSecrets ? false,
+  enableSshSecrets ? enableSecrets,
   ...
 }:
 let
+  sopsEnabled = enableSecrets || enableSshSecrets;
   upstreamSopsProgram = config.launchd.agents.sops-nix.config.Program;
   sopsLocked = pkgs.writeShellApplication {
     name = "sops-nix-locked";
@@ -123,6 +126,8 @@ lib.mkIf pkgs.stdenv.isDarwin {
         );
       };
     };
+  }
+  // lib.optionalAttrs sopsEnabled {
     # Disable the upstream asynchronous agent. The distinct login agent and
     # activation node both execute this same lock-serialized decrypt path.
     sops-nix = {

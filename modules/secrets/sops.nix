@@ -4,9 +4,11 @@
   lib,
   src,
   enableSecrets ? false,
+  enableSshSecrets ? enableSecrets,
   ...
 }:
 let
+  sopsEnabled = enableSecrets || enableSshSecrets;
   pinnedFingerprint = "SHA256:DdWGvlMmBCptRDumMUS7sUjoD/W0BCOhLTQnF5Iw+m8";
   sshDir = "${config.home.homeDirectory}/.ssh";
   authorizedKeys = "${sshDir}/authorized_keys";
@@ -154,8 +156,8 @@ let
                 fail("managed and legacy matching records differ")
 
             # A disabled host never removes an existing record: the pinned key is
-            # also the SSH login key, so pruning it here locks the deployer out of
-            # any host whose hosts.nix entry sets enableSecrets = false.
+            # also the SSH login key, so pruning it here could lock out a host
+            # whose SSH baseline is deliberately disabled.
             if not enabled:
                 return data
 
@@ -254,7 +256,7 @@ let
       ''} "$@"
     '';
   };
-  activationArgs = lib.optionalString enableSecrets "--enabled --public-key ${lib.escapeShellArg publicKey}";
+  activationArgs = lib.optionalString enableSshSecrets "--enabled --public-key ${lib.escapeShellArg publicKey}";
   sopsSyncLocked = pkgs.writeShellApplication {
     name = "sops-nix-sync-locked";
     runtimeInputs = [ pkgs.python3 ];
@@ -294,7 +296,7 @@ lib.mkMerge [
   {
     home.packages = [ authorizedKeysManager ];
     home.activation.sops-nix-sync =
-      if enableSecrets then
+      if sopsEnabled then
         lib.hm.dag.entryAfter
           [
             (if pkgs.stdenv.isDarwin then "setupLaunchAgents" else "reloadSystemd")
@@ -322,33 +324,32 @@ lib.mkMerge [
         --authorized ${lib.escapeShellArg authorizedKeys}
     '';
   }
-  (lib.mkIf enableSecrets {
+  (lib.mkIf sopsEnabled {
     sops = {
       defaultSopsFile = "${src}/conf.d/sops/secrets.yaml";
       age.keyFile = "${config.xdg.configHome}/age/keys.txt";
-      secrets = {
-        ssh_ed25519 = {
-          path = "${sshDir}/id_ed25519";
-          mode = "0600";
-        };
-        ssh_ed25519_pub = {
-          path = publicKey;
-          mode = "0644";
-        };
-        host_configuration.path = "${sshDir}/host_configuration";
-        allowed_signers.path = "${config.xdg.configHome}/git/allowed_signers";
-        doppler_token = {
-          path = "${config.xdg.dataHome}/doppler/token";
-          mode = "0400";
-        };
-      };
     };
 
     systemd.user.services.sops-nix.Service = lib.mkIf pkgs.stdenv.isLinux {
       Type = lib.mkForce "oneshot";
     };
 
+    # The explicit synchronous node above owns decryption ordering.
     home.activation.sops-nix = lib.mkForce (lib.hm.dag.entryAfter [ "writeBoundary" ] "");
+  })
+  (lib.mkIf enableSshSecrets {
+    sops.secrets = {
+      ssh_ed25519 = {
+        path = "${sshDir}/id_ed25519";
+        mode = "0600";
+      };
+      ssh_ed25519_pub = {
+        path = publicKey;
+        mode = "0644";
+      };
+      host_configuration.path = "${sshDir}/host_configuration";
+      allowed_signers.path = "${config.xdg.configHome}/git/allowed_signers";
+    };
 
     programs = {
       git = {
@@ -356,6 +357,12 @@ lib.mkMerge [
         settings.gpg.ssh.allowedSignersFile = config.sops.secrets.allowed_signers.path;
       };
       ssh.settings."*".IdentityFile = config.sops.secrets.ssh_ed25519.path;
+    };
+  })
+  (lib.mkIf enableSecrets {
+    sops.secrets.doppler_token = {
+      path = "${config.xdg.dataHome}/doppler/token";
+      mode = "0400";
     };
   })
 ]

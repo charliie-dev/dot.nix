@@ -1,14 +1,18 @@
 #!/usr/bin/env bats
+# shellcheck disable=SC2016 # literal shell fragments are the assertions
 
 REPO="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
 
-@test "Darwin disables upstream async agent and defines locked login agent" {
+@test "Darwin gates the disabled upstream agent and locked login agent on either secret group" {
   file="$REPO/modules/platform/darwin.nix"
+  grep -q 'sopsEnabled = enableSecrets || enableSshSecrets' "$file"
+  grep -q 'lib.optionalAttrs sopsEnabled' "$file"
   grep -q 'sops-nix = {' "$file"
   grep -q 'enable = lib.mkForce false' "$file"
   grep -q 'sops-nix-sync = {' "$file"
   grep -q 'fcntl.LOCK_EX' "$file"
-  ! grep -q 'stamp' "$file"
+  run grep -q 'stamp' "$file"
+  [ "$status" -eq 1 ]
 }
 
 @test "Darwin lock wrapper supplies system PATH before exec" {
@@ -29,15 +33,20 @@ REPO="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
   grep -q '\$DRY_RUN_CMD.*sops-nix-sync.config.Program' "$file"
 }
 
-@test "authorized key consumer is ordered after synchronous SOPS" {
+@test "security-sensitive activation ordering is synchronous SOPS then authorized keys then Docker" {
   grep -q 'home.activation.authorizedKeys = lib.hm.dag.entryAfter \[ "sops-nix-sync" \]' \
     "$REPO/modules/secrets/sops.nix"
+  grep -q 'activation.dockerCredentials = lib.hm.dag.entryAfter \[ "authorizedKeys" \]' \
+    "$REPO/modules/runtime/docker.nix"
 }
 
-@test "new hosts default disabled and intended direct hosts are explicit" {
+@test "application and SSH secret defaults and explicit shared-host policy are wired" {
   grep -q 'enableSecrets = hostCfg.enableSecrets or false' "$REPO/flake.nix"
-  [ "$(grep -c 'enableSecrets = true' "$REPO/hosts.nix")" -eq 5 ]
-  [ "$(grep -c 'enableSecrets = false' "$REPO/hosts.nix")" -eq 3 ]
+  grep -q 'enableSshSecrets = hostCfg.enableSshSecrets or enableSecrets' "$REPO/flake.nix"
+  grep -q '^[[:space:]]*enableSshSecrets$' "$REPO/flake.nix"
+  [ "$(grep -c 'enableSecrets = true' "$REPO/hosts.nix")" -eq 4 ]
+  [ "$(grep -c 'enableSecrets = false' "$REPO/hosts.nix")" -eq 7 ]
+  [ "$(grep -c 'enableSshSecrets = true' "$REPO/hosts.nix")" -eq 1 ]
 }
 
 @test "activation mutations are dry-run guarded" {

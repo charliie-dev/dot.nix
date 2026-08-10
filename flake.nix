@@ -77,6 +77,7 @@
         _name: hostCfg:
         let
           enableSecrets = hostCfg.enableSecrets or false;
+          enableSshSecrets = hostCfg.enableSshSecrets or enableSecrets;
           isGpu = hostCfg.gpu or false;
           # Stub packages that delegate to upstream-tracked binaries kept in
           # $HOME/.local/share/<name>/bin/<name>. home-manager hardcodes
@@ -178,7 +179,12 @@
             config = pkgsConfig;
           };
           extraSpecialArgs = {
-            inherit src enableSecrets nixgl;
+            inherit
+              src
+              enableSecrets
+              enableSshSecrets
+              nixgl
+              ;
             gpuEnabled = isGpu;
             inherit (hostCfg) roles;
           };
@@ -229,5 +235,6 @@
       });
 
       homeConfigurations = directConfigs // sharedConfigs;
+      lib.mkHomeConfiguration = mkHost;
     };
 }

@@ -1,5 +1,11 @@
-{ lib, ... }:
-
+{
+  config,
+  lib,
+  ...
+}:
+let
+  enableSshSecrets = builtins.elem "~/.ssh/host_configuration" config.programs.ssh.includes;
+in
 {
   setOptions = [
     "always_to_end"
@@ -44,9 +50,11 @@
         fzf-preview 'echo ''${(P)word}'
       zstyle ':fzf-tab:complete:(alias|unalias):*' fzf-preview ""
 
-      # Match an SSH config block by Host or HostName.
-      zstyle ':fzf-tab:complete:(ssh|scp|rsync):*' fzf-preview \
-        'awk -v w="''${word% }" '"'"'/^Host /{if(m){print b;d=1;exit}b=$0;m=($2==w);next}{b=b"\n"$0;if($1=="HostName"&&$2==w)m=1}END{if(m&&!d)print b}'"'"' ~/.ssh/host_configuration 2>/dev/null | bat --color=always --style=plain --language=ssh_config'
+      ${lib.optionalString enableSshSecrets ''
+        # Match an SSH config block by Host or HostName.
+        zstyle ':fzf-tab:complete:(ssh|scp|rsync):*' fzf-preview \
+          'awk -v w="''${word% }" '"'"'/^Host /{if(m){print b;d=1;exit}b=$0;m=($2==w);next}{b=b"\n"$0;if($1=="HostName"&&$2==w)m=1}END{if(m&&!d)print b}'"'"' ~/.ssh/host_configuration 2>/dev/null | bat --color=always --style=plain --language=ssh_config'
+      ''}
 
       zstyle ':fzf-tab:complete:(\\|)run-help:*' fzf-preview \
         'MANPAGER=cat MANWIDTH=$FZF_PREVIEW_COLUMNS man ''${word% } 2>/dev/null'
