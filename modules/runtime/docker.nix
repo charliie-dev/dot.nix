@@ -265,9 +265,13 @@ in
               | sort -u
           }
 
+          count_fingerprints() {
+            printf '%s\n' "$1" | awk 'NF { count++ } END { print count + 0 }'
+          }
+
           require_one_fingerprint() {
             fingerprints=$1
-            fingerprint_count=$(printf '%s\n' "$fingerprints" | awk 'NF { count++ } END { print count + 0 }')
+            fingerprint_count=$(count_fingerprints "$fingerprints")
             [ "$fingerprint_count" -eq 1 ] \
               || die "expected exactly one usable secret encryption key, found $fingerprint_count"
             printf '%s\n' "$fingerprints"
@@ -295,20 +299,32 @@ in
             fi
 
             if [ -n "$recipient" ]; then
-              key_fpr=$(require_one_fingerprint "$(usable_fingerprints_for_recipient "$recipient")")
+              available=$(usable_fingerprints_for_recipient "$recipient")
             else
               encrypted_entry=$(find "$PASSWORD_STORE_DIR" -name '*.gpg' -print -quit)
               [ -z "$encrypted_entry" ] \
                 || die "password store has encrypted entries but no logical .gpg-id recipient"
-              key_fpr=$(require_one_fingerprint "$(usable_fingerprints_for_uid)")
-              pass init "$key_fpr" >/dev/null
-              require_private_file "$gpg_id"
-              initialized_recipient=$(read_gpg_recipient "$gpg_id")
-              [ -n "$initialized_recipient" ] \
-                || die "pass init did not create a logical .gpg-id recipient"
-              require_one_fingerprint "$(usable_fingerprints_for_recipient "$initialized_recipient")" \
-                >/dev/null
+              available=$(usable_fingerprints_for_uid)
             fi
+
+            # A host that deploys no secrets has no decrypted GPG key to initialise the
+            # store with. Skip rather than die: this activation must not gate a switch on
+            # hosts whose hosts.nix entry sets enableSecrets = false.
+            if [ "$(count_fingerprints "$available")" -eq 0 ]; then
+              echo "docker credentials: no usable secret encryption key; skipping password store" >&2
+              return 0
+            fi
+
+            key_fpr=$(require_one_fingerprint "$available")
+            [ -z "$recipient" ] || return 0
+
+            pass init "$key_fpr" >/dev/null
+            require_private_file "$gpg_id"
+            initialized_recipient=$(read_gpg_recipient "$gpg_id")
+            [ -n "$initialized_recipient" ] \
+              || die "pass init did not create a logical .gpg-id recipient"
+            require_one_fingerprint "$(usable_fingerprints_for_recipient "$initialized_recipient")" \
+              >/dev/null
           }
         ''}
 
