@@ -25,12 +25,12 @@ let
     credentialPackages
     ++ [
       pkgs.coreutils
+      pkgs.gawk
       pkgs.jq
       pkgs.util-linux
     ]
     ++ lib.optionals isLinux [
       pkgs.findutils
-      pkgs.gawk
       pkgs.gnupg
       pkgs.gnused
     ]
