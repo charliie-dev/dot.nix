@@ -98,12 +98,59 @@ assert_exact_key() {
   assert_exact_key
 }
 
+@test "Docker Hub token-like registry identifiers are accepted and idempotent" {
+  run_bootstrap
+  [ "$status" -eq 0 ]
+  cat > "$DOCKER_CONFIG" <<'JSON'
+{
+  "auths": {
+    "https://index.docker.io/v1/": {},
+    "/access-token": {},
+    "/refresh-token": {}
+  },
+  "credsStore": "pass"
+}
+JSON
+  chmod 600 "$DOCKER_CONFIG"
+  run_bootstrap
+  [ "$status" -eq 0 ]
+  jq -e '
+    .credsStore == "pass"
+    and .auths["https://index.docker.io/v1/"] == {}
+    and .auths["/access-token"] == {}
+    and .auths["/refresh-token"] == {}
+  ' "$DOCKER_CONFIG" >/dev/null
+  before="$(config_hash)"
+  run_bootstrap
+  [ "$status" -eq 0 ]
+  [ "$(config_hash)" = "$before" ]
+}
+
+@test "credential fields beneath Docker Hub token-like registry identifiers remain rejected" {
+  run_bootstrap
+  [ "$status" -eq 0 ]
+  cases=(
+    '{"credsStore":"pass","auths":{"https://index.docker.io/v1/":{"auth":"SENTINEL_PRIVATE"}}}'
+    '{"credsStore":"pass","auths":{"/access-token":{"identityToken":"SENTINEL_PRIVATE"}}}'
+    '{"credsStore":"pass","auths":{"/refresh-token":{"nested":[{"RefreshTOKEN":"SENTINEL_PRIVATE"}]}}}'
+  )
+  for document in "${cases[@]}"; do
+    printf '%s\n' "$document" > "$DOCKER_CONFIG"
+    chmod 600 "$DOCKER_CONFIG"
+    before="$(config_hash)"
+    run_bootstrap
+    [ "$status" -ne 0 ]
+    [ "$(config_hash)" = "$before" ]
+    [[ "$output" != *SENTINEL_PRIVATE* ]]
+  done
+}
+
 @test "inline auth and token fields are rejected unconditionally without disclosure" {
   cases=(
     '{"auths":{"registry.invalid":{"auth":"SENTINEL_PRIVATE"}}}'
     '{"credsStore":"pass","auths":{"registry.invalid":{"identityToken":"SENTINEL_PRIVATE"}}}'
     '{"credHelpers":{"registry.invalid":"gcr"},"auths":{"registry.invalid":{"nested":{"RefreshTOKEN":"SENTINEL_PRIVATE"}}}}'
-    '{"auths":{"registry.invalid":[{"AUTH":"SENTINEL_PRIVATE"}]}}'
+    '{"auths":{"registry.invalid":{"entries":[{"AUTH":"SENTINEL_PRIVATE"}]}}}'
   )
   for document in "${cases[@]}"; do
     mkdir -p "$(dirname "$DOCKER_CONFIG")"
@@ -120,7 +167,11 @@ assert_exact_key() {
 }
 
 @test "malformed auths and credential helper types fail before GPG mutation" {
-  for document in '{"auths":[]}' '{"credHelpers":[]}' '{"credsStore":{}}'; do
+  for document in \
+    '{"auths":[]}' \
+    '{"auths":{"registry.invalid":[]}}' \
+    '{"credHelpers":[]}' \
+    '{"credsStore":{}}'; do
     mkdir -p "$(dirname "$DOCKER_CONFIG")"
     chmod 700 "$(dirname "$DOCKER_CONFIG")"
     printf '%s\n' "$document" > "$DOCKER_CONFIG"

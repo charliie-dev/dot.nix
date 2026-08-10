@@ -165,7 +165,9 @@ let
                     return any(credential_fields(child) for child in value)
                 return False
 
-            if credential_fields(auths):
+            if any(not isinstance(value, dict) for value in auths.values()):
+                fail("Docker auth registry entries must be objects")
+            if any(credential_fields(value) for value in auths.values()):
                 fail("inline Docker auth/token credentials are not allowed")
             if store not in (None, "", args.store):
                 fail("Docker config has a conflicting credsStore")
