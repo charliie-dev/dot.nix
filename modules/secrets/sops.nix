@@ -153,13 +153,17 @@ let
             if block and variants and next(iter(variants)) != managed_record.rstrip(b"\r\n"):
                 fail("managed and legacy matching records differ")
 
+            # A disabled host never removes an existing record: the pinned key is
+            # also the SSH login key, so pruning it here locks the deployer out of
+            # any host whose hosts.nix entry sets enableSecrets = false.
+            if not enabled:
+                return data
+
             remove = {i for i, _ in matches}
             if block:
                 start, finish, _ = block
                 remove.update(range(start, finish + 1))
             remaining = b"".join(line for i, line in enumerate(lines) if i not in remove)
-            if not enabled:
-                return remaining
 
             record = managed_record
             if record is None and matches:

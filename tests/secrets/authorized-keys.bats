@@ -111,7 +111,7 @@ managed = g['BEGIN'] + b'\n' + adversarial + g['END'] + b'\n'
 assert managed in enabled
 assert enabled.count(actual_body) == 1
 disabled = transform(source, False, None)
-assert disabled == b'before\nafter\n'
+assert disabled == source, 'disabled hosts must not prune the pinned login key'
 unrelated_source = b'before\n' + unrelated + b'after\n'
 assert transform(unrelated_source, False, None) == unrelated_source
 print('quoted-option-fingerprint-ok')
