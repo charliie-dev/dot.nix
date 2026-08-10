@@ -147,8 +147,6 @@ subprocess.run([ns['SSH_KEYGEN'], '-q', '-t', 'ed25519', '-N', '', '-f', key], c
 record = open(key + '.pub', 'rb').read().strip()
 g = ns['manage_authorized'].__globals__
 g['PIN'] = ns['fingerprint_record'](record); g['HOME_DIR'] = home
-assert g['TEST_ALLOW_USER_ANCESTORS'] is False
-g['TEST_ALLOW_USER_ANCESTORS'] = True
 ns['pwd'].getpwuid = lambda uid: types.SimpleNamespace(pw_dir=home)
 os.environ['HOME'] = home
 target = os.path.join(ssh, 'authorized_keys')
@@ -262,7 +260,7 @@ ns = runpy.run_path(sys.argv[1]); g = ns['manage_authorized'].__globals__
 base = tempfile.mkdtemp(dir=os.environ['SEC03_TEST_TMPDIR'])
 home = os.path.join(base, 'home'); ssh = os.path.join(home, '.ssh')
 os.makedirs(ssh, mode=0o700); os.chmod(home, 0o700); os.chmod(ssh, 0o700)
-g['HOME_DIR'] = home; g['TEST_ALLOW_USER_ANCESTORS'] = True
+g['HOME_DIR'] = home
 ns['pwd'].getpwuid = lambda uid: types.SimpleNamespace(pw_dir=home)
 os.environ['HOME'] = home
 key = os.path.join(base, 'key')
@@ -305,12 +303,22 @@ PY
 @test "unsafe directory target and lock metadata are rejected without repair" {
   manager_parts
   run "$python" - "$script" <<'PY'
-import os, runpy, subprocess, sys, tempfile, types
+import os, runpy, stat, subprocess, sys, tempfile, types
 ns = runpy.run_path(sys.argv[1]); g = ns['manage_authorized'].__globals__
+component = ns['validate_home_component']
+other_uid = os.getuid() + 1000
+component(types.SimpleNamespace(st_uid=other_uid, st_mode=stat.S_IFDIR | 0o755), False)
+for fixture, final in [
+    (types.SimpleNamespace(st_uid=other_uid, st_mode=stat.S_IFDIR | 0o775), False),
+    (types.SimpleNamespace(st_uid=other_uid, st_mode=stat.S_IFDIR | 0o755), True),
+]:
+    try: component(fixture, final)
+    except SystemExit: pass
+    else: raise AssertionError('unsafe home component accepted')
 base = tempfile.mkdtemp(dir=os.environ['SEC03_TEST_TMPDIR'])
 home = os.path.join(base, 'home'); ssh = os.path.join(home, '.ssh')
 os.makedirs(ssh, mode=0o700); os.chmod(home, 0o700); os.chmod(ssh, 0o700)
-g['HOME_DIR'] = home; g['TEST_ALLOW_USER_ANCESTORS'] = True
+g['HOME_DIR'] = home
 ns['pwd'].getpwuid = lambda uid: types.SimpleNamespace(pw_dir=home)
 os.environ['HOME'] = home
 key = os.path.join(base, 'key')
@@ -344,7 +352,7 @@ ns = runpy.run_path(sys.argv[1]); g = ns['manage_authorized'].__globals__
 base = tempfile.mkdtemp(dir=os.environ['SEC03_TEST_TMPDIR'])
 home = os.path.join(base, 'home'); ssh = os.path.join(home, '.ssh')
 os.makedirs(ssh, mode=0o700); os.chmod(home, 0o700); os.chmod(ssh, 0o700)
-g['HOME_DIR'] = home; g['TEST_ALLOW_USER_ANCESTORS'] = True
+g['HOME_DIR'] = home
 ns['pwd'].getpwuid = lambda uid: types.SimpleNamespace(pw_dir=home)
 os.environ['HOME'] = home
 key = os.path.join(base, 'key')

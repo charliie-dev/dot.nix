@@ -40,7 +40,6 @@ let
         )
         MAX_RECORD_BYTES = 4096
         TARGET_MODES = {0o600, 0o644}
-        TEST_ALLOW_USER_ANCESTORS = False
         TEST_HOOK = lambda event: None
 
         class ShortWrite(Exception):
@@ -63,6 +62,12 @@ let
                 fail(label + " has an unsafe type or owner")
             if st.st_nlink != 1 or stat.S_IMODE(st.st_mode) not in modes:
                 fail(label + " has an unsafe link count or mode")
+
+        def validate_home_component(st, final):
+            if not stat.S_ISDIR(st.st_mode) or stat.S_IMODE(st.st_mode) & 0o022:
+                fail("home path has an unsafe type or mode")
+            if final and st.st_uid != os.getuid():
+                fail("home directory has an unsafe owner")
 
         def fingerprint_record(record):
             if not record:
@@ -211,18 +216,7 @@ let
                     os.close(directory_fd)
                     directory_fd = next_fd
                     st = os.fstat(directory_fd)
-                    final = index == len(parts) - 1
-                    if final:
-                        allowed_owners = {os.getuid()}
-                    else:
-                        allowed_owners = {0}
-                        if TEST_ALLOW_USER_ANCESTORS:
-                            allowed_owners.add(os.getuid())
-                    if st.st_uid not in allowed_owners or stat.S_IMODE(st.st_mode) & 0o022:
-                        fail("home path has unsafe ownership or mode")
-                home_st = os.fstat(directory_fd)
-                if home_st.st_uid != os.getuid():
-                    fail("home directory has an unsafe owner")
+                    validate_home_component(st, index == len(parts) - 1)
                 ssh_fd = os.open(".ssh", flags, dir_fd=directory_fd)
             except OSError:
                 os.close(directory_fd)
