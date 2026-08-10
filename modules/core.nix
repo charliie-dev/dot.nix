@@ -142,11 +142,6 @@
     };
     activation = {
       initDataDirs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-        # GPG
-        mkdir -p ${config.xdg.dataHome}/gnupg
-        chmod 700 ${config.xdg.dataHome}/gnupg
-
-        # Tool data dirs
         mkdir -p ${config.xdg.dataHome}/dotnet
       '';
       migrateZshHistory = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
