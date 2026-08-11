@@ -22,13 +22,13 @@ _: {
         whitespace = "blank-at-eol,blank-at-eof,space-before-tab,tabwidth=4";
         autocrlf = false; # set to true if on Windows_NT
       };
-      # dont use this, this will cause some cli use ssh over https, but those
-      # cli cant communicate w/ ssh-agent, so git ssh auth will fail.
-      # url = {
-      #   "ssh://git@github.com/" = {
-      #     insteadOf = "https://github.com/";
-      #   };
-      # };
+      # Go discovers private GitHub modules through HTTPS. Rewrite only the
+      # private organization so unrelated GitHub tools keep using HTTPS.
+      url = {
+        "ssh://git@github.com/nics-dp/" = {
+          insteadOf = "https://github.com/nics-dp/";
+        };
+      };
       gpg.ssh = { };
       gc = {
         auto = 256;
