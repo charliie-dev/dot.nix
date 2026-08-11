@@ -76,15 +76,7 @@
         "aqua:docker/buildx" = "latest";
 
         # code agents tools
-        # codebase-memory-mcp: C static binary shipped via GitHub releases.
-        # `matching = "ui"` picks the embedded-UI asset
-        # (codebase-memory-mcp-ui-<os>-<arch>.tar.gz) instead of the headless
-        # default, so `--ui=true` can serve the HTTP dashboard; platform arch is
-        # still autodetected. github backend also verifies artifact attestation.
-        "github:DeusData/codebase-memory-mcp" = {
-          version = "latest";
-          matching = "ui";
-        };
+        "github:DeusData/codebase-memory-mcp" = "latest";
         "npm:@colbymchenry/codegraph" = "latest";
         "npm:@google-cloud/backupdr-mcp" = "latest";
         "npm:@google-cloud/gcloud-mcp" = "latest";
