@@ -27,6 +27,7 @@ let
     /bin/launchctl setenv GROK_TELEMETRY_ENABLED "${env.GROK_TELEMETRY_ENABLED}"
     /bin/launchctl setenv GROK_FEEDBACK_ENABLED "${env.GROK_FEEDBACK_ENABLED}"
     /bin/launchctl setenv GROK_TELEMETRY_TRACE_UPLOAD "${env.GROK_TELEMETRY_TRACE_UPLOAD}"
+    /bin/launchctl setenv GROK_STORAGE_MODE "${env.GROK_STORAGE_MODE}"
     /bin/launchctl setenv GROK_DISABLE_AUTOUPDATER "${env.GROK_DISABLE_AUTOUPDATER}"
     /bin/launchctl setenv COPILOT_AUTO_UPDATE "${env.COPILOT_AUTO_UPDATE}"
     /bin/launchctl setenv CODEGRAPH_TELEMETRY "${env.CODEGRAPH_TELEMETRY}"
