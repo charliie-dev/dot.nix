@@ -9,6 +9,10 @@ let
   dopplerDir = "${config.xdg.dataHome}/doppler";
   dopplerTokenPath = "${dopplerDir}/token";
   dopplerTokenTarget = "${config.xdg.configHome}/sops-nix/secrets/doppler_token";
+  # bootstrap 與目標命令共用的隔離 config 目錄:bootstrap 走 --config-dir flag,
+  # 目標命令走 DOPPLER_CONFIG_DIR。兩者都不指定的話 doppler 會落回 ~/.doppler
+  # 在家目錄建 config;指到 XDG config 又會讓目標命令拿到那裡的 login token。
+  dopplerRunConfigDir = "${config.xdg.cacheHome}/doppler-run";
   sensitiveNames = [
     "DOPPLER_TOKEN"
     "DOPPLER_PROJECT"
@@ -36,11 +40,12 @@ let
       pkgs.python3
     ];
     text = ''
-      exec python3 ${pkgs.writeText "doppler-run.py" ''
-        import base64
+      # -I:呼叫者的 PYTHONPATH 可以 shadow 掉 stdlib(放一個 re.py 就行),
+      # PYTHONEXECUTABLE 還能換掉下面 re-exec 用的 sys.executable。清理環境
+      # 只能決定子行程,這個解譯器本身是在呼叫者的環境下啟動的。
+      exec python3 -I ${pkgs.writeText "doppler-run.py" ''
         import os
         import re
-        import signal
         import stat
         import sys
         import tomllib
@@ -48,6 +53,7 @@ let
 
         TOKEN_PATH = ${builtins.toJSON dopplerTokenPath}
         TOKEN_TARGET = ${builtins.toJSON dopplerTokenTarget}
+        RUN_CONFIG_DIR = ${builtins.toJSON dopplerRunConfigDir}
         GROK_CONFIG = ${builtins.toJSON "${config.xdg.configHome}/grok/config.toml"}
         SENSITIVE = set(${builtins.toJSON sensitiveNames})
         BOOTSTRAP_METADATA = {
@@ -56,6 +62,18 @@ let
             "DOPPLER_ENVIRONMENT",
         }
         SANITIZE = SENSITIVE | {"DOPPLER_CONFIG_DIR"}
+        # doppler 是 Go 程式,net/http 的 ProxyFromEnvironment 認 *_PROXY,而
+        # SSL_CERT_* 會取代系統根憑證 —— 不只在 Linux,Go 1.27 起
+        # x509sslcertoverrideplatform 預設 1,darwin 設了這兩個也改從磁碟載入。
+        # --api-host 只 pin 住名字,pin 不住路由與信任錨,所以 bootstrap 這段要
+        # 另外拿掉。改名暫存再還原,目標命令原封拿回:wrapper 的職責是注入
+        # secrets,不是改掉 agent 的網路設定。
+        TRANSPORT = (
+            "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "NO_PROXY",
+            "http_proxy", "https_proxy", "all_proxy", "no_proxy",
+            "SSL_CERT_FILE", "SSL_CERT_DIR",
+        )
+        STASH_PREFIX = "__DOPPLER_RUN_STASH_"
         PROFILES = {
             "azure-grok": ("AZURE_OPENAI_API_KEY",),
             "azure-codex": ("AZURE_OPENAI_API_KEY",),
@@ -121,6 +139,33 @@ let
                     fail("private directory has an unsafe type")
                 if st.st_uid != os.getuid() or stat.S_IMODE(st.st_mode) & 0o022:
                     fail("private directory has unsafe ownership or mode")
+
+        def ensure_run_config_dir():
+            validate_private_parents(RUN_CONFIG_DIR)
+            try:
+                os.makedirs(RUN_CONFIG_DIR, mode=0o700, exist_ok=True)
+                st = os.lstat(RUN_CONFIG_DIR)
+            except OSError:
+                fail("isolated config directory is unavailable")
+            if stat.S_ISLNK(st.st_mode) or not stat.S_ISDIR(st.st_mode):
+                fail("isolated config directory has an unsafe type")
+            if st.st_uid != os.getuid():
+                fail("isolated config directory has an unexpected owner")
+            if stat.S_IMODE(st.st_mode) & 0o077:
+                os.chmod(RUN_CONFIG_DIR, 0o700)
+            reset_run_config_file()
+
+        def reset_run_config_file():
+            # 目標命令與 bootstrap 同 uid,可以在離場前把 verify-tls 之類的選項
+            # 寫進這個 config file 影響下一次 bootstrap。每次執行前清掉,
+            # 讓 bootstrap 的來源只由 flag 與 env token 決定。
+            # os.unlink 不跟隨 symlink,刪到的一定是這條路徑本身。
+            try:
+                os.unlink(os.path.join(RUN_CONFIG_DIR, ".doppler.yaml"))
+            except FileNotFoundError:
+                return
+            except OSError:
+                fail("isolated config file cannot be reset")
 
         def open_expected_link(path, expected_target, exact_mode):
             try:
@@ -198,7 +243,53 @@ let
                 fail("Grok shell environment policy has drifted")
 
         def clean_environment(source):
-            return {k: v for k, v in source.items() if k not in SANITIZE}
+            # 前綴清除而非白名單:doppler 有 40 幾個可經 DOPPLER_* 覆寫的全域選項
+            # (api-host、no-verify-tls、dns-resolver 等),逐一列舉遲早漏掉。
+            # wrapper 自己要用的值一律在清除後明確設回或改走 CLI flag。
+            return {
+                k: v
+                for k, v in source.items()
+                if k not in SANITIZE and not k.startswith("DOPPLER_")
+            }
+
+        def bootstrap_environment(source, token):
+            env = clean_environment(source)
+            stashed = {STASH_PREFIX + n: env.pop(n) for n in TRANSPORT if n in env}
+            env.update(stashed)
+            env["DOPPLER_TOKEN"] = token
+            return env
+
+        def restore_transport(env):
+            # 只有 TRANSPORT 裡的名字能被還原;呼叫者自己預埋的其他 stash 名
+            # 不會變成真名,連前綴形式也不留給目標命令。
+            keep = {n: env[STASH_PREFIX + n] for n in TRANSPORT if STASH_PREFIX + n in env}
+            clean = {k: v for k, v in env.items() if not k.startswith(STASH_PREFIX)}
+            clean.update(keep)
+            return clean
+
+        def bootstrap_argv(profile, command):
+            # --no-verify-tls=false 讓 cobra 的 Changed 為真:config file 的
+            # verify-tls 是唯一沒有 flag 壓的欄位,只靠 reset 搶跑擋不住同 uid
+            # 的背景 writer。加上這個 flag 之後六個 file-scoped 欄位全被 flag
+            # 或 env 蓋住(dashboard-host 在 run 路徑上沒人讀),config file 對
+            # bootstrap 就沒有影響力了,reset 退回 defence-in-depth。
+            # --no-check-version 擋的是版本檢查的網路呼叫;config file 裡那個空
+            # 的 version-check 欄位擋不掉,它是 doppler 重建 config 時的固定欄位。
+            argv = [
+                "${pkgs.doppler}/bin/doppler", "run", "--no-fallback",
+                "--no-verify-tls=false", "--no-check-version",
+                "--api-host", "https://api.doppler.com",
+                "--config-dir", RUN_CONFIG_DIR,
+                "--project", "dot-nix", "--config", "dev_personal",
+            ]
+            for name in PROFILES[profile]:
+                argv.extend(("--only-secrets", name))
+            # 第二段也要 -I。它是 doppler re-exec 的,環境裡還留著呼叫者的
+            # PYTHONPATH,而這個行程已經持有 DOPPLER_TOKEN 與注入的 secret,
+            # 頂端 import re 發生在 launch() 的邊界檢查之前。
+            argv.extend(("--", sys.executable, "-I", os.path.realpath(__file__),
+                         "--internal-launch", profile, "--", *command))
+            return argv
 
         def validate_value(name, value):
             if not NAME_RE.fullmatch(name) or not value or any(c in value for c in "\x00\r\n"):
@@ -238,7 +329,8 @@ let
                 or os.environ["DOPPLER_CONFIG"] != "dev_personal"
             ):
                 fail("injected Doppler source metadata does not match fixed source")
-            final = clean_environment(os.environ)
+            final = restore_transport(clean_environment(os.environ))
+            final["DOPPLER_CONFIG_DIR"] = RUN_CONFIG_DIR
             for name in required:
                 final[name] = os.environ[name]
             if profile == "azure-pi":
@@ -277,16 +369,10 @@ let
             if profile == "azure-grok":
                 validate_grok_policy()
             token = read_token()
-            env = clean_environment(os.environ)
-            env["DOPPLER_TOKEN"] = token
-            argv = [
-                "${pkgs.doppler}/bin/doppler", "run", "--no-fallback",
-                "--project", "dot-nix", "--config", "dev_personal",
-            ]
-            for name in PROFILES[profile]:
-                argv.extend(("--only-secrets", name))
-            argv.extend(("--", sys.executable, os.path.realpath(__file__),
-                         "--internal-launch", profile, "--", *command))
+            ensure_run_config_dir()
+            # 來源固定全部走 flag:doppler 的優先序是 flag > env > config file。
+            env = bootstrap_environment(os.environ, token)
+            argv = bootstrap_argv(profile, command)
             os.execve(argv[0], argv, env)
 
         if __name__ == "__main__":
