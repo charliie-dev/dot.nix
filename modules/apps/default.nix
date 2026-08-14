@@ -21,6 +21,7 @@ let
     && !(builtins.elem name [
       "default.nix"
       "catppuccin.nix"
+      "patina.nix"
       "ssh.nix"
     ])
     && !(lib.hasPrefix "_" name)
@@ -48,6 +49,7 @@ in
   # Full app modules live beside the fragments but bypass programs.* wrapping.
   imports = [
     ./catppuccin.nix
+    ./patina.nix
     ./ssh.nix
   ];
 

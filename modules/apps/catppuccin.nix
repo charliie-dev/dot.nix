@@ -51,8 +51,7 @@
       enable = true;
     };
     # NOTE: no zsh-syntax-highlighting port — the active highlighter is
-    # fast-syntax-highlighting (loaded via antidote), which ignores
-    # ZSH_HIGHLIGHT_STYLES. Its Mocha theme lives in
-    # modules/apps/zsh/highlighting.nix instead.
+    # zsh-patina, which carries its own Catppuccin themes. It reads the
+    # flavor set above via modules/apps/patina.nix.
   };
 }
