@@ -1,11 +1,14 @@
 #!/usr/bin/env bats
 
-REPO="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
-HOST='charles@24041-LABNB01'
+load "../lib/home-config"
+
+setup() {
+  require_home_config
+}
 
 build_git_config() {
   nix build --no-link --print-out-paths --impure --expr \
-    "let f = builtins.getFlake \"git+file://$REPO\"; in f.homeConfigurations.\"$HOST\".config.xdg.configFile.\"git/config\".source"
+    "let f = builtins.getFlake \"git+file://$REPO\"; in f.homeConfigurations.\"$(home_config_name)\".config.xdg.configFile.\"git/config\".source"
 }
 
 resolve_url() {

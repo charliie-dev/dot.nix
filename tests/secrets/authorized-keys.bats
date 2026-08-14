@@ -1,10 +1,12 @@
 #!/usr/bin/env bats
 
-REPO="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
+load "../lib/home-config"
+
 MODULE="$REPO/modules/secrets/sops.nix"
 PIN='SHA256:DdWGvlMmBCptRDumMUS7sUjoD/W0BCOhLTQnF5Iw+m8'
 
 setup() {
+  require_home_config
   SEC03_TEST_TMPDIR="$(mktemp -d "$HOME/.sec03-authorized-keys.XXXXXXXX")"
   chmod 0700 "$SEC03_TEST_TMPDIR"
   export SEC03_TEST_TMPDIR
@@ -17,8 +19,7 @@ teardown() {
 }
 
 build_manager() {
-  nix build --no-link --print-out-paths --impure --expr \
-    "let f = builtins.getFlake \"git+file://$REPO\"; ps = f.homeConfigurations.\"charles@24041-LABNB01\".config.home.packages; in builtins.head (builtins.filter (p: (p.name or \"\") == \"manage-authorized-keys\") ps)"
+  build_home_package manage-authorized-keys
 }
 
 manager_parts() {

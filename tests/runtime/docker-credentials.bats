@@ -1,15 +1,10 @@
 #!/usr/bin/env bats
 
-REPO="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
+load "../lib/home-config"
 
 setup_file() {
-  PROGRAM="$(nix build --no-link --print-out-paths --impure --expr "
-    let
-      f = builtins.getFlake \"git+file://$REPO\";
-      packages = f.homeConfigurations.\"charles@24041-LABNB01\".config.home.packages;
-    in builtins.head (builtins.filter
-      (package: (package.name or \"\") == \"home-manager-docker-credentials\") packages)
-  ")/bin/home-manager-docker-credentials"
+  require_home_config
+  PROGRAM="$(build_home_package home-manager-docker-credentials)/bin/home-manager-docker-credentials"
   export PROGRAM
 }
 
