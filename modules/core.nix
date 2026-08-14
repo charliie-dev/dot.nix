@@ -103,6 +103,13 @@
       ASIDE_HOME = "${config.xdg.dataHome}/aside";
       PI_CODING_AGENT_DIR = "${config.xdg.configHome}/pi";
       PI_CODING_AGENT_SESSION_DIR = "${config.xdg.dataHome}/pi/sessions";
+      # Vertex AI 上的 Claude。Claude Code 從自己的 settings.json env 取得這兩個
+      # 值,但那份 env 不會 export 到 shell,pi 的 @twogiants/pi-anthropic-vertex
+      # extension 在載入時讀不到專案 ID 就整個自我停用,anthropic-vertex provider
+      # 連同全部 Claude model 都不會註冊。用 ANTHROPIC_VERTEX_PROJECT_ID 而不是
+      # GOOGLE_CLOUD_PROJECT,避免順手改掉 gcloud/terraform 的預設專案。
+      ANTHROPIC_VERTEX_PROJECT_ID = "dp-vertex-ai";
+      CLOUD_ML_REGION = "global";
       GROK_TELEMETRY_ENABLED = "0";
       GROK_FEEDBACK_ENABLED = "0";
       GROK_TELEMETRY_TRACE_UPLOAD = "0";
