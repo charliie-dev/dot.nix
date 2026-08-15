@@ -23,6 +23,5 @@
   initContent = lib.mkOrder 1000 ''
     smartcache eval zoxide init zsh
     smartcache eval starship init zsh
-    smartcache eval mise activate zsh
   '';
 }

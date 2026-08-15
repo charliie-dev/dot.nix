@@ -6,7 +6,7 @@
 {
   mise = {
     enable = true;
-    enableZshIntegration = false; # cached by modules/apps/zsh/integrations.nix
+    enableZshIntegration = false; # activated below without smartcache
     globalConfig = {
       tools = {
         # aube: jdx's Rust npm pkg manager — the backend for `npm:` global tools
@@ -151,4 +151,10 @@
       };
     };
   };
+
+  # Generate mise's shell hooks without smartcache. Order 1010 keeps this after
+  # the cached integrations at 1000 and before the custom hooks at 1050.
+  zsh.initContent = lib.mkOrder 1010 ''
+    eval "$(${lib.getExe pkgs.mise} activate zsh)"
+  '';
 }
