@@ -3,11 +3,11 @@
     enable = true;
     associations = [
       {
-        fpath = ".*.md$";
+        fpath = ".*\\.md$";
         command = "bat --color=always --style=plain --language=markdown %pistol-filename%";
       }
       {
-        fpath = ".*.log$";
+        fpath = ".*\\.log$";
         command = "lnav -n %pistol-filename%";
       }
       {
