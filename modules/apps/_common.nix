@@ -13,6 +13,7 @@
     parallel # Shell tool for executing jobs in parallel
     lazyjournal # TUI for journalctl, filesystem logs, and Docker container logs
     gum # Tool for glamorous shell scripts (prompts, spinners, styling)
+    antidote # Zsh plugin manager
 
     # Secrets Management
     age # Modern, secure file encryption tool
