@@ -180,60 +180,62 @@
         format = "[ · ](bg:surface0)[$symbol$branch]($style)";
       };
 
-      custom.git_worktree = {
-        description = "Show indicator when inside a git worktree";
-        format = "[ · ](bg:surface0)[$symbol]($style)";
-        style = "bold fg:green bg:surface0";
-        symbol = "󱘎 ";
-        when = ''[ "$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null)" != "$(git rev-parse --path-format=absolute --git-dir 2>/dev/null)" ]'';
-        require_repo = true;
-        ignore_timeout = true;
-      };
+      custom = {
+        git_worktree = {
+          description = "Show indicator when inside a git worktree";
+          format = "[ · ](bg:surface0)[$symbol]($style)";
+          style = "bold fg:green bg:surface0";
+          symbol = "󱘎 ";
+          when = ''[ "$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null)" != "$(git rev-parse --path-format=absolute --git-dir 2>/dev/null)" ]'';
+          require_repo = true;
+          ignore_timeout = true;
+        };
 
-      # Provides the directory module's leading separator when in a repo,
-      # and prepends the parent-of-repo (e.g. "platform/") only when sitting at the repo root.
-      custom.repo_sep = {
-        description = "Directory separator + parent of repo root (only at repo root)";
-        when = "git rev-parse --is-inside-work-tree 2>/dev/null";
-        command = ''
-          root=$(git rev-parse --show-toplevel 2>/dev/null)
-          if [ "$PWD" = "$root" ]; then
-            parent=$(dirname "$root")
-            case "$parent" in
-              "$HOME") printf '%s' '~/' ;;
-              "/") printf '%s' '/' ;;
-              *) printf '%s/' "$(basename "$parent")" ;;
-            esac
-          fi
-        '';
-        format = "[ · ](bg:surface0)[$output]($style)";
-        style = "fg:subtext0 bg:surface0";
-        require_repo = true;
-        ignore_timeout = true;
-      };
-
-      # Replaces the built-in directory module for non-repo paths: always shows last 2 levels.
-      custom.dir_non_repo = {
-        description = "Last 2 path components when not in a git repo";
-        when = "! git rev-parse --is-inside-work-tree 2>/dev/null";
-        command = ''
-          case "$PWD" in
-            "$HOME") printf '%s' '~' ;;
-            "/") printf '%s' '/' ;;
-            *)
-              parent=$(dirname "$PWD")
-              base=$(basename "$PWD")
+        # Provides the directory module's leading separator when in a repo,
+        # and prepends the parent-of-repo (e.g. "platform/") only when sitting at the repo root.
+        repo_sep = {
+          description = "Directory separator + parent of repo root (only at repo root)";
+          when = "git rev-parse --is-inside-work-tree 2>/dev/null";
+          command = ''
+            root=$(git rev-parse --show-toplevel 2>/dev/null)
+            if [ "$PWD" = "$root" ]; then
+              parent=$(dirname "$root")
               case "$parent" in
-                "$HOME") printf '~/%s' "$base" ;;
-                "/") printf '/%s' "$base" ;;
-                *) printf '%s/%s' "$(basename "$parent")" "$base" ;;
+                "$HOME") printf '%s' '~/' ;;
+                "/") printf '%s' '/' ;;
+                *) printf '%s/' "$(basename "$parent")" ;;
               esac
-              ;;
-          esac
-        '';
-        format = "[ · ](bg:surface0)[$output]($style)";
-        style = "fg:subtext0 bg:surface0";
-        ignore_timeout = true;
+            fi
+          '';
+          format = "[ · ](bg:surface0)[$output]($style)";
+          style = "fg:subtext0 bg:surface0";
+          require_repo = true;
+          ignore_timeout = true;
+        };
+
+        # Replaces the built-in directory module for non-repo paths: always shows last 2 levels.
+        dir_non_repo = {
+          description = "Last 2 path components when not in a git repo";
+          when = "! git rev-parse --is-inside-work-tree 2>/dev/null";
+          command = ''
+            case "$PWD" in
+              "$HOME") printf '%s' '~' ;;
+              "/") printf '%s' '/' ;;
+              *)
+                parent=$(dirname "$PWD")
+                base=$(basename "$PWD")
+                case "$parent" in
+                  "$HOME") printf '~/%s' "$base" ;;
+                  "/") printf '/%s' "$base" ;;
+                  *) printf '%s/%s' "$(basename "$parent")" "$base" ;;
+                esac
+                ;;
+            esac
+          '';
+          format = "[ · ](bg:surface0)[$output]($style)";
+          style = "fg:subtext0 bg:surface0";
+          ignore_timeout = true;
+        };
       };
 
       git_status = {
@@ -279,7 +281,8 @@
         disabled = false;
         symbol = "󱇶 ";
         style = "bg:surface0";
-        format = "[$symbol($project)]($style)";
+        # format = "[$symbol($project)]($style)";
+        format = "[$symbol]($style)";
         project_aliases = {
           "nics-data-confluence" = "DCF";
         };
@@ -290,7 +293,8 @@
         symbol = "󰸏 ";
         # format = "[\$symbol(\$profile)(\\(\$region\\) )](\$style)";
         style = "bg:surface0";
-        format = "[ · ](bg:surface0)[\$symbol(\$profile)](\$style)";
+        # format = "[ · ](bg:surface0)[\$symbol(\$profile)](\$style)";
+        format = "[ · ](bg:surface0)[\$symbol](\$style)";
         profile_aliases = {
           "default" = "NICS";
         };
@@ -300,7 +304,8 @@
         disabled = false;
         symbol = "󰠅 ";
         style = "bg:surface0";
-        format = "[ · ](bg:surface0)[$symbol($subscription)]($style)";
+        # format = "[ · ](bg:surface0)[$symbol($subscription)]($style)";
+        format = "[ · ](bg:surface0)[$symbol]($style)";
         subscription_aliases = {
           "Azure_nics" = "NICS";
         };
