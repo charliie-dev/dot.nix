@@ -83,23 +83,28 @@
     plugins = with pkgs.yaziPlugins; {
       inherit
         chmod
-        duckdb
-        full-border
-        git
         ouch
         piper
-        starship
         sudo
         toggle-pane
         ;
+      duckdb = {
+        package = duckdb;
+        setup = true;
+      };
+      full-border = {
+        package = full-border;
+        setup = true;
+      };
+      git = {
+        package = git;
+        setup = true;
+      };
+      starship = {
+        package = starship;
+        setup = true;
+      };
     };
-
-    initLua = ''
-      require("duckdb"):setup()
-      require("full-border"):setup()
-      require("git"):setup()
-      require("starship"):setup()
-    '';
 
     keymap = {
       mgr.prepend_keymap = [
