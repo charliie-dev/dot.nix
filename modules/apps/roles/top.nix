@@ -1,7 +1,4 @@
 { pkgs, ... }:
-let
-  inherit (pkgs) lib stdenv;
-in
 {
   packages =
     with pkgs;
@@ -19,8 +16,8 @@ in
       s-tui # Stress-Terminal UI monitoring tool
       iotop-c # Top-like UI for monitoring I/O usage (C port of iotop)
       wavemon # ncurses Wi-Fi signal and statistics monitor
-      gpufetch # GPU architecture info
     ]
+    ++ lib.optional (lib.meta.availableOn stdenv.hostPlatform gpufetch) gpufetch
     ++ lib.optionals stdenv.hostPlatform.isDarwin [
       docker-client # Docker CLI (client only, no daemon)
       docker-credential-helpers # docker-credential-osxkeychain (credsStore in ~/.config/docker/config.json)
