@@ -127,12 +127,19 @@
               nixBoost = nixPkgs.nixDependencies2.boost.overrideAttrs (prevAttrs: {
                 patches = builtins.filter (patch: toString patch != duplicateBoostPatch) (prevAttrs.patches or [ ]);
               });
+              # nix-src already forces this patched libgit2 to build locally.
+              # Its package checks do not contribute to the installed outputs.
+              nixLibgit2 = nixPkgs.nixDependencies2.libgit2.overrideAttrs (_: {
+                doCheck = false;
+                doInstallCheck = false;
+              });
               # Drop the wasmtime (Rust) compile: enableWasm only powers
               # `builtins.wasm` (call WebAssembly modules during eval), which we
               # never use, and wasmtime is a custom determinate build that is
               # never cached.
               nixComponents = nixPkgs.nixComponents2.overrideScope (
                 _finalC: prevC: {
+                  nix-fetchers = prevC.nix-fetchers.override { libgit2 = nixLibgit2; };
                   nix-util = prevC.nix-util.override { boost = nixBoost; };
                   nix-expr = prevC.nix-expr.override {
                     boost = nixBoost;
