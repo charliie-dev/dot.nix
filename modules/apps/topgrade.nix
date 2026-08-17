@@ -42,8 +42,11 @@
         # Run these steps before all others
         # first = ["chezmoi"]
 
-        # Run these steps after all others
-        # last = ["system"]
+        # Run Nix before Home Manager after Git repository updates.
+        last = [
+          "nix"
+          "home_manager"
+        ];
 
         # Ignore failures for these steps
         # ignore_failures = ["powershell"]
@@ -108,7 +111,7 @@
         # this will be ignored if the binary is built without self update support
         #
         # available also via setting the environment variable TOPGRADE_NO_SELF_UPGRADE)
-        no_self_update = true;
+        no_self_update = false;
 
         # Extra tracing filter directives
         # These are prepended to the `--log-filter` argument
@@ -124,7 +127,7 @@
         # When set to autodetect: use nh when available, fall back to vanilla
         # Allowed values:
         #   autodetect, nh, vanilla
-        nix_handler = "nh";
+        nix_handler = "vanilla";
       };
 
       # Commands to run before anything
@@ -136,12 +139,9 @@
       # Commands to run after anything
       post_commands = {
         # "Emacs Snapshot" = "rm -rf ~/.emacs.d/elpa.bak && cp -rl ~/.emacs.d/elpa ~/.emacs.d/elpa.bak"
-        "home-manager" = "~/.local/state/nix/profile/bin/home-manager switch";
         # "television cabels" = " ~/.local/state/nix/profile/bin/tv update-channels --force";
-        "antidote" = "~/.local/state/nix/profile/share/antidote/antidote update";
         # "home-manager cleanup" =
         #   "nix-collect-garbage -d && nix-env --delete-generations old && nix-store --gc && nix-store --optimise";
-        "determinate-nixd upgrade" = "sudo determinate-nixd upgrade";
       };
 
       # Custom commands
