@@ -8,7 +8,6 @@
     extensions = with pkgs; [
       # gh-cal
       # gh-contribs
-      gh-dash
       # gh-eco
       gh-f
       # gh-i
