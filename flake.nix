@@ -119,14 +119,29 @@
               # nix-src exposes its component scope as `nixComponents2` only via
               # the `internal` overlay (the public `default` overlay just sets a
               # nix-everything `nix`). Re-layer it onto our pkgs so components
-              # build against our nixpkgs, then override the scope to drop the
-              # wasmtime (Rust) compile: enableWasm only powers `builtins.wasm`
-              # (call WebAssembly modules during eval), which we never use, and
-              # wasmtime is a custom determinate build that is never cached.
-              nixComponents = (prev.extend nix-src.overlays.internal).nixComponents2.overrideScope (
+              # build against our nixpkgs.
+              nixPkgs = prev.extend nix-src.overlays.internal;
+              # nix-src still injects Boost PR 337, but nixpkgs now carries the
+              # same backport after its prerequisite patch. Applying both fails.
+              duplicateBoostPatch = "${nix-src}/packaging/patches/0001-Fix-uncaught_exceptions-not-accounting-for-forced_un.patch";
+              nixBoost = nixPkgs.nixDependencies2.boost.overrideAttrs (prevAttrs: {
+                patches = builtins.filter (patch: toString patch != duplicateBoostPatch) (prevAttrs.patches or [ ]);
+              });
+              # Drop the wasmtime (Rust) compile: enableWasm only powers
+              # `builtins.wasm` (call WebAssembly modules during eval), which we
+              # never use, and wasmtime is a custom determinate build that is
+              # never cached.
+              nixComponents = nixPkgs.nixComponents2.overrideScope (
                 _finalC: prevC: {
-                  nix-expr = prevC.nix-expr.override { enableWasm = false; };
-                  nix-store = prevC.nix-store.override { enableWasm = false; };
+                  nix-util = prevC.nix-util.override { boost = nixBoost; };
+                  nix-expr = prevC.nix-expr.override {
+                    boost = nixBoost;
+                    enableWasm = false;
+                  };
+                  nix-store = prevC.nix-store.override {
+                    boost = nixBoost;
+                    enableWasm = false;
+                  };
                 }
               );
               # Use nix-cli, not nix-everything: nix-cli deliberately excludes
