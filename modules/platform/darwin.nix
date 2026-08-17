@@ -45,7 +45,7 @@ let
     '';
   };
 in
-lib.mkIf pkgs.stdenv.isDarwin {
+lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
   targets.darwin = {
     # Homebrew manages all GUI applications.
     copyApps.enable = false;

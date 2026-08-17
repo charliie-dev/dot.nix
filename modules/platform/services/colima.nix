@@ -6,7 +6,7 @@
 }:
 
 # Colima is the Darwin Docker host; Linux uses its system Docker service.
-lib.mkIf pkgs.stdenv.isDarwin {
+lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
   services.colima = {
     enable = true;
 

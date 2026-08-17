@@ -5,7 +5,7 @@
   ...
 }:
 let
-  isLinux = pkgs.stdenv.isLinux;
+  isLinux = pkgs.stdenv.hostPlatform.isLinux;
   dockerConfigDir = "${config.xdg.configHome}/docker";
   dockerConfigFile = "${dockerConfigDir}/config.json";
   dockerLockFile = "${config.xdg.configHome}/.docker-config.lock";

@@ -63,7 +63,7 @@ let
     /bin/launchctl setenv CODEGRAPH_NO_UPDATE_CHECK "${env.CODEGRAPH_NO_UPDATE_CHECK}"
   '';
 in
-lib.mkIf pkgs.stdenv.isDarwin {
+lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
   launchd.agents.brew-env = {
     enable = true;
     # Show up as "brew-env" instead of "sh" in Login Items & Extensions. The agent

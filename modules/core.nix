@@ -53,7 +53,7 @@
       "${config.home.homeDirectory}/.local/share/mise/bin"
       "${config.home.homeDirectory}/.local/share/topgrade/bin"
     ]
-    ++ lib.optionals pkgs.stdenv.isDarwin [
+    ++ lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
       "/opt/homebrew/bin"
       # gcloud components such as gke-gcloud-auth-plugin are not linked into
       # Homebrew's bin directory.

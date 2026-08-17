@@ -15,13 +15,13 @@ in
       onefetch # Git repo summary
       cpufetch # CPU architecture info
     ]
-    ++ lib.optionals stdenv.isLinux [
+    ++ lib.optionals stdenv.hostPlatform.isLinux [
       s-tui # Stress-Terminal UI monitoring tool
       iotop-c # Top-like UI for monitoring I/O usage (C port of iotop)
       wavemon # ncurses Wi-Fi signal and statistics monitor
       gpufetch # GPU architecture info
     ]
-    ++ lib.optionals stdenv.isDarwin [
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [
       docker-client # Docker CLI (client only, no daemon)
       docker-credential-helpers # docker-credential-osxkeychain (credsStore in ~/.config/docker/config.json)
       macpm # Perf monitoring CLI tool for Apple Silicon

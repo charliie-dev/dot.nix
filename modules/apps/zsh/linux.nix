@@ -1,6 +1,6 @@
 { lib, pkgs, ... }:
 
-lib.mkIf pkgs.stdenv.isLinux {
+lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
   shellAliases = {
     ps = "ps auxf";
     openports = "ss -lntup";

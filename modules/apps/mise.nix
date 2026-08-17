@@ -71,7 +71,7 @@
       # deprecated aqua backend to github, so it's pinned to github:docker/compose
       # to match (a bare "docker-compose" key still resolves to aqua and warns).
       # nixpkgs can lag upstream buildx, hence mise rather than a nix package.
-      // lib.optionalAttrs pkgs.stdenv.isDarwin {
+      // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
         "github:docker/compose" = "latest";
         "aqua:docker/buildx" = "latest";
 

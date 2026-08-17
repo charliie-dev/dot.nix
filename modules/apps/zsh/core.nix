@@ -26,7 +26,7 @@ in
     autoload -U compinit
     compinit -d "$XDG_CACHE_HOME/zsh/zcompdump"
   '';
-  enableVteIntegration = !pkgs.stdenv.isDarwin;
+  enableVteIntegration = !pkgs.stdenv.hostPlatform.isDarwin;
   defaultKeymap = "viins";
 
   dirHashes = {
@@ -106,4 +106,4 @@ in
     fpath=("${config.xdg.dataHome}/zsh/site-functions" $fpath)
   '';
 }
-// lib.optionalAttrs pkgs.stdenv.isDarwin { package = systemZsh; }
+// lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin { package = systemZsh; }

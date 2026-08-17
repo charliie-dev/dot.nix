@@ -6,7 +6,7 @@
   gpuEnabled ? false,
   ...
 }:
-lib.mkIf pkgs.stdenv.isLinux {
+lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
   # Home Manager's generic Linux target supports every lib.platforms.linux
   # architecture, including aarch64-linux. nixGL remains GPU-host-only.
   targets.genericLinux = {

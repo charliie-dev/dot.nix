@@ -4,7 +4,7 @@
   ...
 }:
 
-lib.mkIf pkgs.stdenv.isDarwin {
+lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
   sessionVariables = {
     CLICOLOR = "1";
     LSCOLORS = "Gxfxcxdxbxegedabagacad";

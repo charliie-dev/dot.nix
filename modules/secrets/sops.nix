@@ -447,10 +447,10 @@ lib.mkMerge [
       if sopsEnabled then
         lib.hm.dag.entryAfter
           [
-            (if pkgs.stdenv.isDarwin then "setupLaunchAgents" else "reloadSystemd")
+            (if pkgs.stdenv.hostPlatform.isDarwin then "setupLaunchAgents" else "reloadSystemd")
           ]
           (
-            if pkgs.stdenv.isDarwin then
+            if pkgs.stdenv.hostPlatform.isDarwin then
               ''
                 $DRY_RUN_CMD ${config.launchd.agents.sops-nix-sync.config.Program}
               ''
@@ -474,7 +474,7 @@ lib.mkMerge [
       age.keyFile = "${config.xdg.configHome}/age/keys.txt";
     };
 
-    systemd.user.services.sops-nix.Service = lib.mkIf pkgs.stdenv.isLinux {
+    systemd.user.services.sops-nix.Service = lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
       Type = lib.mkForce "oneshot";
     };
 

@@ -25,7 +25,7 @@
   # mkOutOfStoreSymlink because these live outside the nix store. (Install dir
   # names differ: compose uses the registry short name, buildx the explicit
   # aqua backend — see mise.nix.)
-  xdg.configFile = lib.optionalAttrs pkgs.stdenv.isDarwin {
+  xdg.configFile = lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
     "docker/cli-plugins/docker-compose".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.local/share/mise/installs/docker-compose/latest/docker-cli-plugin-docker-compose";
     "docker/cli-plugins/docker-buildx".source =
