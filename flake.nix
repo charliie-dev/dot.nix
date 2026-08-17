@@ -70,6 +70,9 @@
         ];
       };
 
+      # Preserve Nixpkgs share/completions/man while binaries bootstrap on first use.
+      binaryStubsOverlay = import ./modules/runtime/binary-stubs.nix { inherit lib; };
+
       hm_ver = "26.05";
       hosts = import ./hosts.nix;
 
@@ -79,20 +82,6 @@
           enableSecrets = hostCfg.enableSecrets or false;
           enableSshSecrets = hostCfg.enableSshSecrets or enableSecrets;
           isGpu = hostCfg.gpu or false;
-          # Stub packages that delegate to upstream-tracked binaries kept in
-          # $HOME/.local/share/<name>/bin/<name>. home-manager hardcodes
-          # ${pkgs.<name>}/bin/<name> in places like `eval "$(.../mise activate zsh)"`,
-          # so we keep a tiny Nix-managed wrapper for each tool and let the
-          # Runtime DAG modules sync the actual binary with each switch.
-          mkBinaryStub =
-            prev: name:
-            prev.writeShellScriptBin name ''
-              exec -a "$(basename "$0")" "$HOME/.local/share/${name}/bin/${name}" "$@"
-            '';
-          binaryStubsOverlay = _: prev: {
-            mise = mkBinaryStub prev "mise";
-            topgrade = mkBinaryStub prev "topgrade";
-          };
           # General rule: doCheck=false is only worth setting on a package we
           # are ALREADY forced to rebuild locally (e.g. the determinate-nix
           # override below pulls nurl off cache). On a package that still
