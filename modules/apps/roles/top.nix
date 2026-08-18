@@ -17,8 +17,6 @@
     ]
     ++ lib.optional (lib.meta.availableOn stdenv.hostPlatform gpufetch) gpufetch
     ++ lib.optionals stdenv.hostPlatform.isDarwin [
-      docker-client # Docker CLI (client only, no daemon)
-      docker-credential-helpers # docker-credential-osxkeychain (credsStore in ~/.config/docker/config.json)
       macpm # Perf monitoring CLI tool for Apple Silicon
     ];
 }

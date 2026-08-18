@@ -5,6 +5,7 @@
   ...
 }:
 let
+  isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
   isLinux = pkgs.stdenv.hostPlatform.isLinux;
   dockerConfigDir = "${config.xdg.configHome}/docker";
   dockerConfigFile = "${dockerConfigDir}/config.json";
@@ -13,11 +14,13 @@ let
   gpgHome = "${config.xdg.dataHome}/gnupg";
   credentialsStore = if isLinux then "pass" else "osxkeychain";
   garRegistries = [ "asia-east1-docker.pkg.dev" ];
-  credentialPackages = [
-    pkgs.docker-credential-gcr
-    pkgs.docker-credential-helpers
-  ]
-  ++ lib.optionals isLinux [ pkgs.pass ];
+  dockerPackages =
+    lib.optional isDarwin pkgs.docker-client
+    ++ [
+      pkgs.docker-credential-gcr
+      pkgs.docker-credential-helpers
+    ]
+    ++ lib.optional isLinux pkgs.pass;
   bootstrapProgram = pkgs.writeShellApplication {
     name = "home-manager-docker-credentials";
     runtimeInputs = [
@@ -556,7 +559,7 @@ let
 in
 {
   home = {
-    packages = credentialPackages ++ [ bootstrapProgram ];
+    packages = dockerPackages ++ [ bootstrapProgram ];
     sessionVariables = lib.mkIf isLinux {
       PASSWORD_STORE_DIR = passwordStoreDir;
     };
