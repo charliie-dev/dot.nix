@@ -8,7 +8,6 @@
     wget2 # Successor of GNU Wget with parallel connections and HTTP/2
     xdg-ninja # Audits $HOME for files violating XDG Base Directory Spec
     tree # List directory contents in a tree-like format
-    parallel # Shell tool for executing jobs in parallel
     lazyjournal # TUI for journalctl, filesystem logs, and Docker container logs
     gum # Tool for glamorous shell scripts (prompts, spinners, styling)
     antidote # Zsh plugin manager
@@ -25,6 +24,5 @@
     dix # A blazingly fast tool to diff Nix related things.
     nixd # Nix language server
     nil # Yet another language server for Nix
-
   ];
 }

@@ -200,7 +200,6 @@
         recursive = true;
         source = "${src}/conf.d/wget";
       };
-      "parallel/will-cite".text = "";
       "terraform/terraformrc".text = ''
         plugin_cache_dir   = "${config.xdg.dataHome}/terraform/plugin-cache"
         disable_checkpoint = true
