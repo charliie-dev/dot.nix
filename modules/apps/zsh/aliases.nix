@@ -42,7 +42,6 @@ in
     tree = "tree -CAF --dirsfirst";
     treed = "tree -CAFd";
     z = "zi";
-    jqp = "jqp -t catppuccin-mocha";
     lj = "lazyjournal";
     # A writable ttyd shell must not be exposed on every network interface by
     # default. Use an SSH tunnel when remote access is needed.

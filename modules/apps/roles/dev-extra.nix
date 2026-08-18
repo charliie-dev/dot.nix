@@ -19,9 +19,5 @@
     # nix shell nixpkgs#duckdb -c duckdb / nix shell nixpkgs#youplot -c uplot
     qsv # CSVs sliced, diced & analyzed
     miller # Like awk/sed/cut/join/sort for CSV, TSV, JSON
-
-    # Good TUIs
-    jqp # TUI plaground to experiment with jq
-
   ];
 }

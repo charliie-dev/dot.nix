@@ -5,7 +5,6 @@
     eva # Calculator REPL
     fzy # Better fuzzy finder
     git-ignore # Qucikly and easily fetch .gitignore templates from gitignore.io
-    jq # JSON parser
     # ripsecrets # Prevent committing secret keys into your source code
     # xh # Friendly and fast tool for sending HTTP requests
     jless # JSON viewer designed for reading, exploring, and searching through JSON data
@@ -29,6 +28,5 @@
     lnav # Log file navigator
     glow # nur.repos.charmbracelet.glow # Render markdown on the CLI, with pizzazz
     yq-go # jq but for YAML, JSON, XML, CSV, TOML
-
   ];
 }

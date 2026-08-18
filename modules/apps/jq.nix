@@ -1,0 +1,3 @@
+{
+  jq.enable = true;
+}
