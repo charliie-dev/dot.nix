@@ -78,7 +78,6 @@
       DOCKER_CONFIG = "${config.xdg.configHome}/docker";
       FFMPEG_DATADIR = "${config.xdg.configHome}/ffmpeg";
       ANSIBLE_CONFIG = "${config.xdg.configHome}/ansible/ansible.cfg";
-      GNUPGHOME = "${config.xdg.dataHome}/gnupg";
       DOTNET_CLI_HOME = "${config.xdg.dataHome}/dotnet";
       IPYTHONDIR = "${config.xdg.configHome}/ipython";
       JUPYTER_CONFIG_DIR = "${config.xdg.configHome}/jupyter";

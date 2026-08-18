@@ -2,7 +2,6 @@
 {
   common_apps = with pkgs; [
     curl # Command-line tool for transferring data with URLs
-    gnupg # Complete and free implementation of the OpenPGP standard
     unzip # Extraction utility for .zip archives
     ouch # Painless compression and decompression in the terminal
     wget # Tool for retrieving files via HTTP/HTTPS/FTP
