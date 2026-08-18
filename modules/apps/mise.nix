@@ -57,7 +57,10 @@
         "go:golang.org/x/vuln/cmd/govulncheck" = "latest";
         "go:mvdan.cc/gofumpt" = "latest";
         "npm:@rivolink/leaf" = "latest";
-        "npm:hunkdiff" = "latest";
+        "npm:hunkdiff" = {
+          version = "latest";
+          trust_policy_excludes = [ "@pierre/theme@2.0.0" ];
+        };
         "github:immanuwell/dockerfile-roast" = {
           version = "latest";
           exe = "droast";
@@ -104,6 +107,9 @@
         color_theme = "catppuccin";
         env_file = ".env";
         experimental = true;
+        github = {
+          credential_command = "gh auth token";
+        };
         gpg_verify = true;
         jobs = 8;
         libc = "gnu"; # force glibc selection; mise's static-musl binary misdetects host libc
