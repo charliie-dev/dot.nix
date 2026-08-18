@@ -4,8 +4,6 @@
     curl # Command-line tool for transferring data with URLs
     unzip # Extraction utility for .zip archives
     ouch # Painless compression and decompression in the terminal
-    wget # Tool for retrieving files via HTTP/HTTPS/FTP
-    wget2 # Successor of GNU Wget with parallel connections and HTTP/2
     xdg-ninja # Audits $HOME for files violating XDG Base Directory Spec
     tree # List directory contents in a tree-like format
     lazyjournal # TUI for journalctl, filesystem logs, and Docker container logs

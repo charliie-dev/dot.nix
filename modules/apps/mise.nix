@@ -13,7 +13,7 @@
         # (see npm.package_manager below). Declared here so the binary is present
         # before any npm: tool tries to install through it. Lifecycle scripts are
         # jailed by default; the current tool set was audited and none need a build
-        # approval (hunkdiff/oxfmt ship platform binaries via optionalDependencies;
+        # approval (oxfmt ships platform binaries via optionalDependencies;
         # codegraph is pure JS; protobufjs/aws-sdk postinstalls are dev-only no-ops;
         # nub's postinstall is only needed for install-as-root-then-drop-privileges,
         # see its entry below).
@@ -21,6 +21,7 @@
         python = "latest";
         uv = "latest";
         node = "latest";
+        tombi = "latest";
         # nub: Rust front-end for the Node toolchain — replaces npm/pnpm run, npx,
         # nvm/fnm, tsx/ts-node and nodemon with one binary. Not a runtime: it
         # provisions and execs real node, so `node` above is a hard dependency (the
@@ -57,10 +58,6 @@
         "go:golang.org/x/vuln/cmd/govulncheck" = "latest";
         "go:mvdan.cc/gofumpt" = "latest";
         "npm:@rivolink/leaf" = "latest";
-        "npm:hunkdiff" = {
-          version = "latest";
-          trust_policy_excludes = [ "@pierre/theme@2.0.0" ];
-        };
         "github:immanuwell/dockerfile-roast" = {
           version = "latest";
           exe = "droast";

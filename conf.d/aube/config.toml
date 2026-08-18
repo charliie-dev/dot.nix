@@ -8,7 +8,6 @@
 # typosquat gate. Any package NOT on this list still gets the popularity check.
 allowedUnpopularPackages = [
   "@rivolink/leaf",
-  "hunkdiff",
   "@colbymchenry/codegraph",
   "@google-cloud/backupdr-mcp",
   "@google-cloud/gcloud-mcp",

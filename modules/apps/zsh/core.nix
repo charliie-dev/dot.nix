@@ -51,7 +51,6 @@ in
   # home.sessionVariables in modules/core.nix.
   sessionVariables = {
     NODE_REPL_HISTORY = "${config.xdg.stateHome}/node_repl_history";
-    PYTHONSTARTUP = "${config.xdg.configHome}/python/pythonrc";
     PSQL_HISTORY = "${config.xdg.stateHome}/psql_history";
     LC_COLLATE = "C";
   };

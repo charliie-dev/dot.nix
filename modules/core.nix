@@ -61,7 +61,8 @@
     ];
     sessionVariables = {
       # XDG-aware tool homes shared by macOS and Linux.
-      WGETRC = "${config.xdg.configHome}/wget/wgetrc";
+      PYTHONSTARTUP = "${src}/modules/apps/python/pythonrc";
+      PYTHON_HISTORY = "${config.xdg.stateHome}/python/history";
       CARGO_HOME = "${config.xdg.dataHome}/cargo";
       RUSTUP_HOME = "${config.xdg.dataHome}/rustup";
       GOPATH = "${config.xdg.dataHome}/go";
@@ -154,6 +155,9 @@
       initDataDirs = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         mkdir -p ${config.xdg.dataHome}/dotnet
       '';
+      initPythonState = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        mkdir -p "${config.xdg.stateHome}/python"
+      '';
       migrateZshHistory = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         zsh_history_legacy="${config.xdg.cacheHome}/zsh/history"
         zsh_history_target="${config.xdg.stateHome}/zsh/history"
@@ -179,26 +183,9 @@
         recursive = true;
         source = "${src}/conf.d/carapace/specs";
       };
-      "python" = {
-        recursive = true;
-        source = "${src}/conf.d/python";
-      };
       "ghostty" = {
         recursive = true;
         source = "${src}/conf.d/ghostty";
-      };
-      "glow" = {
-        recursive = true;
-        source = "${src}/conf.d/glow";
-      };
-      "hunk" = {
-        recursive = true;
-        source = "${src}/conf.d/hunk";
-      };
-      "tombi/config.toml".source = "${src}/conf.d/tombi/config.toml";
-      "wget" = {
-        recursive = true;
-        source = "${src}/conf.d/wget";
       };
       "terraform/terraformrc".text = ''
         plugin_cache_dir   = "${config.xdg.dataHome}/terraform/plugin-cache"

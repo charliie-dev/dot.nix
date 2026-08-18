@@ -21,8 +21,12 @@ let
     && !(builtins.elem name [
       "default.nix"
       "catppuccin.nix"
+      "glow.nix"
+      "hunk.nix"
       "patina.nix"
       "ssh.nix"
+      "tombi.nix"
+      "wget.nix"
     ])
     && !(lib.hasPrefix "_" name)
   ) (builtins.readDir ./.);
@@ -49,8 +53,12 @@ in
   # Full app modules live beside the fragments but bypass programs.* wrapping.
   imports = [
     ./catppuccin.nix
+    ./glow.nix
+    ./hunk.nix
     ./patina.nix
     ./ssh.nix
+    ./tombi.nix
+    ./wget.nix
   ];
 
   home.packages = lib.unique (common_apps ++ rolePackages);
