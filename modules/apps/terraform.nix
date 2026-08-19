@@ -4,7 +4,7 @@
   ...
 }:
 let
-  pluginCacheDir = "${config.xdg.dataHome}/terraform/plugin-cache";
+  pluginCacheDir = "${config.xdg.cacheHome}/terraform/plugin-cache";
 in
 {
   home.activation.terraformPluginCache = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
