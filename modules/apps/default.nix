@@ -7,10 +7,15 @@
   ...
 }:
 let
-  inherit (import ./_common.nix { inherit pkgs; }) common_apps;
-  rolePackages = lib.concatMap (
-    role: (import (./roles + "/${role}.nix") { inherit config pkgs; }).packages
-  ) roles;
+  packageSets = import ./_packages.nix { inherit pkgs; };
+  validRoles = builtins.attrNames packageSets.roles;
+  getRolePackages =
+    role:
+    if builtins.hasAttr role packageSets.roles then
+      packageSets.roles.${role}
+    else
+      throw "unknown app role '${role}'; valid roles: ${lib.concatStringsSep ", " validRoles}";
+  rolePackages = lib.concatMap getRolePackages roles;
 
   # Auto-discover program fragments from this directory. Convention:
   # <name>.nix returns { <name> = { ... }; }; helpers prefix with `_`.
@@ -69,6 +74,6 @@ in
     ./wget.nix
   ];
 
-  home.packages = lib.unique (common_apps ++ rolePackages);
+  home.packages = lib.unique (packageSets.common ++ rolePackages);
   programs = lib.mkMerge (map loadApp (builtins.attrNames appFiles));
 }

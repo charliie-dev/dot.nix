@@ -10,7 +10,7 @@ Nix Home-Manager dotfiles repo — manages dev environments across macOS/Linux u
 - `modules/runtime/*.nix` - App-specific activation hooks
 - `modules/platform/*.nix` - OS targets, runtime integration, and platform services
 - `modules/secrets/*.nix` - Secret-gated SOPS and Doppler integration
-- Role-based packages: hosts.nix defines roles → `modules/apps/roles/*.nix`
+- Package catalog: `modules/apps/_packages.nix` defines common and role-based packages selected by `hosts.nix`
 - `skills/` - Version-controlled agent skill sources; not Home Manager modules
 - DAG activation: `lib.hm.dag.entryAfter ["writeBoundary"]`
 - Custom scripts: `conf.d/Usercommand/` → `~/.local/bin`
