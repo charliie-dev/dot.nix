@@ -94,9 +94,9 @@
       ++ lib.optionals stdenv.hostPlatform.isDarwin [
         macpm # Perf monitoring CLI tool for Apple Silicon
       ];
-
-    "nvidia-gpu" = with pkgs; [
-      nvtopPackages.nvidia # GPU process monitor (htop-like) for NVIDIA
-    ];
   };
+
+  capabilities.nvidiaGpu = with pkgs; [
+    nvtopPackages.nvidia # GPU process monitor (htop-like) for NVIDIA
+  ];
 }

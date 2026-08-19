@@ -3,7 +3,7 @@
   pkgs,
   lib,
   nixgl,
-  gpuEnabled ? false,
+  nvidiaGpu ? false,
   ...
 }:
 lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
@@ -13,7 +13,7 @@ lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
     enable = true;
     gpu.enable = false;
   }
-  // lib.optionalAttrs gpuEnabled {
+  // lib.optionalAttrs nvidiaGpu {
     nixGL = {
       inherit (nixgl) packages;
       installScripts = [

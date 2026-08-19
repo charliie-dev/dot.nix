@@ -4,6 +4,7 @@
   lib,
   src,
   roles ? [ ],
+  nvidiaGpu ? false,
   ...
 }:
 let
@@ -16,6 +17,7 @@ let
     else
       throw "unknown app role '${role}'; valid roles: ${lib.concatStringsSep ", " validRoles}";
   rolePackages = lib.concatMap getRolePackages roles;
+  nvidiaPackages = lib.optionals nvidiaGpu packageSets.capabilities.nvidiaGpu;
 
   # Auto-discover program fragments from this directory. Convention:
   # <name>.nix returns { <name> = { ... }; }; helpers prefix with `_`.
@@ -74,6 +76,6 @@ in
     ./wget.nix
   ];
 
-  home.packages = lib.unique (packageSets.common ++ rolePackages);
+  home.packages = lib.unique (packageSets.common ++ rolePackages ++ nvidiaPackages);
   programs = lib.mkMerge (map loadApp (builtins.attrNames appFiles));
 }

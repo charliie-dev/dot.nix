@@ -2,7 +2,7 @@
 # enableSecrets: application secrets (Doppler token and process-scoped wrappers)
 # enableSshSecrets: SOPS SSH baseline; defaults to enableSecrets when unspecified
 # sharedConfig: point to another host name to reuse its homeManagerConfiguration
-# gpu: enable the nixGL/NVIDIA variant of the generic Linux platform
+# nvidiaGpu: enable the nixGL/NVIDIA variant of the generic Linux platform
 {
   "charles@24041-LABNB01" = {
     system = "aarch64-darwin";
@@ -42,10 +42,9 @@
       "dev-core"
       "dev-extra"
       "top"
-      "nvidia-gpu"
     ];
     homeDirectory = "/home/charles";
-    gpu = true;
+    nvidiaGpu = true;
     enableSecrets = true;
     silent = true;
   };

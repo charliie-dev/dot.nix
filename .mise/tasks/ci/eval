@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#MISE description="CI host-eval gate: evaluate this system's homeConfigurations (non-gpu, non-shared)"
+#MISE description="CI host-eval gate: evaluate this system's homeConfigurations (non-NVIDIA, non-shared)"
 #MISE raw=true
 # Mirrors the `eval-hosts` job in .github/workflows/ci.yml, restricted to the
 # current system so it runs offline on your machine. CI covers every system.
@@ -8,7 +8,7 @@ set -uo pipefail
 sys=$(nix eval --impure --raw --expr 'builtins.currentSystem')
 hosts=$(nix eval --file hosts.nix --apply "
   hosts: builtins.filter
-    (name: hosts.\${name}.system == \"$sys\" && !(hosts.\${name}.gpu or false) && !(hosts.\${name} ? sharedConfig))
+    (name: hosts.\${name}.system == \"$sys\" && !(hosts.\${name}.nvidiaGpu or false) && !(hosts.\${name} ? sharedConfig))
     (builtins.attrNames hosts)
 " --json) || { echo "[ERROR] nix eval of hosts.nix failed" >&2; exit 1; }
 

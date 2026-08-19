@@ -77,11 +77,11 @@
       hosts = import ./hosts.nix;
 
       mkHost =
-        _name: hostCfg:
+        name: hostCfg:
         let
           enableSecrets = hostCfg.enableSecrets or false;
           enableSshSecrets = hostCfg.enableSshSecrets or enableSecrets;
-          isGpu = hostCfg.gpu or false;
+          nvidiaGpu = hostCfg.nvidiaGpu or false;
           # General rule: doCheck=false is only worth setting on a package we
           # are ALREADY forced to rebuild locally (e.g. the determinate-nix
           # override below pulls nurl off cache). On a package that still
@@ -175,14 +175,17 @@
             batExtrasOverlay
             determinateNixOverlay
           ]
-          ++ (if isGpu then [ nixgl.overlay ] else [ ]);
+          ++ lib.optional nvidiaGpu nixgl.overlay;
           pkgsConfig = {
             allowUnfree = true;
           }
-          // (if isGpu then { nvidia.acceptLicense = true; } else { });
+          // lib.optionalAttrs nvidiaGpu { nvidia.acceptLicense = true; };
 
           silentModule = if hostCfg.silent or false then { news.display = "silent"; } else { };
         in
+        assert lib.assertMsg (
+          !nvidiaGpu || lib.hasSuffix "-linux" hostCfg.system
+        ) "host ${name}: nvidiaGpu requires a Linux system";
         home-manager.lib.homeManagerConfiguration {
           pkgs = import nixpkgs {
             inherit (hostCfg) system;
@@ -195,8 +198,8 @@
               enableSecrets
               enableSshSecrets
               nixgl
+              nvidiaGpu
               ;
-            gpuEnabled = isGpu;
             inherit (hostCfg) roles;
           };
           modules = [

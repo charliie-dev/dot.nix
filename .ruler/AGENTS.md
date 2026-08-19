@@ -3,7 +3,7 @@
 Nix Home-Manager dotfiles repo — manages dev environments across macOS/Linux using Nix Flakes.
 
 - `flake.nix` - Inputs and homeConfigurations per host
-- `hosts.nix` - Declarative host registry (system, roles, gpu, sharedConfig)
+- `hosts.nix` - Declarative host registry (system, roles, nvidiaGpu, sharedConfig)
 - `modules/default.nix` - Entry point for all local Home Manager modules
 - `modules/core.nix` - Shared Nix, XDG, environment, PATH, and Home Manager policy
 - `modules/apps/default.nix` - Aggregates program fragments, full app modules, and role-based packages
