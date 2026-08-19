@@ -166,32 +166,9 @@
           cp -p "$zsh_history_legacy" "$zsh_history_target"
         fi
       '';
-      terraformPluginCache = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-        mkdir -p "${config.xdg.dataHome}/terraform/plugin-cache"
-      '';
     };
   };
 
-  xdg = {
-    enable = true;
-    configFile = {
-      # aube pkg-manager exemptions (allowlist + trust exclude) for the mise npm
-      # backend — see conf.d/aube/config.toml and modules/apps/mise.nix. Single
-      # file (not recursive) so HM doesn't claim the whole ~/.config/aube dir.
-      "aube/config.toml".source = "${src}/conf.d/aube/config.toml";
-      "carapace/specs" = {
-        recursive = true;
-        source = "${src}/conf.d/carapace/specs";
-      };
-      "ghostty" = {
-        recursive = true;
-        source = "${src}/conf.d/ghostty";
-      };
-      "terraform/terraformrc".text = ''
-        plugin_cache_dir   = "${config.xdg.dataHome}/terraform/plugin-cache"
-        disable_checkpoint = true
-      '';
-    };
-  };
+  xdg.enable = true;
 
 }

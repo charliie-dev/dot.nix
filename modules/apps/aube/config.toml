@@ -1,6 +1,6 @@
 # aube package-manager config — consumed by the mise npm backend
 # (settings.npm.package_manager = "aube" in modules/apps/mise.nix). Linked to
-# ~/.config/aube/config.toml by modules/core.nix.
+# ~/.config/aube/config.toml by modules/apps/aube.nix.
 #
 # allowedUnpopularPackages: the curated set of global CLI tools mise installs via
 # aube. They are niche (some <1000 weekly downloads) but explicitly vetted and

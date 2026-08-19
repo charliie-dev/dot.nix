@@ -20,11 +20,15 @@ let
     && lib.hasSuffix ".nix" name
     && !(builtins.elem name [
       "default.nix"
+      "aube.nix"
+      "carapace.nix"
       "catppuccin.nix"
+      "ghostty.nix"
       "glow.nix"
       "hunk.nix"
       "patina.nix"
       "ssh.nix"
+      "terraform.nix"
       "tombi.nix"
       "wget.nix"
     ])
@@ -52,11 +56,15 @@ in
 {
   # Full app modules live beside the fragments but bypass programs.* wrapping.
   imports = [
+    ./aube.nix
+    ./carapace.nix
     ./catppuccin.nix
+    ./ghostty.nix
     ./glow.nix
     ./hunk.nix
     ./patina.nix
     ./ssh.nix
+    ./terraform.nix
     ./tombi.nix
     ./wget.nix
   ];
