@@ -21,7 +21,12 @@
         python = "latest";
         uv = "latest";
         node = "latest";
-        tombi = "latest";
+        # Tombi publishes musl-only Linux assets; the GitHub backend selects the
+        # available release even though the global libc setting remains gnu.
+        "github:tombi-toml/tombi" = {
+          version = "latest";
+          exe = "tombi";
+        };
         # nub: Rust front-end for the Node toolchain — replaces npm/pnpm run, npx,
         # nvm/fnm, tsx/ts-node and nodemon with one binary. Not a runtime: it
         # provisions and execs real node, so `node` above is a hard dependency (the
