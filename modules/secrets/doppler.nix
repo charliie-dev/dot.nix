@@ -13,6 +13,27 @@ let
   # 目標命令走 DOPPLER_CONFIG_DIR。兩者都不指定的話 doppler 會落回 ~/.doppler
   # 在家目錄建 config;指到 XDG config 又會讓目標命令拿到那裡的 login token。
   dopplerRunConfigDir = "${config.xdg.cacheHome}/doppler-run";
+  herdrContextNames = [
+    "HERDR_ENV"
+    "HERDR_SOCKET_PATH"
+    "HERDR_WORKSPACE_ID"
+    "HERDR_TAB_ID"
+    "HERDR_PANE_ID"
+  ];
+  unixCoreEnvironmentNames = [
+    "PATH"
+    "SHELL"
+    "TMPDIR"
+    "TEMP"
+    "TMP"
+    "HOME"
+    "LANG"
+    "LC_ALL"
+    "LC_CTYPE"
+    "LOGNAME"
+    "USER"
+  ];
+  agentShellEnvironmentNames = unixCoreEnvironmentNames ++ herdrContextNames;
   sensitiveNames = [
     "DOPPLER_TOKEN"
     "DOPPLER_PROJECT"
@@ -55,7 +76,9 @@ let
         TOKEN_TARGET = ${builtins.toJSON dopplerTokenTarget}
         RUN_CONFIG_DIR = ${builtins.toJSON dopplerRunConfigDir}
         GROK_CONFIG = ${builtins.toJSON "${config.xdg.configHome}/grok/config.toml"}
-        SENSITIVE = set(${builtins.toJSON sensitiveNames})
+        SENSITIVE_NAMES = tuple(${builtins.toJSON sensitiveNames})
+        AGENT_SHELL_ENVIRONMENT_NAMES = tuple(${builtins.toJSON agentShellEnvironmentNames})
+        SENSITIVE = set(SENSITIVE_NAMES)
         BOOTSTRAP_METADATA = {
             "DOPPLER_PROJECT",
             "DOPPLER_CONFIG",
@@ -100,7 +123,7 @@ let
                 "anmo.tw",
             ),
         }
-        GROK_EXCLUDES = SENSITIVE
+        GROK_EXCLUDES = SENSITIVE_NAMES
         NAME_RE = re.compile(r"^[A-Z_][A-Z0-9_]*$")
         CF_TOKEN_RE = re.compile(r"^[0-9A-Za-z_-]{40,80}$")
 
@@ -228,17 +251,14 @@ let
                 fail("Grok config is unreadable or malformed")
             policy = doc.get("shell_environment_policy")
             if not isinstance(policy, dict) or set(policy) != {
-                "inherit", "ignore_default_excludes", "exclude"
+                "inherit", "ignore_default_excludes", "exclude", "include_only"
             }:
                 fail("Grok shell environment policy has drifted")
-            excludes = policy.get("exclude")
             if (
-                policy.get("inherit") != "core"
+                policy.get("inherit") != "all"
                 or policy.get("ignore_default_excludes") is not False
-                or not isinstance(excludes, list)
-                or any(not isinstance(x, str) for x in excludes)
-                or len(excludes) != len(set(excludes))
-                or set(excludes) != GROK_EXCLUDES
+                or policy.get("exclude") != list(GROK_EXCLUDES)
+                or policy.get("include_only") != list(AGENT_SHELL_ENVIRONMENT_NAMES)
             ):
                 fail("Grok shell environment policy has drifted")
 
@@ -330,6 +350,12 @@ let
             ):
                 fail("injected Doppler source metadata does not match fixed source")
             final = restore_transport(clean_environment(os.environ))
+            if profile == "azure-grok":
+                final.pop("GROK_CONFIG", None)
+                final.pop("GROK_CONFIG_PATH", None)
+                final["GROK_HOME"] = ${builtins.toJSON "${config.xdg.configHome}/grok"}
+            if profile == "azure-codex":
+                final["CODEX_HOME"] = ${builtins.toJSON "${config.xdg.configHome}/codex"}
             final["DOPPLER_CONFIG_DIR"] = RUN_CONFIG_DIR
             for name in required:
                 final[name] = os.environ[name]
@@ -393,19 +419,48 @@ let
     text = ''
       for arg in "$@"; do
         case "$arg" in
-          -c | --config | --config=* | --enable | --disable)
+          -c | -c?* | --config | --config=* | -p | -p?* | --profile | --profile=* | --enable | --enable=* | --disable | --disable=*)
             echo "codex-azure: caller configuration overrides are not allowed" >&2
             exit 2
             ;;
         esac
       done
+      herdr_context_names=(
+        HERDR_ENV
+        HERDR_SOCKET_PATH
+        HERDR_WORKSPACE_ID
+        HERDR_TAB_ID
+        HERDR_PANE_ID
+      )
+      herdr_present=0
+      for name in "''${herdr_context_names[@]}"; do
+        if [[ -v $name ]]; then
+          ((herdr_present += 1))
+        fi
+      done
+      if ((herdr_present != 0 && herdr_present != 5)); then
+        echo "codex-azure: partial Herdr context is not allowed" >&2
+        exit 2
+      fi
+      trusted_herdr_args=()
+      for name in "''${herdr_context_names[@]}"; do
+        if ((herdr_present == 5)); then
+          value="''${!name}"
+        else
+          value=""
+        fi
+        json="$(printf '%s' "$value" | ${lib.getExe pkgs.jq} -Rs .)"
+        trusted_herdr_args+=( -c "shell_environment_policy.set.$name=$json" )
+      done
       exec ${dopplerRun}/bin/doppler-run azure-codex -- codex \
         --disable hooks \
         --disable shell_snapshot \
         -c 'notify=[]' \
-        -c 'shell_environment_policy.inherit="core"' \
+        -c 'shell_environment_policy.inherit="all"' \
+        -c 'shell_environment_policy.include_only=${builtins.toJSON agentShellEnvironmentNames}' \
         -c 'shell_environment_policy.ignore_default_excludes=false' \
         -c 'shell_environment_policy.exclude=["AZURE_OPENAI_API_KEY"]' \
+        "''${trusted_herdr_args[@]}" \
         "$@"
     '';
   };
