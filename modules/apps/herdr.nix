@@ -71,6 +71,7 @@
           "grok"
           "pi"
         ];
+        cjk_ime_cursor_shape = "bar";
         # 本地 Kitty graphics 渲染;需外層終端支援(ghostty 有)
         kitty_graphics = true;
       };
