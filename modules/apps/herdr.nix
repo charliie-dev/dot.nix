@@ -6,24 +6,47 @@
       onboarding = false;
 
       theme = {
-        name = "terminal"; # 跟隨 ghostty (固定 Catppuccin Mocha)
+        name = "catppuccin"; # 跟隨 ghostty (固定 Catppuccin Mocha)
         auto_switch = false;
+        # surface_dim 是 herdr 的邊線/分隔線 token,內建 catppuccin 主題的值
+        # 太接近背景,拉亮到 Mocha surface2 讓 pane 邊線與 sidebar 分隔線可見
+        custom.surface_dim = "#585b70"; # Mocha surface2
       };
 
+      # herdr 版本由 nixpkgs 管,背景版本檢查沒有意義
+      update.version_check = false;
+
       ui = {
+        accent = "#cba6f7";
         show_agent_labels_on_pane_borders = true;
+        pane_borders = true;
+        # pane_outer_borders = true;
+        pane_gaps = true;
         # priority:注意力佇列排序(需要處理的排前面),取代預設的 spaces 分組
         agent_panel_sort = "priority";
-        # sidebar 展開列:多加一行任務標題,7 個 session 並行時才分得出誰在做什麼
-        sidebar.agents.rows = [
-          [
-            "state_icon"
-            "workspace"
-            "tab"
-          ]
-          [ "terminal_title_stripped" ]
-          [ "agent" ]
-        ];
+        # sidebar 展開列:對齊 herdr.dev 官網示意
+        # spaces rows 用預設 [["state_icon","workspace"],["branch","git_status"]]
+        # row_gap = 1:條目間留一行空隙(0.7.4 起預設 packed)
+        sidebar = {
+          spaces.row_gap = 1;
+          agents = {
+            row_gap = 1;
+            rows = [
+              [
+                "state_icon"
+                "workspace"
+              ]
+              [
+                "state_text"
+                # agent 名取消變暗(herdr 寫死 overlay0+dim,無法跟狀態變色)
+                {
+                  token = "agent";
+                  dim = false;
+                }
+              ]
+            ];
+          };
+        };
         toast = {
           # terminal:走 OSC 9/99 請 ghostty 發桌面通知(可拿到 ghostty 的通知音)
           delivery = "terminal";
@@ -102,6 +125,13 @@
             key = "prefix+alt+d";
             type = "popup";
             command = "lazydocker";
+            width = "80%";
+            height = "80%";
+          }
+          {
+            key = "prefix+alt+y";
+            type = "popup";
+            command = "yazi";
             width = "80%";
             height = "80%";
           }
