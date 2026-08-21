@@ -40,4 +40,13 @@ run = [
 description = "Run CI gates locally: ci:fmt then ci:eval"
 run = [{ task = "ci:fmt" }, { task = "ci:eval" }]
 
+# ==============================================================================
+#  Herdr
+# ==============================================================================
+# 0.7.5 起 `herdr config check` 會報未知 key 的完整路徑;改完 herdr.nix 並
+# switch 後跑這個驗證生效中的設定檔。
+[tasks."herdr:check"]
+description = "Validate active herdr config (reports unknown keys with full paths)"
+run = "herdr config check"
+
 # mise sync-transient-prompt: update colors in plugins.zsh after changing theme
