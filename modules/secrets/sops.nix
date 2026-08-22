@@ -470,7 +470,15 @@ lib.mkMerge [
   }
   (lib.mkIf sopsEnabled {
     sops = {
-      defaultSopsFile = "${src}/conf.d/sops/secrets.yaml";
+      # builtins.path copies just this file into its own store path, keyed by
+      # file content. Interpolating "${src}/..." directly would key it to the
+      # hash of the whole flake source, so every repo change would rewrite the
+      # sops manifest -> launchd plist chain, re-registering the agent (and
+      # popping a BTM "background item added" notification) on every switch.
+      defaultSopsFile = builtins.path {
+        path = "${src}/conf.d/sops/secrets.yaml";
+        name = "secrets.yaml";
+      };
       age.keyFile = "${config.xdg.configHome}/age/keys.txt";
     };
 
