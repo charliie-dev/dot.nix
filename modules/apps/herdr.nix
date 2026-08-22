@@ -1,7 +1,10 @@
 {
   herdr = {
     enable = true;
-    # package 使用預設 pkgs.herdr
+    # 這個 module 只管 config。binary 走官方 installer(~/.local/bin/herdr)
+    # 自我升級:`herdr update`,由 topgrade 的 herdr custom command 觸發。
+    # nixpkgs 版本落後 upstream(0.8.0 vs 0.8.2),且 nix 安裝會停用 self-update。
+    package = null;
     settings = {
       onboarding = false;
 
@@ -13,8 +16,7 @@
         custom.surface_dim = "#585b70"; # Mocha surface2
       };
 
-      # herdr 版本由 nixpkgs 管,背景版本檢查沒有意義
-      update.version_check = false;
+      # binary 自我管理後,背景版本檢查恢復意義(預設開啟)
 
       ui = {
         accent = "#cba6f7";

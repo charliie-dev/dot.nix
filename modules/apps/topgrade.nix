@@ -156,6 +156,10 @@
         # matches the NOPASSWD sudoers rule for /usr/local/bin/determinate-nixd;
         # if that rule ever disappears, -n fails loudly instead of prompting.
         "Determinate Nix upgrade" = "sudo -n /usr/local/bin/determinate-nixd upgrade";
+        # herdr binary is self-managed (modules/apps/herdr.nix sets package = null).
+        # No --handoff: the running server keeps the old version until its next
+        # restart instead of live-swapping mid-run.
+        "herdr" = "herdr update";
         # "Python Environment" = "~/dev/.env/bin/pip install -i https://pypi.python.org/simple -U --upgrade-strategy eager jupyter"
         # "Custom command using interactive shell (unix)" = "-i vim_upgrade"
       };
