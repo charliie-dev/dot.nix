@@ -19,13 +19,19 @@
         # (default: false)
         # allow_root = false
 
-        # No step needs a cached sudo ticket anymore: the only privileged action
-        # is the "Determinate Nix upgrade" custom command below, which runs
-        # `sudo -n` against a NOPASSWD sudoers rule. macOS system update runs
-        # softwareupdate without sudo. Keeping these off makes the whole run
-        # prompt-free.
-        pre_sudo = false;
-        sudo_loop = false;
+        # One Touch ID / password at run start, silent afterwards. Needed for
+        # the mas step: on macOS 26.1+ installd requires an Apple-only
+        # entitlement, so mas >= 4.1 installs via `sudo /usr/sbin/installer`
+        # internally and probes the ticket with `sudo -n true`. A scoped
+        # NOPASSWD rule is not possible there (installer/sh with variable
+        # args equals passwordless root). The Determinate Nix upgrade custom
+        # command still uses its own NOPASSWD rule and ignores the ticket.
+        pre_sudo = true;
+        sudo_loop = true;
+        # Must stay below the macOS sudo timestamp_timeout (300s): the loop
+        # refreshes with `sudo -n -v`, which silently fails on an expired
+        # ticket and never revives it. 240s is also topgrade's default.
+        sudo_loop_interval = 240;
 
         # Sudo command to be used
         sudo_command = "sudo";
