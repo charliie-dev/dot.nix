@@ -171,6 +171,61 @@
     claude = ''
       env -u DO_NOT_TRACK claude "$@"
     '';
+
+    # skipDangerousModePermissionPrompt suppresses the workspace-trust dialog,
+    # and Claude Code silently disables statusline + hooks in untrusted
+    # workspaces (anthropics/claude-code#34608). Mark $PWD trusted up front —
+    # the same write the dialog would have made.
+    cc = ''
+      local cfg="''${CLAUDE_CONFIG_DIR:-$HOME/.config/claude}/.claude.json"
+      if [[ -f "$cfg" ]] && ! jq -e --arg p "$PWD" \
+          '.projects[$p].hasTrustDialogAccepted == true' "$cfg" >/dev/null 2>&1; then
+        jq --arg p "$PWD" \
+          '.projects[$p] = ((.projects[$p] // {}) + {hasTrustDialogAccepted: true})' \
+          "$cfg" > "$cfg.tmp" && command mv "$cfg.tmp" "$cfg" || command rm -f "$cfg.tmp"
+      fi
+      claude --dangerously-skip-permissions "$@"
+    '';
+
+    # Codex trust lookup is an exact-key match on cwd / git repo root — parent
+    # directory entries never inherit, and --yolo doesn't bypass the first-run
+    # trust prompt or project-local .codex gating (verified in codex-rs 0.149.0
+    # config_toml.rs get_active_project). Seed the repo-root entry codex itself
+    # would write on accepting the prompt.
+    cdx = ''
+      local root rc
+      root=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
+      if [[ "$root" == */.git ]]; then
+        root="''${root%/.git}"  # main repo root (normal repo and linked worktree)
+      else
+        # submodule / separate-git-dir / bare / non-git: current tree's toplevel, else cwd
+        root=$(git rev-parse --path-format=absolute --show-toplevel 2>/dev/null)
+        [[ -z "$root" ]] && root=$PWD
+      fi
+      local cfg="''${CODEX_HOME:-$HOME/.codex}/config.toml"
+      if [[ -f "$cfg" ]]; then
+        # TOML-aware existence check (grep on one textual rendering can miss
+        # quote/indent variants and append a duplicate table, which makes codex
+        # reject the whole config): 0=present, 1=absent, 2=unreadable (leave alone)
+        python3 -c '
+      import sys
+      try:
+          import tomllib
+          with open(sys.argv[1], "rb") as f:
+              data = tomllib.load(f)
+      except Exception:
+          sys.exit(2)
+      sys.exit(0 if sys.argv[2] in data.get("projects", {}) else 1)
+      ' "$cfg" "$root" 2>/dev/null
+        rc=$?
+        if (( rc == 1 )); then
+          local esc="''${root//\\/\\\\}"
+          esc="''${esc//\"/\\\"}"  # escape for a TOML basic-string key
+          printf '\n[projects."%s"]\ntrust_level = "trusted"\n' "$esc" >> "$cfg"
+        fi
+      fi
+      codex --dangerously-bypass-approvals-and-sandbox "$@"
+    '';
   };
 
   initContent = lib.mkOrder 1050 ''

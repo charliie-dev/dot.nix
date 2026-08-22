@@ -29,9 +29,7 @@ in
     wget = "wget2";
     zip = "ouch compress";
     unzip = "ouch decompress";
-    cc = "claude --dangerously-skip-permissions";
     cct = "claude-code-toggle";
-    cdx = "codex --dangerously-bypass-approvals-and-sandbox";
 
     py = "TERM=xterm-256color python3";
     ls = "lsd -lAh";
