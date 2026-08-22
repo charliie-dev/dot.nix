@@ -19,32 +19,32 @@
         # (default: false)
         # allow_root = false
 
-        # Run `sudo -v` to cache credentials at the start of the run
-        # This avoids a blocking password prompt in the middle of an unattended run
-        # (default: false)
-        pre_sudo = true;
-
-        # Periodically runs `sudo -v` or `please -w` to avoid password re-prompts during updates (default: false)
-        # WARNING: This is a potential security risk; if you walk away from the computer while topgrade is running,
-        # another person can come by, CTRL+C, and gain access to a sudo session.
-        sudo_loop = true;
-        sudo_loop_interval = 600; # 10 minutes (600s); default if sudo_loop enabled
+        # No step needs a cached sudo ticket anymore: the only privileged action
+        # is the "Determinate Nix upgrade" custom command below, which runs
+        # `sudo -n` against a NOPASSWD sudoers rule. macOS system update runs
+        # softwareupdate without sudo. Keeping these off makes the whole run
+        # prompt-free.
+        pre_sudo = false;
+        sudo_loop = false;
 
         # Sudo command to be used
         sudo_command = "sudo";
 
-        # Disable specific steps - same options as the command line flag
-        # disable = [
-        #   "system"
-        #   "emacs"
-        # ];
+        # The built-in nix step hardcodes `sudo -i` for the Determinate
+        # self-upgrade; with -i sudoers matches root's login shell instead of
+        # determinate-nixd, so the NOPASSWD rule never applies and it prompts.
+        # Replaced by the "Determinate Nix upgrade" custom command below.
+        # nix-env / nix-channel (also part of this step) are no-ops in a
+        # flake + home-manager setup.
+        disable = [ "nix" ];
 
         # Run these steps before all others
         # first = ["chezmoi"]
 
-        # Run Nix before Home Manager after Git repository updates.
+        # Run the Determinate Nix upgrade (custom command) before Home Manager,
+        # after Git repository updates.
         last = [
-          "nix"
+          "custom_commands"
           "home_manager"
         ];
 
@@ -146,6 +146,10 @@
 
       # Custom commands
       commands = {
+        # Replaces the disabled built-in nix step (see misc.disable). `sudo -n`
+        # matches the NOPASSWD sudoers rule for /usr/local/bin/determinate-nixd;
+        # if that rule ever disappears, -n fails loudly instead of prompting.
+        "Determinate Nix upgrade" = "sudo -n /usr/local/bin/determinate-nixd upgrade";
         # "Python Environment" = "~/dev/.env/bin/pip install -i https://pypi.python.org/simple -U --upgrade-strategy eager jupyter"
         # "Custom command using interactive shell (unix)" = "-i vim_upgrade"
       };
