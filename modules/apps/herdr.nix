@@ -22,8 +22,10 @@
         accent = "#cba6f7";
         show_agent_labels_on_pane_borders = true;
         pane_borders = true;
-        # pane_outer_borders = true;
+        pane_outer_borders = true;
         pane_gaps = true;
+        # symbols:blocked/working/done/idle/unknown 用不同靜態形狀取代預設彩色圓點
+        status_indicators = "symbols";
         # priority:注意力佇列排序(需要處理的排前面),取代預設的 spaces 分組
         agent_panel_sort = "priority";
         # sidebar 展開列:對齊 herdr.dev 官網示意
@@ -59,6 +61,8 @@
         };
         # 背景 workspace 的 agent 狀態音效
         sound.enabled = true;
+
+        tab_bar_right = [ { type = "zoom"; } ];
       };
 
       experimental = {
