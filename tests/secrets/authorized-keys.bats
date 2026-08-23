@@ -268,10 +268,16 @@ key = os.path.join(base, 'key')
 subprocess.run([ns['SSH_KEYGEN'], '-q', '-t', 'ed25519', '-N', '', '-f', key], check=True)
 record = open(key + '.pub', 'rb').read().strip(); g['PIN'] = ns['fingerprint_record'](record)
 # The deployment path must be the exact owned symlink to the expected safe terminal file.
-terminal = os.path.join(base, 'terminal'); open(terminal, 'wb').write(record + b'\n'); os.chmod(terminal, 0o644)
+terminal = os.path.join(base, 'terminal'); open(terminal, 'wb').write(record + b'\n')
 deploy = os.path.join(ssh, 'id_ed25519.pub'); os.symlink(terminal, deploy)
 g['PUBLIC_KEY_TARGET'] = terminal
-assert ns['read_expected_link'](deploy, terminal, {0o644}) == record + b'\n'
+for mode in (0o600, 0o644):
+    os.chmod(terminal, mode)
+    assert ns['read_expected_link'](deploy, terminal, ns['PUBLIC_KEY_MODES']) == record + b'\n'
+os.chmod(terminal, 0o660)
+try: ns['read_expected_link'](deploy, terminal, ns['PUBLIC_KEY_MODES'])
+except SystemExit: pass
+else: raise AssertionError('group-writable public key accepted')
 os.unlink(deploy); os.symlink(os.path.join(base, 'wrong'), deploy)
 try: ns['read_expected_link'](deploy, terminal, {0o644})
 except SystemExit: pass

@@ -39,6 +39,8 @@ let
             rb"^[ \t]*ssh-ed25519[ \t]+([^ \t]+)(?:[ \t]+[\t -~]*)?$"
         )
         MAX_RECORD_BYTES = 4096
+        # sops-install-secrets applies the caller's umask, so 0644 may become 0600.
+        PUBLIC_KEY_MODES = {0o600, 0o644}
         TARGET_MODES = {0o600, 0o644}
         TEST_HOOK = lambda event: None
 
@@ -393,7 +395,7 @@ let
             if not args.enabled:
                 return
             require_primitives()
-            public = read_expected_link(args.public_key, PUBLIC_KEY_TARGET, {0o644})
+            public = read_expected_link(args.public_key, PUBLIC_KEY_TARGET, PUBLIC_KEY_MODES)
             canonical, _ = validate_canonical_bytes(public)
             result = manage_authorized(args.authorized, canonical, args.dry_run)
             if args.dry_run:
