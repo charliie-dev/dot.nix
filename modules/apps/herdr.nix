@@ -1,10 +1,10 @@
+{ pkgs, ... }:
 {
   herdr = {
     enable = true;
-    # 這個 module 只管 config。binary 走官方 installer(~/.local/bin/herdr)
-    # 自我升級:`herdr update`,由 topgrade 的 herdr custom command 觸發。
-    # nixpkgs 版本落後 upstream(0.8.0 vs 0.8.2),且 nix 安裝會停用 self-update。
-    package = null;
+    # Nix package 是 first-use bootstrap stub,官方 binary 放在 ~/.local/bin/herdr。
+    # 自我升級仍走 `herdr update`,由 topgrade 的 herdr custom command 觸發。
+    package = pkgs.herdr;
     settings = {
       onboarding = false;
 

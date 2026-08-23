@@ -1,9 +1,24 @@
-{ config, lib, ... }:
 {
-  # binary 自我管理(package = null)後,上游 module 的 onChange 退化成裸呼叫
-  # `herdr`,但 activation script 的 PATH 沒有 ~/.local/bin,switch 後的
-  # auto reload 因此靜默失效。改回絕對路徑。
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+{
+  # Bootstrap 後的官方 binary 位於 ~/.local/bin,但 activation script 的
+  # PATH 沒有這個目錄。用絕對路徑維持 switch 後的 auto reload。
   xdg.configFile."herdr/config.toml".onChange = lib.mkForce ''
     ${config.home.homeDirectory}/.local/bin/herdr server reload-config || true
+  '';
+
+  # Existing native installs can shadow the profile stub. Refresh generated
+  # assets during switch without bootstrapping a missing binary.
+  home.activation.herdrNativeAssets = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    if [ -z "''${DRY_RUN_CMD:-}" ] && [ -x "${config.home.homeDirectory}/.local/bin/herdr" ]; then
+      HOME="${config.home.homeDirectory}" \
+        XDG_DATA_HOME="${config.xdg.dataHome}" \
+        XDG_STATE_HOME="${config.xdg.stateHome}" \
+        ${lib.getExe pkgs.herdr} --version > /dev/null || true
+    fi
   '';
 }

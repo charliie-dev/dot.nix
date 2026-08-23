@@ -70,7 +70,7 @@
         ];
       };
 
-      # Bootstrap upstream binaries on first use; each stub selects native or Nix assets.
+      # Bootstrap verified upstream binaries and their generated support assets on first use.
       binaryStubsOverlay = import ./modules/runtime/binary-stubs.nix { inherit lib; };
 
       hm_ver = "26.05";

@@ -15,15 +15,15 @@ let
     {
       name,
       repo,
-      member,
       arches,
-      completionShell ? null,
+      archiveMember ? null,
+      assetName ? "${name}-$tag-$arch.tar.gz",
+      generatedAssets ? [ ],
+      installDir ? ".local/share/${name}/bin",
       installNativeAssets ? false,
-      preserveUpstreamAssets ? true,
     }:
     let
-      upstream = prev.${name};
-      root = lib.head (lib.splitString "/" member);
+      root = if archiveMember == null then null else lib.head (lib.splitString "/" archiveMember);
       archCases = lib.concatStringsSep "\n" (
         lib.mapAttrsToList (platform: arch: "          ${platform}) arch=${arch} ;;") arches
       );
@@ -35,13 +35,15 @@ let
       wrapper = prev.writeShellApplication {
         inherit name runtimeInputs;
         text = ''
-                    target="$HOME/.local/share/${name}/bin/${name}"
-                    install_dir="$HOME/.local/share/${name}/bin"
+                    install_dir="$HOME/${installDir}"
+                    target="$install_dir/${name}"
                     state_home="''${XDG_STATE_HOME:-$HOME/.local/state}"
                     lock_dir="$state_home/home-manager/locks"
                     lock_path="$lock_dir/${name}-bootstrap.lock"
-          ${lib.optionalString installNativeAssets ''
+          ${lib.optionalString (installNativeAssets || generatedAssets != [ ]) ''
             data_home="''${XDG_DATA_HOME:-$HOME/.local/share}"
+          ''}
+          ${lib.optionalString installNativeAssets ''
             assets_stamp="$state_home/home-manager/${name}-assets-version"
             assets_retry="$state_home/home-manager/${name}-assets-retry"
             man_path="$data_home/man/man1/${name}.1"
@@ -124,7 +126,7 @@ let
                           exit 1
                         fi
 
-                        asset_name="${name}-$tag-$arch.tar.gz"
+                        asset_name="${assetName}"
                         expected_url="https://github.com/$repo/releases/download/$tag/$asset_name"
                         expected_digest=$(jq -er \
                           --arg tag "$tag" \
@@ -155,7 +157,7 @@ let
 
                         echo "${name} bootstrap: installing $tag" >&2
                         archive="$tmpdir/$asset_name"
-                        curl -fsSL --max-time 60 "$expected_url" -o "$archive" || {
+                        curl -fsSL --retry 3 --connect-timeout 10 --max-time 120 "$expected_url" -o "$archive" || {
                           echo "${name} bootstrap: release download failed" >&2
                           exit 1
                         }
@@ -165,37 +167,46 @@ let
                           exit 1
                         fi
 
-                        if ! tar -tzf "$archive" > "$tmpdir/members" \
-                          || ! awk -v root=${lib.escapeShellArg root} -v member=${lib.escapeShellArg member} '
-                            $0 !~ ("^" root "(/|$)") { valid = 0 }
-                            {
-                              parts = split($0, component, "/")
-                              for (i = 1; i <= parts; i++) {
-                                if (component[i] == "..") valid = 0
-                              }
-                            }
-                            $0 == member { count++ }
-                            END { exit !(valid != 0 && count == 1) }
-                          ' valid=1 "$tmpdir/members" \
-                          || ! tar -tvzf "$archive" | awk '
-                            substr($1, 1, 1) != "-" && substr($1, 1, 1) != "d" { valid = 0 }
-                            END { exit !(valid != 0) }
-                          ' valid=1; then
-                          echo "${name} bootstrap: unexpected or unsafe archive layout" >&2
-                          exit 1
-                        fi
+          ${lib.optionalString (archiveMember != null) ''
+            if ! tar -tzf "$archive" > "$tmpdir/members" \
+              || ! awk -v root=${lib.escapeShellArg root} -v member=${lib.escapeShellArg archiveMember} '
+                $0 !~ ("^" root "(/|$)") { valid = 0 }
+                {
+                  parts = split($0, component, "/")
+                  for (i = 1; i <= parts; i++) {
+                    if (component[i] == "..") valid = 0
+                  }
+                }
+                $0 == member { count++ }
+                END { exit !(valid != 0 && count == 1) }
+              ' valid=1 "$tmpdir/members" \
+              || ! tar -tvzf "$archive" | awk '
+                substr($1, 1, 1) != "-" && substr($1, 1, 1) != "d" { valid = 0 }
+                END { exit !(valid != 0) }
+              ' valid=1; then
+              echo "${name} bootstrap: unexpected or unsafe archive layout" >&2
+              exit 1
+            fi
 
-                        mkdir "$tmpdir/extract"
-                        tar --extract --gzip --file "$archive" --directory "$tmpdir/extract" \
-                          --no-same-owner --no-same-permissions || {
-                          echo "${name} bootstrap: archive extraction failed" >&2
-                          exit 1
-                        }
-                        extracted_bin="$tmpdir/extract/${member}"
-                        if [ ! -f "$extracted_bin" ] || [ -L "$extracted_bin" ] || [ ! -x "$extracted_bin" ]; then
-                          echo "${name} bootstrap: archive lacks regular executable ${member}" >&2
-                          exit 1
-                        fi
+            mkdir "$tmpdir/extract"
+            tar --extract --gzip --file "$archive" --directory "$tmpdir/extract" \
+              --no-same-owner --no-same-permissions || {
+              echo "${name} bootstrap: archive extraction failed" >&2
+              exit 1
+            }
+            extracted_bin="$tmpdir/extract/${archiveMember}"
+            if [ ! -f "$extracted_bin" ] || [ -L "$extracted_bin" ] || [ ! -x "$extracted_bin" ]; then
+              echo "${name} bootstrap: archive lacks regular executable ${archiveMember}" >&2
+              exit 1
+            fi
+          ''}
+          ${lib.optionalString (archiveMember == null) ''
+            extracted_bin="$archive"
+            if [ ! -f "$extracted_bin" ] || [ -L "$extracted_bin" ] || [ ! -s "$extracted_bin" ]; then
+              echo "${name} bootstrap: download is not a regular non-empty file" >&2
+              exit 1
+            fi
+          ''}
 
                         if [ ! -x "$target" ]; then
                           new_bin=$(mktemp "$install_dir/.${name}.new.XXXXXX")
@@ -287,47 +298,58 @@ let
           }
                     fi
 
-          ${lib.optionalString (completionShell != null) ''
-            data_home="''${XDG_DATA_HOME:-$HOME/.local/share}"
-            completion_dir="$data_home/${completionShell}/site-functions"
-            completion_path="$completion_dir/_${name}"
-            if [ ! -f "$completion_path" ] || [ "$target" -nt "$completion_path" ]; then
-              mkdir -p "$completion_dir"
-              completion_tmp=$(mktemp "$completion_dir/.${name}.completion.XXXXXX")
-              if "$target" completion ${completionShell} > "$completion_tmp" 2>/dev/null; then
-                mv -f "$completion_tmp" "$completion_path"
-              else
-                rm -f "$completion_tmp"
-                echo "${name} bootstrap: completion generation failed" >&2
-              fi
-            fi
+          ${lib.optionalString (generatedAssets != [ ]) ''
+              generate_asset() {
+                local relative_path="$1"
+                local generated_path generated_dir generated_tmp
+                shift
+                generated_path="$data_home/$relative_path"
+                generated_dir=$(dirname "$generated_path")
+                if [ -L "$generated_dir" ] || { [ -e "$generated_dir" ] && [ ! -d "$generated_dir" ]; }; then
+                  echo "${name} bootstrap: unsafe generated asset directory $generated_dir" >&2
+                  return
+                fi
+                if [ -L "$generated_path" ] || { [ -e "$generated_path" ] && [ ! -f "$generated_path" ]; }; then
+                  echo "${name} bootstrap: unsafe generated asset path $generated_path" >&2
+                  return
+                fi
+                if [ ! -f "$generated_path" ] || [ "$target" -nt "$generated_path" ]; then
+                  mkdir -p "$generated_dir"
+                  generated_tmp=$(mktemp "$generated_dir/.${name}.generated.XXXXXX")
+                  if "$target" "$@" > "$generated_tmp" 2>/dev/null && [ -s "$generated_tmp" ]; then
+                    mv -f "$generated_tmp" "$generated_path"
+                  else
+                    rm -f "$generated_tmp"
+                    echo "${name} bootstrap: failed to generate $relative_path" >&2
+                  fi
+                fi
+              }
+            ${lib.concatMapStringsSep "\n" (
+              asset:
+              "            generate_asset ${lib.escapeShellArg asset.path} ${lib.escapeShellArgs asset.args}"
+            ) generatedAssets}
           ''}
                     exec -a "$(basename "$0")" "$target" "$@"
         '';
       };
     in
-    if preserveUpstreamAssets then
-      prev.symlinkJoin {
-        inherit name;
-        paths = [ upstream ];
-        postBuild = ''
-          rm -f "$out/bin/${name}"
-          ln -s ${lib.getExe wrapper} "$out/bin/${name}"
-        '';
-        meta.mainProgram = name;
-        passthru = { inherit upstream; };
-      }
-    else
-      wrapper;
+    wrapper;
 in
 {
   mise = mkRuntimeStub {
     name = "mise";
     repo = "jdx/mise";
-    member = "mise/bin/mise";
-    completionShell = "zsh";
+    archiveMember = "mise/bin/mise";
+    generatedAssets = [
+      {
+        path = "zsh/site-functions/_mise";
+        args = [
+          "completion"
+          "zsh"
+        ];
+      }
+    ];
     installNativeAssets = true;
-    preserveUpstreamAssets = false;
     arches = {
       "Darwin/arm64" = "macos-arm64";
       "Darwin/x86_64" = "macos-x64";
@@ -340,13 +362,81 @@ in
   topgrade = mkRuntimeStub {
     name = "topgrade";
     repo = "topgrade-rs/topgrade";
-    member = "topgrade";
+    archiveMember = "topgrade";
+    generatedAssets = [
+      {
+        path = "bash-completion/completions/topgrade.bash";
+        args = [
+          "--gen-completion"
+          "bash"
+        ];
+      }
+      {
+        path = "fish/vendor_completions.d/topgrade.fish";
+        args = [
+          "--gen-completion"
+          "fish"
+        ];
+      }
+      {
+        path = "zsh/site-functions/_topgrade";
+        args = [
+          "--gen-completion"
+          "zsh"
+        ];
+      }
+      {
+        path = "man/man1/topgrade.1";
+        args = [ "--gen-manpage" ];
+      }
+    ];
     arches = {
       "Darwin/arm64" = "aarch64-apple-darwin";
       "Darwin/x86_64" = "x86_64-apple-darwin";
       "Linux/aarch64" = "aarch64-unknown-linux-musl";
       "Linux/arm64" = "aarch64-unknown-linux-musl";
       "Linux/x86_64" = "x86_64-unknown-linux-musl";
+    };
+  };
+
+  herdr = mkRuntimeStub {
+    name = "herdr";
+    repo = "herdrdev/herdr";
+    assetName = "herdr-$arch";
+    generatedAssets = [
+      {
+        path = "bash-completion/completions/herdr.bash";
+        args = [
+          "completion"
+          "bash"
+        ];
+      }
+      {
+        path = "fish/vendor_completions.d/herdr.fish";
+        args = [
+          "completion"
+          "fish"
+        ];
+      }
+      {
+        path = "zsh/site-functions/_herdr";
+        args = [
+          "completion"
+          "zsh"
+        ];
+      }
+      {
+        path = "herdr/skills/herdr/SKILL.md";
+        args = [ "--skill" ];
+      }
+    ];
+    installDir = ".local/bin";
+    arches = {
+      "Darwin/arm64" = "macos-aarch64";
+      "Darwin/x86_64" = "macos-x86_64";
+      "Linux/aarch64" = "linux-aarch64";
+      "Linux/arm64" = "linux-aarch64";
+      "Linux/x86_64" = "linux-x86_64";
     };
   };
 }

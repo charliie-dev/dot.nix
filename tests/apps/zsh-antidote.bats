@@ -7,7 +7,7 @@ setup_file() {
   GENERATED_ZSHRC=$(nix build --no-link --print-out-paths --impure --expr \
     "let f = builtins.getFlake \"path:$REPO\"; in f.homeConfigurations.\"$(home_config_name)\".config.home.file.\".config/zsh/.zshrc\".source")
   TOPGRADE_PACKAGE=$(nix build --no-link --print-out-paths --impure --expr \
-    "let f = builtins.getFlake \"path:$REPO\"; in f.homeConfigurations.\"$(home_config_name)\".config.programs.topgrade.package.upstream")
+    "let f = builtins.getFlake \"path:$REPO\"; system = f.homeConfigurations.\"$(home_config_name)\".pkgs.stdenv.hostPlatform.system; in (builtins.getAttr system f.inputs.nixpkgs.legacyPackages).topgrade")
   ZSH_PACKAGE=$(nix build --no-link --print-out-paths --impure --expr \
     "let f = builtins.getFlake \"path:$REPO\"; in f.homeConfigurations.\"$(home_config_name)\".config.programs.zsh.package")
   HOME_IS_DARWIN=$(nix eval --impure --json --expr \

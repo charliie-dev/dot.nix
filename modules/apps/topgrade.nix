@@ -156,7 +156,7 @@
         # matches the NOPASSWD sudoers rule for /usr/local/bin/determinate-nixd;
         # if that rule ever disappears, -n fails loudly instead of prompting.
         "Determinate Nix upgrade" = "sudo -n /usr/local/bin/determinate-nixd upgrade";
-        # herdr binary is self-managed (modules/apps/herdr.nix sets package = null).
+        # herdr bootstrap installs a self-managed binary under ~/.local/bin.
         # No --handoff: the running server keeps the old version until its next
         # restart instead of live-swapping mid-run.
         "herdr" = "herdr update";
