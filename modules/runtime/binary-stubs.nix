@@ -17,6 +17,9 @@ let
       repo,
       member,
       arches,
+      completionShell ? null,
+      installNativeAssets ? false,
+      preserveUpstreamAssets ? true,
     }:
     let
       upstream = prev.${name};
@@ -24,12 +27,28 @@ let
       archCases = lib.concatStringsSep "\n" (
         lib.mapAttrsToList (platform: arch: "          ${platform}) arch=${arch} ;;") arches
       );
+      archiveNeeded =
+        if installNativeAssets then
+          ''[ ! -x "$target" ] || [ ! -f "$assets_stamp" ] || [ "$target" -nt "$assets_stamp" ] || [ ! -f "$man_path" ]''
+        else
+          ''[ ! -x "$target" ]'';
       wrapper = prev.writeShellApplication {
         inherit name runtimeInputs;
         text = ''
                     target="$HOME/.local/share/${name}/bin/${name}"
-                    if [ ! -x "$target" ]; then
-                      umask 077
+                    install_dir="$HOME/.local/share/${name}/bin"
+                    state_home="''${XDG_STATE_HOME:-$HOME/.local/state}"
+                    lock_dir="$state_home/home-manager/locks"
+                    lock_path="$lock_dir/${name}-bootstrap.lock"
+          ${lib.optionalString installNativeAssets ''
+            data_home="''${XDG_DATA_HOME:-$HOME/.local/share}"
+            assets_stamp="$state_home/home-manager/${name}-assets-version"
+            assets_retry="$state_home/home-manager/${name}-assets-retry"
+            man_path="$data_home/man/man1/${name}.1"
+          ''}
+                    umask 077
+                    sync_archive() (
+                      set -e
                       case "$(uname -s)/$(uname -m)" in
           ${archCases}
                         *)
@@ -37,11 +56,6 @@ let
                           exit 1
                           ;;
                       esac
-
-                      install_dir="$HOME/.local/share/${name}/bin"
-                      state_home="''${XDG_STATE_HOME:-$HOME/.local/state}"
-                      lock_dir="$state_home/home-manager/locks"
-                      lock_path="$lock_dir/${name}-bootstrap.lock"
 
                       if [ -L "$install_dir" ] || { [ -e "$install_dir" ] && [ ! -d "$install_dir" ]; }; then
                         echo "${name} bootstrap: unsafe install directory $install_dir" >&2
@@ -63,13 +77,25 @@ let
                         exit 1
                       fi
                       flock 9
-                      [ -x "$target" ] || {
+                      if ${archiveNeeded}; then
                         tmpdir=$(mktemp -d)
                         new_bin=""
-                        trap 'rm -rf "$tmpdir"; [ -z "$new_bin" ] || rm -f "$new_bin"' EXIT HUP INT TERM
+                        asset_tmp=""
+                        trap 'rm -rf "$tmpdir"; [ -z "$new_bin" ] || rm -f "$new_bin"; [ -z "$asset_tmp" ] || rm -f "$asset_tmp"' EXIT HUP INT TERM
 
                         repo=${repo}
-                        api_url="https://api.github.com/repos/$repo/releases/latest"
+                        requested_tag=""
+                        if [ -x "$target" ]; then
+                          version=$("$target" --version 2>/dev/null | awk 'NR == 1 { print $1; exit }')
+                          if [[ ! "$version" =~ ^[0-9][0-9A-Za-z._+-]*$ ]]; then
+                            echo "${name} bootstrap: invalid installed version" >&2
+                            exit 1
+                          fi
+                          requested_tag="v$version"
+                          api_url="https://api.github.com/repos/$repo/releases/tags/$requested_tag"
+                        else
+                          api_url="https://api.github.com/repos/$repo/releases/latest"
+                        fi
                         http_code=$(
                           curl -sS --max-time 10 -o "$tmpdir/release.json" -w '%{http_code}' "$api_url"
                         ) || {
@@ -93,6 +119,10 @@ let
                           echo "${name} bootstrap: malformed GitHub release metadata" >&2
                           exit 1
                         }
+                        if [ -n "$requested_tag" ] && [ "$tag" != "$requested_tag" ]; then
+                          echo "${name} bootstrap: release tag mismatch" >&2
+                          exit 1
+                        fi
 
                         asset_name="${name}-$tag-$arch.tar.gz"
                         expected_url="https://github.com/$repo/releases/download/$tag/$asset_name"
@@ -123,7 +153,7 @@ let
                           exit 1
                         }
 
-                        echo "${name} bootstrap: installing $tag"
+                        echo "${name} bootstrap: installing $tag" >&2
                         archive="$tmpdir/$asset_name"
                         curl -fsSL --max-time 60 "$expected_url" -o "$archive" || {
                           echo "${name} bootstrap: release download failed" >&2
@@ -167,35 +197,137 @@ let
                           exit 1
                         fi
 
-                        new_bin=$(mktemp "$install_dir/.${name}.new.XXXXXX")
-                        install -m 755 "$extracted_bin" "$new_bin"
-                        mv -f "$new_bin" "$target"
-                        new_bin=""
-                      }
+                        if [ ! -x "$target" ]; then
+                          new_bin=$(mktemp "$install_dir/.${name}.new.XXXXXX")
+                          install -m 755 "$extracted_bin" "$new_bin"
+                          mv -f "$new_bin" "$target"
+                          new_bin=""
+                        fi
+
+          ${lib.optionalString installNativeAssets ''
+            extracted_man="$tmpdir/extract/${root}/man/man1/${name}.1"
+            if [ ! -f "$extracted_man" ] || [ -L "$extracted_man" ]; then
+              echo "${name} bootstrap: archive lacks regular man/man1/${name}.1" >&2
+              exit 1
+            fi
+            man_dir=$(dirname "$man_path")
+            if [ -L "$man_dir" ] || { [ -e "$man_dir" ] && [ ! -d "$man_dir" ]; }; then
+              echo "${name} bootstrap: unsafe man directory $man_dir" >&2
+              exit 1
+            fi
+            mkdir -p "$man_dir"
+            asset_tmp=$(mktemp "$man_dir/.${name}.1.new.XXXXXX")
+            install -m 644 "$extracted_man" "$asset_tmp"
+            mv -f "$asset_tmp" "$man_path"
+            asset_tmp=""
+
+            extracted_fish="$tmpdir/extract/${root}/share/fish/vendor_conf.d/${name}-activate.fish"
+            if [ -f "$extracted_fish" ] && [ ! -L "$extracted_fish" ]; then
+              fish_dir="$data_home/fish/vendor_conf.d"
+              if [ -L "$fish_dir" ] || { [ -e "$fish_dir" ] && [ ! -d "$fish_dir" ]; }; then
+                echo "${name} bootstrap: unsafe fish vendor directory $fish_dir" >&2
+                exit 1
+              fi
+              mkdir -p "$fish_dir"
+              asset_tmp=$(mktemp "$fish_dir/.${name}.new.XXXXXX")
+              install -m 644 "$extracted_fish" "$asset_tmp"
+              mv -f "$asset_tmp" "$fish_dir/${name}-activate.fish"
+              asset_tmp=""
+            fi
+
+            asset_tmp=$(mktemp "$lock_dir/.${name}.assets.XXXXXX")
+            printf '%s\n' "$tag" > "$asset_tmp"
+            mv -f "$asset_tmp" "$assets_stamp"
+            asset_tmp=""
+            rm -f "$assets_retry"
+          ''}
+                        rm -rf "$tmpdir"
+                        tmpdir=""
+                        trap - EXIT HUP INT TERM
+                      fi
                       flock -u 9
                       exec 9>&-
+                    )
+                    if ${archiveNeeded}; then
+          ${
+            if installNativeAssets then
+              ''
+                if [ ! -x "$target" ]; then
+                  sync_archive
+                else
+                  retry_after=0
+                  if [ -f "$assets_retry" ] && [ ! -L "$assets_retry" ] && [ ! "$target" -nt "$assets_retry" ]; then
+                    saved_retry=$(cat "$assets_retry" 2>/dev/null || true)
+                    if [[ "$saved_retry" =~ ^[0-9]+$ ]]; then
+                      retry_after=$saved_retry
+                    fi
+                  fi
+                  if [ "$(date +%s)" -ge "$retry_after" ]; then
+                    set +e
+                    sync_archive
+                    sync_status=$?
+                    set -e
+                    if [ "$sync_status" -ne 0 ]; then
+                      # Retry state is optional and must not block an installed binary.
+                      if [ -d "$lock_dir" ] && [ ! -L "$lock_dir" ]; then
+                        retry_tmp=""
+                        if ! retry_tmp=$(mktemp "$lock_dir/.${name}.retry.XXXXXX") \
+                          || ! printf '%s\n' "$(( $(date +%s) + 3600 ))" > "$retry_tmp" \
+                          || ! mv -f "$retry_tmp" "$assets_retry"; then
+                          [ -z "$retry_tmp" ] || rm -f "$retry_tmp" || true
+                        fi
+                      fi
+                      echo "${name} bootstrap: native asset refresh failed; using installed binary" >&2
+                    fi
+                  fi
+                fi
+              ''
+            else
+              "sync_archive"
+          }
                     fi
 
+          ${lib.optionalString (completionShell != null) ''
+            data_home="''${XDG_DATA_HOME:-$HOME/.local/share}"
+            completion_dir="$data_home/${completionShell}/site-functions"
+            completion_path="$completion_dir/_${name}"
+            if [ ! -f "$completion_path" ] || [ "$target" -nt "$completion_path" ]; then
+              mkdir -p "$completion_dir"
+              completion_tmp=$(mktemp "$completion_dir/.${name}.completion.XXXXXX")
+              if "$target" completion ${completionShell} > "$completion_tmp" 2>/dev/null; then
+                mv -f "$completion_tmp" "$completion_path"
+              else
+                rm -f "$completion_tmp"
+                echo "${name} bootstrap: completion generation failed" >&2
+              fi
+            fi
+          ''}
                     exec -a "$(basename "$0")" "$target" "$@"
         '';
       };
     in
-    prev.symlinkJoin {
-      inherit name;
-      paths = [ upstream ];
-      postBuild = ''
-        rm -f "$out/bin/${name}"
-        ln -s ${lib.getExe wrapper} "$out/bin/${name}"
-      '';
-      meta.mainProgram = name;
-      passthru = { inherit upstream; };
-    };
+    if preserveUpstreamAssets then
+      prev.symlinkJoin {
+        inherit name;
+        paths = [ upstream ];
+        postBuild = ''
+          rm -f "$out/bin/${name}"
+          ln -s ${lib.getExe wrapper} "$out/bin/${name}"
+        '';
+        meta.mainProgram = name;
+        passthru = { inherit upstream; };
+      }
+    else
+      wrapper;
 in
 {
   mise = mkRuntimeStub {
     name = "mise";
     repo = "jdx/mise";
     member = "mise/bin/mise";
+    completionShell = "zsh";
+    installNativeAssets = true;
+    preserveUpstreamAssets = false;
     arches = {
       "Darwin/arm64" = "macos-arm64";
       "Darwin/x86_64" = "macos-x64";

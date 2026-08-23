@@ -70,7 +70,7 @@
         ];
       };
 
-      # Preserve Nixpkgs share/completions/man while binaries bootstrap on first use.
+      # Bootstrap upstream binaries on first use; each stub selects native or Nix assets.
       binaryStubsOverlay = import ./modules/runtime/binary-stubs.nix { inherit lib; };
 
       hm_ver = "26.05";

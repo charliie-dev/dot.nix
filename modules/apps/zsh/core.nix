@@ -100,8 +100,7 @@ in
       export TMUX_TMPDIR="$XDG_RUNTIME_DIR"
     fi
 
-    # Completion functions generated for activation-managed binaries such as
-    # mise must be available before compinit runs.
+    # Keep user-generated completions on fpath before compinit scans it.
     fpath=("${config.xdg.dataHome}/zsh/site-functions" $fpath)
   '';
 }

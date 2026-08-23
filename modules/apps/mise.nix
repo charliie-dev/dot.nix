@@ -164,5 +164,10 @@
   # the cached integrations at 1000 and before the custom hooks at 1050.
   zsh.initContent = lib.mkOrder 1010 ''
     eval "$(${lib.getExe pkgs.mise} activate zsh)"
+    # The native wrapper may create _mise after compinit on its first run.
+    if (( $+functions[compdef] )) && [[ -r "$XDG_DATA_HOME/zsh/site-functions/_mise" ]]; then
+      autoload -Uz _mise
+      compdef _mise mise
+    fi
   '';
 }

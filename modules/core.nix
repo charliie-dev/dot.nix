@@ -59,6 +59,7 @@
       # Homebrew's bin directory.
       "/opt/homebrew/share/google-cloud-sdk/bin"
     ];
+    sessionSearchVariables.MANPATH = [ "${config.xdg.dataHome}/man" ];
     sessionVariables = {
       # XDG-aware tool homes shared by macOS and Linux.
       PYTHONSTARTUP = "${src}/modules/apps/python/pythonrc";
