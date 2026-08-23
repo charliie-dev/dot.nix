@@ -22,12 +22,11 @@
   # so a shim invoked through a docker-buildx-named symlink isn't recognised
   # and mise falls through to whatever docker-buildx is next on PATH. The
   # installs/<tool>/latest symlink is maintained by mise across upgrades.
-  # mkOutOfStoreSymlink because these live outside the nix store. (Install dir
-  # names differ: compose uses the registry short name, buildx the explicit
-  # aqua backend — see mise.nix.)
+  # mkOutOfStoreSymlink because these live outside the nix store. Backend-qualified
+  # tool IDs become github-docker-compose and aqua-docker-buildx directories.
   xdg.configFile = lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
     "docker/cli-plugins/docker-compose".source =
-      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.local/share/mise/installs/docker-compose/latest/docker-cli-plugin-docker-compose";
+      config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.local/share/mise/installs/github-docker-compose/latest/docker-compose";
     "docker/cli-plugins/docker-buildx".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.local/share/mise/installs/aqua-docker-buildx/latest/docker-cli-plugin-docker-buildx";
   };
