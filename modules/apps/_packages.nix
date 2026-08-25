@@ -20,8 +20,21 @@
     ### nix-build --log-format internal-json -v |& nom --json
     nix-tree # Interactively browse dependency graphs of Nix derivations.
     dix # A blazingly fast tool to diff Nix related things.
-    nixd # Nix language server
-    nil # Yet another language server for Nix
+
+    # LSP
+    clang-tools # clangd and clang-format
+    nil # Nix language server
+    nixd # Nix language server with advanced completion
+    systemd-lsp # Systemd unit language server
+
+    # Formatters
+    mdsf # Markdown code-block formatter
+    nixfmt # Official Nix formatter
+
+    # Linters
+    deadnix # Find unused Nix code
+    selene # Lua linter
+    statix # Find and fix Nix antipatterns
   ];
 
   roles = {

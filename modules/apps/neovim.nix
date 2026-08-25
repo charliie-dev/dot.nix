@@ -25,13 +25,6 @@
       stdenv.cc
       tree-sitter
 
-      # Nix language servers, formatter, and linters
-      deadnix
-      nil
-      nixd
-      nixfmt
-      statix
-
       # Keep these candidates until their absence is confirmed in daily use.
       # clang
       # cmake
