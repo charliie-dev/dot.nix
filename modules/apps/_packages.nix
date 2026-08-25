@@ -35,6 +35,7 @@
     deadnix # Find unused Nix code
     selene # Lua linter
     statix # Find and fix Nix antipatterns
+    zizmor # GitHub Actions security linter
   ];
 
   roles = {
