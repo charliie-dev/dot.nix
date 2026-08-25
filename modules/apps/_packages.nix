@@ -30,6 +30,8 @@
     # Formatters
     mdsf # Markdown code-block formatter
     nixfmt # Official Nix formatter
+    shellharden # Shell formatter
+    stylua # Lua formatter
 
     # Linters
     deadnix # Find unused Nix code

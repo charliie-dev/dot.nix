@@ -38,8 +38,6 @@
         "pipx:zuban" = "latest";
 
         # Formatters
-        "aqua:JohnnyMorganz/StyLua" = "latest";
-        "cargo:shellharden" = "latest";
         "go:golang.org/x/tools/cmd/goimports" = "latest";
         "go:mvdan.cc/gofumpt" = "latest";
         "npm:fixjson" = "latest";
