@@ -28,10 +28,12 @@
         # command still uses its own NOPASSWD rule and ignores the ticket.
         pre_sudo = true;
         sudo_loop = true;
-        # Must stay below the macOS sudo timestamp_timeout (300s): the loop
-        # refreshes with `sudo -n -v`, which silently fails on an expired
-        # ticket and never revives it. 240s is also topgrade's default.
-        sudo_loop_interval = 240;
+        # Must stay well below the macOS sudo timestamp_timeout (300s): the
+        # loop refreshes with `sudo -n -v`, which silently fails on an expired
+        # ticket and never revives it. Topgrade's default 240s leaves only 60s
+        # of slack, which a slow step or a nap already blew once; 120s keeps
+        # half the window as margin.
+        sudo_loop_interval = 120;
 
         # Sudo command to be used
         sudo_command = "sudo";
