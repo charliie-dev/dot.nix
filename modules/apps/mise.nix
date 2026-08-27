@@ -83,8 +83,6 @@
         "aqua:docker/buildx" = "latest"; # nixpkgs can lag upstream
 
         # Code agent tools
-        "github:DeusData/codebase-memory-mcp" = "latest";
-        "npm:@colbymchenry/codegraph" = "latest";
         "npm:@google-cloud/backupdr-mcp" = "latest";
         "npm:@google-cloud/gcloud-mcp" = "latest";
         "npm:@google-cloud/observability-mcp" = "latest";

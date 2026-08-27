@@ -59,8 +59,6 @@ let
     /bin/launchctl setenv GROK_STORAGE_MODE "${env.GROK_STORAGE_MODE}"
     /bin/launchctl setenv GROK_DISABLE_AUTOUPDATER "${env.GROK_DISABLE_AUTOUPDATER}"
     /bin/launchctl setenv COPILOT_AUTO_UPDATE "${env.COPILOT_AUTO_UPDATE}"
-    /bin/launchctl setenv CODEGRAPH_TELEMETRY "${env.CODEGRAPH_TELEMETRY}"
-    /bin/launchctl setenv CODEGRAPH_NO_UPDATE_CHECK "${env.CODEGRAPH_NO_UPDATE_CHECK}"
   '';
 in
 lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {

@@ -121,8 +121,6 @@
       GROK_DISABLE_AUTOUPDATER = "1";
       COPILOT_AUTO_UPDATE = "0";
       DO_NOT_TRACK = "1";
-      CODEGRAPH_TELEMETRY = "0";
-      CODEGRAPH_NO_UPDATE_CHECK = "1";
 
       # Cloud CLIs.
       AWS_SHARED_CREDENTIALS_FILE = "${config.xdg.configHome}/aws/credentials";
