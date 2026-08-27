@@ -59,6 +59,11 @@
     silent = true;
   };
   # Shared aliases — application secrets stay off while the SSH baseline is inherited.
+  "charles@rdsrv02" = {
+    sharedConfig = "charles@RDSrv01";
+    system = "x86_64-linux";
+    enableSecrets = false;
+  };
   "charles@ra-lab" = {
     sharedConfig = "charles@RDSrv01";
     system = "x86_64-linux";
