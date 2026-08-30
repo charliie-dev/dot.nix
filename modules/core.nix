@@ -115,6 +115,7 @@
       GROK_FEEDBACK_ENABLED = "0";
       GROK_TELEMETRY_TRACE_UPLOAD = "0";
       GROK_TELEMETRY_MIXPANEL_ENABLED = "0";
+      GROK_WORKSPACE_DATA_COLLECTION_DISABLED = "true";
       # session 只留本地 JSONL。grok 1.0.0 的 StorageMode 優先序是
       # cli > env > remote settings > 預設(local),xAI 的 remote 旗標
       # writeback_enabled 可以把整段對話 + cwd 路徑 flush 到 grok-code-backend。
