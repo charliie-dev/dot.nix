@@ -31,6 +31,9 @@ in
     unzip = "ouch decompress";
     cct = "claude-code-toggle";
 
+    # Limit npx skills installs to the agents actually in use.
+    skills-add = "npx -y skills add -g --agent claude-code grok pi -y";
+
     py = "TERM=xterm-256color python3";
     ls = "lsd -lAh";
     lg = "lazygit";
