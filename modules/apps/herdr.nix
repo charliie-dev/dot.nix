@@ -55,7 +55,7 @@
           # terminal:走 OSC 9/99 請 ghostty 發桌面通知(可拿到 ghostty 的通知音)
           delivery = "terminal";
           # 延遲送出:到期時 pane 仍是同一狀態才通知,濾掉 subagent 結束造成的瞬間 idle
-          delay_seconds = 120;
+          delay_seconds = 10;
           # clipboard toast 只吃 top-center / bottom-center,沒有四角
           clipboard.position = "top-center";
         };
