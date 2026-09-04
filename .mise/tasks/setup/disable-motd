@@ -6,10 +6,38 @@ set -euo pipefail
 
 MOTD_DIR="/etc/update-motd.d"
 
-# List of MOTD scripts to disable
+# Restore the package-owned file if an older version of this task patched it.
+APT_CHECK="/usr/lib/update-notifier/apt_check.py"
+if [[ -f "$APT_CHECK" ]] && grep -q "disabled by disable-motd" "$APT_CHECK"; then
+  sudo env DEBIAN_FRONTEND=noninteractive apt-get install --reinstall -y update-notifier-common
+  echo "Restored package-owned apt_check.py"
+fi
+
+# motd-news.service executes this script directly, so chmod -x causes
+# status=203/EXEC. Keep it executable, disable its supported config switch, and
+# stop the timer that fetches remote news.
+MOTD_NEWS="${MOTD_DIR}/50-motd-news"
+MOTD_NEWS_DEFAULTS="/etc/default/motd-news"
+if [[ -f "$MOTD_NEWS" ]]; then
+  sudo chmod 0755 "$MOTD_NEWS"
+fi
+if [[ -f "$MOTD_NEWS_DEFAULTS" ]] && grep -q '^ENABLED=' "$MOTD_NEWS_DEFAULTS"; then
+  sudo sed -i 's/^ENABLED=.*/ENABLED=0/' "$MOTD_NEWS_DEFAULTS"
+else
+  printf 'ENABLED=0\n' | sudo tee -a "$MOTD_NEWS_DEFAULTS" >/dev/null
+fi
+if systemctl cat motd-news.timer &>/dev/null; then
+  sudo systemctl disable --now motd-news.timer
+fi
+if systemctl cat motd-news.service &>/dev/null; then
+  sudo systemctl reset-failed motd-news.service
+fi
+echo "Ubuntu remote MOTD news disabled"
+
+# Disable local login-only MOTD scripts. Unlike 50-motd-news, these files are
+# not used as systemd ExecStart targets.
 DISABLE_LIST=(
   "10-help-text"        # Ubuntu usage tips (man / manpath / info command hints)
-  "50-motd-news"        # Canonical remote news feed (requires network, slows SSH login)
   "60-unminimize"       # Prompt to restore full Ubuntu packages from minimal install
   "80-esm"              # Ubuntu Pro ESM available package count notice
   "88-esm-announce"     # Ubuntu Pro ESM upsell ad (complements 80-esm)
@@ -60,44 +88,10 @@ else
   echo "ubuntu-advantage-tools not found (skipped)"
 fi
 
-# Silence ESM/Ubuntu Pro messages emitted by apt_check.py (update-notifier).
-# On Ubuntu 24.04, the "ESM Apps is not enabled" notice is printed by
-# _output_esm_service_status() and _output_esm_package_alert() inside
-# apt_check.py — not by any update-motd.d script — so it survives the steps
-# above. Inserting a bare `return` as the first statement in each function
-# makes them no-ops while leaving the file otherwise intact.
-APT_CHECK="/usr/lib/update-notifier/apt_check.py"
-if [[ -f "$APT_CHECK" ]]; then
-  if grep -q "_output_esm" "$APT_CHECK"; then
-    sudo python3 - "$APT_CHECK" <<'PYEOF'
-import re, sys
-path = sys.argv[1]
-with open(path) as f:
-    src = f.read()
-# Match all _output_esm_* functions, including multi-line signatures.
-# Captures everything from "def _output_esm_..." up to and including "):\n",
-# then inserts a bare return as the first statement.
-src = re.sub(
-    r'(def _output_esm_\w+\(.*?\):\n)',
-    r'\1    return  # disabled by disable-motd\n',
-    src,
-    flags=re.DOTALL,
-)
-with open(path, "w") as f:
-    f.write(src)
-PYEOF
-    echo "Patched apt_check.py ESM functions"
-  else
-    echo "apt_check.py: ESM functions not found (already patched or different version)"
-  fi
-else
-  echo "apt_check.py not found (skipped)"
-fi
-
 # Flush stale MOTD caches so the next login reflects changes immediately.
-# /run/motd.dynamic is read by PAM; /var/lib/update-notifier/updates-available
-# is written by apt_check.py and included in the dynamic MOTD.
-for cache in /run/motd.dynamic /var/lib/update-notifier/updates-available; do
+# /run/motd.dynamic is read by PAM; the other files are populated by the
+# disabled news and update-notifier scripts.
+for cache in /run/motd.dynamic /var/cache/motd-news /var/lib/update-notifier/updates-available; do
   if [[ -f "$cache" ]]; then
     sudo truncate -s 0 "$cache"
     echo "Cleared cache: ${cache}"
