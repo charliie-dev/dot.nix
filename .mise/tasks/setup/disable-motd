@@ -21,11 +21,23 @@ MOTD_NEWS_DEFAULTS="/etc/default/motd-news"
 if [[ -f "$MOTD_NEWS" ]]; then
   sudo chmod 0755 "$MOTD_NEWS"
 fi
-if sudo test -f "$MOTD_NEWS_DEFAULTS" && sudo grep -q '^ENABLED=' "$MOTD_NEWS_DEFAULTS"; then
-  sudo sed -i 's/^ENABLED=.*/ENABLED=0/' "$MOTD_NEWS_DEFAULTS"
-else
-  printf 'ENABLED=0\n' | sudo tee -a "$MOTD_NEWS_DEFAULTS" >/dev/null
+defaults_tmp=$(mktemp)
+trap 'rm -f "$defaults_tmp" "${defaults_tmp}.new"' EXIT
+if sudo test -f "$MOTD_NEWS_DEFAULTS"; then
+  sudo cat "$MOTD_NEWS_DEFAULTS" | tee "$defaults_tmp" >/dev/null
 fi
+awk '
+  /^ENABLED=/ {
+    if (!seen) print "ENABLED=0"
+    seen = 1
+    next
+  }
+  { print }
+  END { if (!seen) print "ENABLED=0" }
+' "$defaults_tmp" >"${defaults_tmp}.new"
+sudo install -o root -g root -m 0644 "${defaults_tmp}.new" "$MOTD_NEWS_DEFAULTS"
+rm -f "$defaults_tmp" "${defaults_tmp}.new"
+trap - EXIT
 if systemctl cat motd-news.timer &>/dev/null; then
   sudo systemctl disable --now motd-news.timer
 fi
