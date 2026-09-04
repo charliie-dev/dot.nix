@@ -10,7 +10,10 @@
     globalConfig = {
       tools = {
         # Runtimes and package managers
-        aube = "latest"; # npm backend; lifecycle scripts stay jailed
+        # Repo moved jdx/aube -> aubepkg/aube; the aqua registry entry (baked into
+        # mise) still expects the jdx workflow identity, so attestation fails.
+        # https://github.com/aquaproj/aqua-registry/pull/60040
+        "github:aubepkg/aube" = "latest"; # npm backend; lifecycle scripts stay jailed
         cargo-binstall = "latest"; # install cargo tools from prebuilt releases
         go = "latest";
         node = "latest"; # runtime for npm tools and nub
