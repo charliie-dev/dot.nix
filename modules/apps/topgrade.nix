@@ -1,3 +1,4 @@
+{ pkgs, ... }:
 {
   topgrade = {
     enable = true;
@@ -24,10 +25,10 @@
         # entitlement, so mas >= 4.1 installs via `sudo /usr/sbin/installer`
         # internally and probes the ticket with `sudo -n true`. A scoped
         # NOPASSWD rule is not possible there (installer/sh with variable
-        # args equals passwordless root). The Determinate Nix upgrade custom
-        # command still uses its own NOPASSWD rule and ignores the ticket.
-        pre_sudo = true;
-        sudo_loop = true;
+        # args equals passwordless root). Linux fleet hosts use NOPASSWD; their
+        # mixed PASSWD/NOPASSWD rules make `sudo -v` prompt unnecessarily.
+        pre_sudo = pkgs.stdenv.hostPlatform.isDarwin;
+        sudo_loop = pkgs.stdenv.hostPlatform.isDarwin;
         # Must stay well below the macOS sudo timestamp_timeout (300s): the
         # loop refreshes with `sudo -n -v`, which silently fails on an expired
         # ticket and never revives it. Topgrade's default 240s leaves only 60s
