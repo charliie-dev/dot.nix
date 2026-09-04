@@ -81,6 +81,7 @@
       // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
         "github:docker/compose" = "latest"; # avoid the deprecated aqua alias
         "aqua:docker/buildx" = "latest"; # nixpkgs can lag upstream
+        "aqua:docker/cli" = "latest"; # colima's VM auto-updates dockerd; keep the client in step
 
         # Code agent tools
         "npm:@google-cloud/backupdr-mcp" = "latest";

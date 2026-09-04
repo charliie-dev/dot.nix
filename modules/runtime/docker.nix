@@ -5,7 +5,6 @@
   ...
 }:
 let
-  isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
   isLinux = pkgs.stdenv.hostPlatform.isLinux;
   dockerConfigDir = "${config.xdg.configHome}/docker";
   dockerConfigFile = "${dockerConfigDir}/config.json";
@@ -14,13 +13,13 @@ let
   gpgHome = "${config.xdg.dataHome}/gnupg";
   credentialsStore = if isLinux then "pass" else "osxkeychain";
   garRegistries = [ "asia-east1-docker.pkg.dev" ];
-  dockerPackages =
-    lib.optional isDarwin pkgs.docker-client
-    ++ [
-      pkgs.docker-credential-gcr
-      pkgs.docker-credential-helpers
-    ]
-    ++ lib.optional isLinux pkgs.pass;
+  # The docker CLI itself is not from nixpkgs: Linux hosts use the apt docker,
+  # macOS gets it from mise (aqua:docker/cli) so it can track colima's dockerd.
+  dockerPackages = [
+    pkgs.docker-credential-gcr
+    pkgs.docker-credential-helpers
+  ]
+  ++ lib.optional isLinux pkgs.pass;
   bootstrapProgram = pkgs.writeShellApplication {
     name = "home-manager-docker-credentials";
     runtimeInputs = [
