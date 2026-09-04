@@ -11,7 +11,7 @@
   xdg.configFile."herdr/agent-detection/grok.toml" = {
     text = ''
       id = "grok"
-      version = "2026.09.03.1"
+      version = "2026.09.03.2"
       min_engine_version = 3
       updated_at = "2026-09-03T00:00:00Z"
       aliases = ["grok-build"]
@@ -75,6 +75,14 @@
       region = "top_non_empty_lines(1)"
       visible_working = true
       line_regex = ['◆\s+[1-9][0-9]*\s+│']
+
+      [[rules]]
+      id = "live_status_working"
+      state = "working"
+      priority = 1160
+      region = "bottom_non_empty_lines(6)"
+      visible_working = true
+      line_regex = ['^\s*[⠋⠙⠹⠸⠼⠴⠦⠧]\s+.*\[stop\]\s*$']
 
       [[rules]]
       id = "osc_progress_working"
