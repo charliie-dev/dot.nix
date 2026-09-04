@@ -21,7 +21,7 @@ MOTD_NEWS_DEFAULTS="/etc/default/motd-news"
 if [[ -f "$MOTD_NEWS" ]]; then
   sudo chmod 0755 "$MOTD_NEWS"
 fi
-if [[ -f "$MOTD_NEWS_DEFAULTS" ]] && grep -q '^ENABLED=' "$MOTD_NEWS_DEFAULTS"; then
+if sudo test -f "$MOTD_NEWS_DEFAULTS" && sudo grep -q '^ENABLED=' "$MOTD_NEWS_DEFAULTS"; then
   sudo sed -i 's/^ENABLED=.*/ENABLED=0/' "$MOTD_NEWS_DEFAULTS"
 else
   printf 'ENABLED=0\n' | sudo tee -a "$MOTD_NEWS_DEFAULTS" >/dev/null
