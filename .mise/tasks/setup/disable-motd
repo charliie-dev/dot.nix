@@ -29,7 +29,7 @@ fi
 if systemctl cat motd-news.timer &>/dev/null; then
   sudo systemctl disable --now motd-news.timer
 fi
-if systemctl cat motd-news.service &>/dev/null; then
+if systemctl is-failed --quiet motd-news.service; then
   sudo systemctl reset-failed motd-news.service
 fi
 echo "Ubuntu remote MOTD news disabled"
