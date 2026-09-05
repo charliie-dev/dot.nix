@@ -115,18 +115,19 @@ if [[ -x "$UPDATE_NOTIFIER" ]]; then
   echo "Ubuntu Pro ESM MOTD lines disabled"
 fi
 
-# Flush stale display caches so the next login reflects changes immediately.
-# Do not truncate updates-available: it was regenerated above without ESM.
-for cache in /run/motd.dynamic /var/cache/motd-news; do
-  if [[ -f "$cache" ]]; then
-    sudo truncate -s 0 "$cache"
-    echo "Cleared cache: ${cache}"
-  fi
-done
-
-if [[ -x /usr/bin/update-motd ]]; then
-  sudo update-motd 2>/dev/null || true
-  echo "Regenerated MOTD"
+if [[ -f /var/cache/motd-news ]]; then
+  sudo truncate -s 0 /var/cache/motd-news
+  echo "Cleared cache: /var/cache/motd-news"
 fi
+
+# Some minimal images have pam_motd but no update-motd helper. Generate the
+# cache directly so the next SSH login consistently sees the enabled scripts.
+motd_tmp=$(mktemp)
+trap 'rm -f "$motd_tmp"' EXIT
+sudo run-parts --lsbsysinit "$MOTD_DIR" | tee "$motd_tmp" >/dev/null
+sudo install -o root -g root -m 0644 "$motd_tmp" /run/motd.dynamic
+rm -f "$motd_tmp"
+trap - EXIT
+echo "Regenerated MOTD"
 
 # vim: ft=sh
