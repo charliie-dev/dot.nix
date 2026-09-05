@@ -98,13 +98,29 @@ if [[ -d "$UA_MSG_DIR" ]]; then
   echo "Cleared ubuntu-pro cached MOTD messages"
 fi
 
-# Suppress Ubuntu Pro upsell messages in apt/apt-get output
+# Suppress Ubuntu Pro remote news in apt/apt-get output.
 if command -v pro &>/dev/null; then
   sudo pro config set apt_news=false
-  echo "Ubuntu Pro apt ads disabled!"
+  echo "Ubuntu Pro apt news disabled"
 else
   echo "ubuntu-advantage-tools not found (skipped)"
 fi
+
+# apt_news does not control the ESM package list emitted by AptCli's JSON
+# upgrade hook. It is the only upgrade hook installed on these Ubuntu hosts;
+# clear that list in a later APT config without modifying the package-owned
+# 20apt-esm-hook.conf.
+APT_PRO_OVERRIDE="/etc/apt/apt.conf.d/99-disable-ubuntu-pro-upgrade-hook"
+apt_override_tmp=$(mktemp)
+trap 'rm -f "$apt_override_tmp"' EXIT
+cat >"$apt_override_tmp" <<'EOF'
+// Suppress the Ubuntu Pro ESM package advertisement in `apt upgrade`.
+#clear binary::apt::AptCli::Hooks::Upgrade;
+EOF
+sudo install -o root -g root -m 0644 "$apt_override_tmp" "$APT_PRO_OVERRIDE"
+rm -f "$apt_override_tmp"
+trap - EXIT
+echo "Ubuntu Pro apt upgrade ad disabled"
 
 # update-notifier supports suppressing only ESM lines while retaining the
 # regular update count. Rebuild its cache with that supported switch.
