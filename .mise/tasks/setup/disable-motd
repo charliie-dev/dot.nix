@@ -100,17 +100,24 @@ else
   echo "ubuntu-advantage-tools not found (skipped)"
 fi
 
-# Flush stale MOTD caches so the next login reflects changes immediately.
-# /run/motd.dynamic is read by PAM; the other files are populated by the
-# disabled news and update-notifier scripts.
-for cache in /run/motd.dynamic /var/cache/motd-news /var/lib/update-notifier/updates-available; do
+# update-notifier supports suppressing only ESM lines while retaining the
+# regular update count. Rebuild its cache with that supported switch.
+UPDATE_NOTIFIER="/usr/lib/update-notifier/update-motd-updates-available"
+if [[ -x "$UPDATE_NOTIFIER" ]]; then
+  sudo install -o root -g root -m 0644 /dev/null /var/lib/update-notifier/hide-esm-in-motd
+  sudo "$UPDATE_NOTIFIER" --force
+  echo "Ubuntu Pro ESM MOTD lines disabled"
+fi
+
+# Flush stale display caches so the next login reflects changes immediately.
+# Do not truncate updates-available: it was regenerated above without ESM.
+for cache in /run/motd.dynamic /var/cache/motd-news; do
   if [[ -f "$cache" ]]; then
     sudo truncate -s 0 "$cache"
     echo "Cleared cache: ${cache}"
   fi
 done
 
-# Regenerate the dynamic MOTD so it picks up all changes above
 if [[ -x /usr/bin/update-motd ]]; then
   sudo update-motd 2>/dev/null || true
   echo "Regenerated MOTD"
