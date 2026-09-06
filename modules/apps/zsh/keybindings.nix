@@ -24,6 +24,17 @@
     bindkey '^X^E' edit-command-line
     bindkey ' ' magic-space
 
+    # Restore the shell cursor after TUIs, including shells inside multiplexers.
+    autoload -Uz add-zle-hook-widget
+    _hm_zle_cursor_shape() {
+      case $KEYMAP in
+        vicmd|visual) printf '\e[2 q' ;;
+        *) printf '\e[5 q' ;;
+      esac
+    }
+    add-zle-hook-widget line-init _hm_zle_cursor_shape
+    add-zle-hook-widget keymap-select _hm_zle_cursor_shape
+
     # Tirith must initialize before deferred plugins so widget wrappers form a
     # valid chain. Its zle -A snapshots are synthetic builtin widgets; F-Sy-H
     # tries to call a nonexistent dot-widget when wrapping those. Re-register
