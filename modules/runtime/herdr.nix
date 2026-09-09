@@ -5,15 +5,14 @@
   ...
 }:
 {
-  # Grok 1.x uses ◆ for its pinned background-work counter. Herdr 0.8.2's
-  # bundled manifest only recognizes the older symbols, so keep the pane
-  # working while background subagents or commands are still running.
+  # Grok 1.x uses plan-approval controls and a ◆ background-work counter
+  # that Herdr 0.8.2's bundled manifest does not recognize.
   xdg.configFile."herdr/agent-detection/grok.toml" = {
     text = ''
       id = "grok"
-      version = "2026.09.03.2"
+      version = "2026.09.09.1"
       min_engine_version = 3
-      updated_at = "2026-09-03T00:00:00Z"
+      updated_at = "2026-09-09T00:00:00Z"
       aliases = ["grok-build"]
 
       [[rules]]
@@ -23,6 +22,17 @@
       region = "osc_title"
       visible_blocker = true
       contains = ["Action Required"]
+
+      [[rules]]
+      id = "plan_approval_blocked"
+      state = "blocked"
+      priority = 1210
+      region = "bottom_non_empty_lines(2)"
+      visible_blocker = true
+      any = [
+        { contains = ["a:approve", "q:quit plan"] },
+        { line_regex = ['^\s*╰─.*· plan approval\b.*─╯\s*$'] },
+      ]
 
       [[rules]]
       id = "option_dialog_blocked"
