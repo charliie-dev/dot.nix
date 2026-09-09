@@ -106,6 +106,7 @@
         color_theme = "catppuccin";
         env_file = ".env";
         experimental = true;
+        fetch_remote_versions_timeout = "60s";
         github = {
           credential_command = "gh auth token";
         };
