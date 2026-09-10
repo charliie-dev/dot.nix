@@ -3,6 +3,7 @@
 load "../lib/home-config"
 
 setup() {
+  bats_require_minimum_version 1.5.0
   require_home_config
   command -v topgrade >/dev/null || skip "topgrade is not installed"
 }
@@ -12,7 +13,14 @@ build_topgrade_config() {
     "let f = builtins.getFlake \"path:$REPO\"; in f.homeConfigurations.\"$(home_config_name)\".config.xdg.configFile.\"topgrade.toml\".source"
 }
 
-@test "topgrade runs built-in updates before one home-manager switch" {
+@test "topgrade keeps brew formula and cask last" {
+  run --separate-stderr nix eval --json --impure --expr \
+    "let f = builtins.getFlake \"path:$REPO\"; in f.homeConfigurations.\"$(home_config_name)\".config.programs.topgrade.settings.misc.last"
+  [ "$status" -eq 0 ]
+  [ "$output" = '["custom_commands","home_manager","brew_formula","brew_cask"]' ]
+}
+
+@test "topgrade runs determinate before one home-manager switch and then brew" {
   config_dir="$BATS_TEST_TMPDIR/topgrade"
   mkdir -p "$config_dir/topgrade.d"
   cp "$(build_topgrade_config)" "$config_dir/topgrade.toml"
@@ -38,11 +46,18 @@ build_topgrade_config() {
   [ "$switch_count" -eq 1 ]
   [ "$antidote_count" -eq 1 ]
   [ "$determinate_count" -eq 1 ]
-  [ "$channel_count" -eq 1 ]
-  [ "$profile_count" -eq 1 ]
+  [ "$channel_count" -eq 0 ]
+  [ "$profile_count" -eq 0 ]
   [ "$topgrade_self_update_count" -eq 1 ]
   [ "$mise_plugins_count" -eq 1 ]
   [ "$mise_self_update_count" -eq 1 ]
   [ "$git_line" -lt "$determinate_line" ]
   [ "$determinate_line" -lt "$home_manager_line" ]
+
+  if command -v brew >/dev/null; then
+    [[ "$output" == *"home-manager switch"*"brew upgrade --formula"* ]]
+    if [[ "$OSTYPE" == darwin* ]]; then
+      [[ "$output" == *"brew upgrade --formula"*"- Cask"* ]]
+    fi
+  fi
 }

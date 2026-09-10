@@ -50,11 +50,13 @@
         # Run these steps before all others
         # first = ["chezmoi"]
 
-        # Run the Determinate Nix upgrade (custom command) before Home Manager,
-        # after Git repository updates.
+        # Run Determinate Nix before Home Manager, after Git updates.
+        # Homebrew resets the sudo timestamp, so both Brew steps run last.
         last = [
           "custom_commands"
           "home_manager"
+          "brew_formula"
+          "brew_cask"
         ];
 
         # Ignore failures for these steps
