@@ -5,14 +5,14 @@
   ...
 }:
 {
-  # Grok 1.x uses plan-approval controls and a ◆ background-work counter
-  # that Herdr 0.8.2's bundled manifest does not recognize.
+  # Grok detection overrides cover plan approval, background work, and
+  # the active foreground footer in Grok 1.0.30.
   xdg.configFile."herdr/agent-detection/grok.toml" = {
     text = ''
       id = "grok"
-      version = "2026.09.09.1"
+      version = "2026.09.13.1"
       min_engine_version = 3
-      updated_at = "2026-09-09T00:00:00Z"
+      updated_at = "2026-09-13T00:00:00Z"
       aliases = ["grok-build"]
 
       [[rules]]
@@ -85,6 +85,15 @@
       region = "top_non_empty_lines(1)"
       visible_working = true
       line_regex = ['◆\s+[1-9][0-9]*\s+│']
+
+      [[rules]]
+      id = "foreground_hints_working"
+      state = "working"
+      priority = 1165
+      region = "bottom_non_empty_lines(2)"
+      visible_working = true
+      contains = ["ctrl+.:shortcuts"]
+      line_regex = ['^\s*(?:Shift\+Tab:mode\s+│\s+)?Ctrl\+b:send to bg(?:\s+│\s*(?:Ctrl\+\.:shortcuts)?)?\s*$']
 
       [[rules]]
       id = "live_status_working"

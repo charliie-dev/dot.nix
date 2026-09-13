@@ -130,3 +130,106 @@ SCREEN
     assert_grok_state blocked
   done
 }
+
+waiting_screen() {
+  cat <<'SCREEN'
+    ◎ waiting · send a message to interrupt
+
+  ╭──────────────────────────────────╮
+  │ ❯                                │
+  ╰───── Test model · always-approve ─╯
+
+  Shift+Tab:mode  │  Ctrl+b:send to bg  │  Ctrl+.:shortcuts
+SCREEN
+}
+
+@test "grok waiting with an active foreground footer is working" {
+  waiting_screen > "$screen"
+  assert_grok_state working
+  jq -e '.visible_working and .matched_rule.id == "foreground_hints_working"' <<<"$output"
+}
+
+@test "grok wrapped active foreground footer is working without a status row" {
+  for wrap in before after; do
+    if [ "$wrap" = before ]; then
+      printf '%s\n' 'Shift+Tab:mode │' 'Ctrl+b:send to bg │ Ctrl+.:shortcuts'
+    else
+      printf '%s\n' 'Shift+Tab:mode │ Ctrl+b:send to bg │' 'Ctrl+.:shortcuts'
+    fi > "$screen"
+    assert_grok_state working
+    jq -e '.visible_working and .matched_rule.id == "foreground_hints_working"' <<<"$output"
+  done
+}
+
+@test "grok dock with background and foreground work is working" {
+  {
+    printf '%s\n' \
+      '  ~/.grok  ◆ 1 │ 260K / 921K │ [Dashboard]' \
+      '     ▾ Tasks 1' \
+      '     : Task checking state  0.0s [↗][✗]'
+    waiting_screen
+  } > "$screen"
+  assert_grok_state working
+  jq -e '.visible_working and .matched_rule.id == "background_work_chip_working"' <<<"$output"
+}
+
+@test "grok idle dock and historical waiting footer remain idle" {
+  {
+    printf '%s\n' '  ~/.grok  260K / 921K │ [Dashboard]' '     ▾ Tasks 0'
+    waiting_screen
+    printf '%s\n' \
+      'The command completed; Ctrl+b:send to bg was available while waiting.' \
+      '╭──────────────────────────────────╮' \
+      '│ ❯                                │' \
+      '╰───── Test model · always-approve ─╯' \
+      'Shift+Tab:mode │ Ctrl+.:shortcuts'
+  } > "$screen"
+  assert_grok_state idle
+  jq -e '.visible_idle and (.visible_working | not) and .matched_rule.id == "prompt_hints_idle"' <<<"$output"
+}
+
+@test "grok historical waiting status above an idle prompt remains idle" {
+  printf '%s\n' \
+    '◎ waiting · send a message to interrupt' \
+    '╭──────────────────────────────────╮' \
+    '│ ❯                                │' \
+    '╰───── Test model · always-approve ─╯' \
+    'Shift+Tab:mode │ Ctrl+.:shortcuts' > "$screen"
+  assert_grok_state idle
+  jq -e '.visible_working | not' <<<"$output"
+}
+
+@test "grok foreground controls mentioned in prose above an idle footer remain idle" {
+  printf '%s\n' \
+    'While waiting, use Ctrl+b:send to bg │ Ctrl+.:shortcuts for help.' \
+    'Shift+Tab:mode │ Ctrl+.:shortcuts' > "$screen"
+  assert_grok_state idle
+  jq -e '.visible_working | not' <<<"$output"
+}
+
+@test "grok plan approval outranks an active foreground footer" {
+  {
+    waiting_screen
+    printf '%s\n' 'a:approve │ q:quit plan │ Tab:prompt'
+  } > "$screen"
+  assert_grok_state blocked
+  jq -e '.visible_blocker and .matched_rule.id == "plan_approval_blocked"' <<<"$output"
+}
+
+@test "grok permission hints outrank an active foreground footer" {
+  {
+    waiting_screen
+    printf '%s\n' '1/3:select │ Ctrl+o:yolo │ Ctrl+c:cancel'
+  } > "$screen"
+  assert_grok_state blocked
+  jq -e '.visible_blocker and .matched_rule.id == "permission_hints_blocked"' <<<"$output"
+}
+
+@test "grok question hints outrank an active foreground footer" {
+  {
+    waiting_screen
+    printf '%s\n' 'Esc:unselect │ Tab:scrollback │ Shift+x:dismiss'
+  } > "$screen"
+  assert_grok_state blocked
+  jq -e '.visible_blocker and .matched_rule.id == "question_dialog_hints_blocked"' <<<"$output"
+}
