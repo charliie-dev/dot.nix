@@ -184,7 +184,7 @@
           '.projects[$p] = ((.projects[$p] // {}) + {hasTrustDialogAccepted: true})' \
           "$cfg" > "$cfg.tmp" && command mv "$cfg.tmp" "$cfg" || command rm -f "$cfg.tmp"
       fi
-      claude --dangerously-skip-permissions "$@"
+      claude "$@"
     '';
 
     # Codex trust lookup is an exact-key match on cwd / git repo root — parent
