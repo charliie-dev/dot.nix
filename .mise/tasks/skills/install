@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+#MISE description="Install repository skills for Claude Code, Grok Build, and Pi"
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+skills=(compose-lint container-security dockerfile-builder)
+
+npx --yes skills add "$repo_root/skills" --global --yes \
+    --skill "${skills[@]}" --agent claude-code grok pi
+
+# The installer uses Pi's default directory, not PI_CODING_AGENT_DIR.
+pi_skills="${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}/skills"
+mkdir -p "$pi_skills"
+for skill in "${skills[@]}"; do
+    target="$pi_skills/$skill"
+    if [[ -e "$target" && ! -L "$target" ]]; then
+        printf 'Refusing to replace non-symlink: %s\n' "$target" >&2
+        exit 1
+    fi
+    ln -sfn "$HOME/.agents/skills/$skill" "$target"
+done
+
+# vim: ft=sh
