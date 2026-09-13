@@ -5,45 +5,45 @@ description: 'Apply container security and hardening best practices based on 11n
 
 # Container Security Skill
 
-> 原則來源：[11notes/RTFM](https://github.com/11notes/RTFM)
+> Principles from [11notes/RTFM](https://github.com/11notes/RTFM)
 
 ## Reference Files
 
-按需載入，不要全部預先讀取：
+Load on demand; do not read them all up front:
 
-| 檔案 | 何時讀取 |
-| ---- | -------- |
-| `references/rootless.md` | 解釋 rootless 概念、為何 PUID/PGID 不夠、caps 詳情 |
-| `references/distroless.md` | 解釋 distroless 概念、eStargz 比較、limitations |
-| `references/socket.md` | 深入解釋 Docker socket 風險、`:ro` 誤解 |
-| `references/volumes.md` | 深入解釋 named volumes vs bind mounts、NFS/CIFS/S3 範例 |
-| `references/daemon.md` | 深入解釋 daemon.json 各設定的意義 |
-| `references/custom.md` | 解釋為何自建 image 而非提 PR |
-
----
-
-## 核心哲學
-
-- **最小攻擊面 + 最低權限** = 大多數自動化攻擊直接失效
-- **永遠不要信任預設值**：distro 和 Docker 的預設設定無法涵蓋個別安裝的複雜性
-- **安全是多層拼圖**：rootless、distroless、socket-proxy、resource limits 各自獨立但互相疊加
-- 以上原則不限於 Docker，同樣適用於 Podman、containerd 等所有 OCI 相容 runtime
+| File | When to read |
+| ---- | ------------ |
+| `references/rootless.md` | Rootless concept in depth, why PUID/PGID is not enough, capability details |
+| `references/distroless.md` | Distroless concept, eStargz comparison, limitations |
+| `references/socket.md` | Docker socket risk in depth, the `:ro` misconception |
+| `references/volumes.md` | Named volumes vs bind mounts in depth, NFS/CIFS/S3 examples |
+| `references/daemon.md` | What each daemon.json setting means |
+| `references/custom.md` | Why build your own image instead of sending a PR upstream |
 
 ---
 
-## 1. Rootless 容器
+## Core philosophy
 
-> **Docker rootless mode vs image rootless**：若 Docker daemon 本身以 rootless mode 運行（`dockerd-rootless`），以下風險不適用。本章節針對**以一般 root daemon 方式執行 Docker** 的情境。
+- **Minimal attack surface + least privilege** = most automated attacks fail outright
+- **Never trust defaults**: distro and Docker defaults cannot cover the complexity of an individual installation
+- **Security is layered**: rootless, distroless, socket-proxy, resource limits are independent and stack on each other
+- These principles are not Docker-specific; they apply equally to Podman, containerd, and every other OCI-compatible runtime
 
-**常見誤解**：很多 image 用 `PUID`/`PGID` 看起來像 rootless，但 entrypoint 仍以 root 啟動再 `su`/`gosu` 降權。真正的 rootless 是 process 從頭到尾不以 root 跑。
+---
 
-### Dockerfile 做法
+## 1. Rootless containers
+
+> **Docker rootless mode vs image rootless**: running the daemon itself in rootless mode (`dockerd-rootless`) reduces the host-level impact of a daemon or runtime compromise, but it does not replace image-level non-root — UID 0 inside the container still holds elevated privileges over that namespace and over everything exposed to the container. This section targets Docker running as a **regular root daemon**; apply its `USER`/least-privilege guidance under a rootless daemon too.
+
+**Common misconception**: many images use `PUID`/`PGID` and look rootless, but the entrypoint still starts as root and then drops privileges with `su`/`gosu`. Truly rootless means the process never runs as root, from start to finish.
+
+### Dockerfile
 ```dockerfile
 RUN addgroup -g 1000 app && adduser -u 1000 -G app -s /bin/sh -D app
 USER 1000:1000
 ```
 
-### Compose 做法
+### Compose
 ```yaml
 services:
   myapp:
@@ -52,102 +52,111 @@ services:
       - no-new-privileges=true
 ```
 
-動態 UID/GID：
+Dynamic UID/GID:
 ```yaml
 services:
   myapp:
     user: "${UID}:${GID}"
 ```
 
-> **11notes images 的預設 UID/GID 是 `1000:1000`**。使用 11notes 官方 images 時，確保 volume 的 ownership 設為此值，或透過動態 UID/GID 覆蓋。
+> **11notes images default to UID/GID `1000:1000`**. When using official 11notes images, make sure volume ownership matches this value, or override it via dynamic UID/GID.
 
 ---
 
-## 2. Distroless Images
+## 2. Distroless images
 
-**原則**：image 裡只放應用程式需要的東西。沒有 shell、沒有 curl、沒有 wget，攻擊者拿到 RCE 也無法下載 payload。
+**Principle**: the image contains only what the application needs. No shell, no curl, no wget — an attacker who gains RCE loses the ready-made post-exploitation tooling, which shrinks the attack surface; it is not a guarantee that a payload cannot be fetched, since a language runtime or a raw socket call can still download and write content.
 
-### 推薦 base images
-| 用途 | Base image |
-| ------ | ----------- |
-| 靜態編譯的 Go/Rust | `gcr.io/distroless/static-debian12` |
-| 動態連結 (glibc) | `gcr.io/distroless/base-debian12` |
-| Java | `gcr.io/distroless/java21-debian12` |
-| Python（有限制） | `gcr.io/distroless/python3-debian12` |
-| 輕量但有 shell | `docker.io/library/alpine:3.21` |
+### Recommended base images
+| Use case | Base image |
+| -------- | ---------- |
+| Statically compiled Go/Rust | `gcr.io/distroless/static-debian13` |
+| Dynamically linked (glibc) | `gcr.io/distroless/base-debian13` |
+| Java | `gcr.io/distroless/java21-debian13` |
+| Python (with limitations) | `gcr.io/distroless/python3-debian13` |
+| Lightweight but with a shell | `docker.io/library/alpine:3.21.7` |
 
-### 不適合 distroless 的情境
-- Python app 大量動態載入套件
-- Node.js / Deno 有動態載入 library
-- .NET Core 使用 inline Assembly
-→ 這些改用 Alpine，移除不必要的工具套件
+> The base images above are illustrative. Pick the release that matches the workload (for distroless the Debian release is part of the image name, e.g. `-debian12` vs `-debian13`), then pin it: distroless publishes only floating tags (`latest`/`nonroot`/`debug`/`debug-nonroot`), so pin those by digest (`gcr.io/distroless/static-debian13@sha256:...`); images that do publish version tags get a full patch-level tag (`alpine:3.21.7`, not `alpine:3.21`), per compose-lint's pinned-tag rule. Never emit an untagged reference — it resolves to `:latest`. The pinned tags in this table and in the examples below are values from when this was written; re-resolve them before emitting.
 
-除錯 distroless 容器（無 shell）：讀 `references/distroless.md`。
+### When distroless does not fit
+- Python apps that load many packages dynamically
+- Node.js / Deno with dynamically loaded libraries
+- .NET Core using inline Assembly
+→ Use Alpine instead and remove unnecessary tool packages
+
+Debugging a distroless container (no shell): read `references/distroless.md`.
 
 ---
 
-## 3. Docker Socket 安全
+## 3. Docker socket security
 
-**核心風險**：任何能存取 `/var/run/docker.sock` 的程式，不需任何驗證即可完全控制 Docker daemon。
+**Core risk**: any program that can reach `/var/run/docker.sock` has full control of the Docker daemon, with no authentication.
 
-**常見誤解**：掛載 socket 加 `:ro` 旗標「唯讀比較安全」— **錯誤**。`:ro` 只是讓容器不能刪除或重命名 socket 檔案本身，對 Docker API 操作完全無影響。
+**Common misconception**: mounting the socket with `:ro` "is safer because it is read-only" — **wrong**. `:ro` only stops the container from deleting or renaming the socket file itself; it has no effect on Docker API operations.
 
-Portainer、Dockge、Komodo 等工具**必須**要求完整的 socket 存取才能運作。**若重視安全性，應避免使用這類工具。**
+Tools such as Portainer, Dockge, and Komodo **require** full socket access to work. **If security matters, avoid these tools.**
 
-### 正確做法：socket-proxy
+### The right way: socket-proxy
 ```yaml
 services:
   socket-proxy:
-    image: docker.io/11notes/socket-proxy:latest
+    image: docker.io/11notes/socket-proxy:2.1.7
     container_name: socket-proxy
+    # starts as root to open the host socket, then serves the proxy socket as 1000:1000. The
+    # startup check requires user: to equal the socket's owner uid:gid exactly, so the gid comes
+    # from the deployer (upstream's "0:0" only works on a root:root socket); on a mismatch the
+    # image exits and prints the pair to use
+    user: "0:${DOCKER_SOCKET_GID:?set to the gid owning the docker socket: stat -c '%g' /run/docker.sock}"
     environment:
-      EVENTS: 1
-      PING: 1
-      CONTAINERS: 1
-      VERSION: 1
-      INFO: 1
-      IMAGES: 1
+      # the image always starts a TCP proxy on :2375 and binds it to 0.0.0.0 by default, which any
+      # container sharing a network with it could reach; pin it to loopback as the second line
+      # behind network_mode: none below
+      SOCKET_PROXY_HTTP_LISTEN_IP: "127.0.0.1"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    networks:
-      - socket-proxy
+      - /run/docker.sock:/run/docker.sock:ro
+      - socket-proxy.run:/run/proxy
+    # no network at all: consumers reach the proxy only through the shared socket volume, so the
+    # TCP listener has nowhere to be reached from even if the loopback pin above is ever lost
+    network_mode: none
     restart: unless-stopped
     read_only: true
-    tmpfs:
-      - /run
     security_opt:
       - no-new-privileges=true
 
   myapp:
-    environment:
-      DOCKER_HOST: tcp://socket-proxy:2375
-    networks:
-      - socket-proxy
+    depends_on:
+      socket-proxy:
+        condition: service_healthy
+    # the proxy socket is created after the image drops to SOCKET_PROXY_UID/GID (default 1000:1000)
+    # and is never chmod'd, so it lands at 0755 and only that exact uid can connect. Match it here,
+    # or set SOCKET_PROXY_UID/SOCKET_PROXY_GID on the proxy to this app's ids
+    user: "1000:1000"
+    volumes:
+      - socket-proxy.run:/var/run   # the app finds the proxied socket at /var/run/docker.sock
 
-networks:
-  socket-proxy:
-    internal: true
+volumes:
+  socket-proxy.run:
 ```
 
-常用 endpoint 變數（預設 1 代表開啟）：`EVENTS`、`PING`（預設開）；`CONTAINERS`、`IMAGES`、`INFO`、`VERSION`、`NETWORKS`、`VOLUMES`（預設關）；`POST` 允許寫入操作（start/stop/pull 等）。
+The policy is fixed, not configured: the proxy forwards only read requests (`GET`/`HEAD`) and refuses everything else, and even over `GET` it blocks `/containers/{id}/attach/ws`, `/containers/{id}/export`, `/containers/{id}/archive`, `/secrets`, `/configs` and `/swarm/unlockkey`. Its README also lists `/images/{name}/get`, but the 2.1.7 pattern (`images/get(/|)$`) does not match that path, so image contents can still be exported through the proxy. No variable widens the request policy — an app that needs write access does not belong behind this proxy.
 
-> **警告**：socket-proxy 的 port 2375 **絕對不能暴露到公網**。
+> **Warning**: the image serves the same proxy over TCP on port 2375 as well, and that listener binds to `0.0.0.0` unless told otherwise, so on a compose network every other container could reach it. Two independent lines keep access to the shared `socket-proxy.run` volume: `network_mode: none` leaves the proxy with no network to be reached over, and `SOCKET_PROXY_HTTP_LISTEN_IP: "127.0.0.1"` confines the listener should a network ever be attached — do not rely on either alone. Never add `ports:` to the service or attach it to a network the outside can reach.
 
 ---
 
-## 4. Named Volumes vs Bind Mounts
+## 4. Named volumes vs bind mounts
 
-**原則**：如果想要 Infrastructure as Code，就必須用 named volumes，不能用 bind mounts。
+**Principle**: if you want Infrastructure as Code, use named volumes, not bind mounts.
 
-| 比較項目 | Named Volume | Bind Mount | Tmpfs |
-| --------- | ------------- | ------------ | ------- |
-| 目錄自動建立 | ✅ | ❌ 需手動建立 | ✅ |
-| 權限管理 | ✅ 繼承 parent 目錄 | ❌ 需手動 chown | ✅ |
-| Compose 自包含 | ✅ | ❌ 依賴 host 路徑 | ✅ |
-| Storage backend | NFS/CIFS/S3/local | 只有 host 路徑 | RAM/swap |
-| Quota 限制 | ✅ 可在 compose 定義 | ❌ 需 host 層設定 | ✅ |
+| Aspect | Named Volume | Bind Mount | Tmpfs |
+| ------ | ------------ | ---------- | ----- |
+| Directory auto-created | ✅ | ❌ manual | ✅ |
+| Permission handling | ✅ inherits parent directory | ❌ manual chown | ✅ |
+| Self-contained compose | ✅ | ❌ depends on host path | ✅ |
+| Storage backend | NFS/CIFS/S3/local | host path only | RAM/swap |
+| Quota | ✅ definable in compose | ❌ host-level setup | ✅ |
 
-Named volume storage backend 範例（詳細說明讀 `references/volumes.md`）：
+Named volume storage backend example (details in `references/volumes.md`):
 ```yaml
 volumes:
   app-data:
@@ -159,19 +168,19 @@ volumes:
 
 ---
 
-## 5. UID/GID 變更：Init Container 模式
+## 5. Changing UID/GID: the init-container pattern
 
 ```yaml
 services:
   init-permissions:
-    image: docker.io/library/alpine:3.21
+    image: docker.io/library/alpine:3.21.7
     command: chown -R 1000:1000 /data
     volumes:
       - app-data:/data
     restart: "no"
 
   myapp:
-    image: some/image
+    image: registry.example.com/myapp:1.2.3
     user: "1000:1000"
     depends_on:
       init-permissions:
@@ -187,14 +196,14 @@ volumes:
 
 ---
 
-## 6. Inline Config 模式
+## 6. Inline config pattern
 
-把 config 內容直接寫成 env var，entrypoint 在啟動時寫入檔案：
+Put the config content in an env var; the entrypoint writes it to a file at startup:
 
 ```yaml
 services:
   adguard:
-    image: docker.io/11notes/adguard-home:latest
+    image: docker.io/11notes/adguard:0.107.79
     environment:
       ADGUARD_CONFIG: |
         http:
@@ -211,13 +220,23 @@ services:
     read_only: true
     security_opt:
       - no-new-privileges=true
+    volumes:
+      - adguard.etc:/adguard/etc
+      - adguard.var:/adguard/var
+    tmpfs:
+      # needed for read_only: true — the entrypoint writes its runtime files here
+      - /adguard/run:uid=1000,gid=1000
+
+volumes:
+  adguard.etc:
+  adguard.var:
 ```
 
-> **搭配 `read_only: true`**：必須為 config 寫入路徑掛載 `tmpfs`，否則 entrypoint 無法寫入 config 檔。
+> **With `read_only: true`**: mount a `tmpfs` at the runtime directory the entrypoint writes to (`/adguard/run` for this image), and keep the config directory and the work directory on named volumes — AdGuard rewrites its config in place, so a `tmpfs` there would discard it on every restart, and it writes its statistics DB and query logs to `/adguard/var`. This image declares `VOLUME` for both directories, so leaving a mount out does not break startup: Docker silently creates an anonymous volume instead, which is exactly what section 4 says not to rely on.
 
 ---
 
-## 7. Docker Daemon 硬化（daemon.json）
+## 7. Docker daemon hardening (daemon.json)
 
 ```json
 {
@@ -236,15 +255,15 @@ services:
 }
 ```
 
-重點：`log-opts.env` 是「要附加到 log 的 env key 清單」（逗號分隔，另有 `env-regex` 以 regex 比對），**不要把含 secret 的 env key 列進去**（或用過寬的 regex），否則對應的 secret 值會被寫進 log；`mtu: 9000` 需整條網路路徑支援，不確定改 `1500`；完整 address-pools 和各設定詳解讀 `references/daemon.md`。
+Notes: `log-opts.env` is the list of env keys to attach to each log entry (comma-separated; `env-regex` matches by regex) — **do not list env keys that hold secrets** (or use an overly broad regex), or the secret values end up in the logs; `mtu: 9000` requires jumbo-frame support along the whole network path, use `1500` if unsure; full address-pool and per-setting details in `references/daemon.md`.
 
-套用：`systemctl restart docker`
+Apply: `systemctl restart docker`
 
 ---
 
-## 8. Compose 安全設定
+## 8. Compose security settings
 
-### RTFM 原始 x-lockdown（11notes image 用）
+### RTFM original x-lockdown (for 11notes images)
 ```yaml
 x-lockdown: &lockdown
   read_only: true
@@ -252,7 +271,7 @@ x-lockdown: &lockdown
     - "no-new-privileges=true"
 ```
 
-### 完整強化版（第三方 image 用）
+### Full hardened variant (for third-party images)
 ```yaml
 x-lockdown: &lockdown
   restart: unless-stopped
@@ -281,9 +300,9 @@ services:
           memory: 256M
 ```
 
-> **`deploy.resources.limits` 生效範圍**：在 Compose v2（`docker compose`）本機 `up` 即套用 `cpus`/`memory`/`pids`，不需 Swarm 或 `--compatibility`；只有舊版 `docker-compose` v1 才會忽略 `deploy` 而需要 Swarm 模式。swap 限制（`memswap_limit`/`mem_swappiness`）仍寫在 service 層，不在 `deploy` 下。
+> **Where `deploy.resources.limits` applies**: with Compose v2 (`docker compose`) a local `up` applies `cpus`/`memory`/`pids` — no Swarm or `--compatibility` needed; only the legacy `docker-compose` v1 ignores `deploy` and needs Swarm mode. Swap limits (`memswap_limit`/`mem_swappiness`) still go at the service level, not under `deploy`.
 
-### Rootless 容器綁定低 port（< 1024）
+### Rootless container binding a low port (< 1024)
 ```yaml
 services:
   dns:
@@ -292,31 +311,31 @@ services:
       net.ipv4.ip_unprivileged_port_start: 53
 ```
 
-### cap_drop: ALL 後常需補回的 capability
-| Capability | 需要的情境 |
-| ----------- | ---------- |
-| `NET_BIND_SERVICE` | 綁定 port < 1024（rootless 建議改用 sysctls） |
-| `CHOWN` | entrypoint 需修改檔案 owner |
-| `SETUID` / `SETGID` | entrypoint 切換使用者 |
-| `DAC_OVERRIDE` | 讀寫自己不擁有的檔案 |
-| `NET_RAW` | healthcheck 用 ping |
+### Capabilities commonly re-added after cap_drop: ALL
+| Capability | Needed when |
+| ---------- | ----------- |
+| `NET_BIND_SERVICE` | binding a port < 1024 (for rootless, prefer sysctls) |
+| `CHOWN` | entrypoint changes file ownership |
+| `SETUID` / `SETGID` | entrypoint switches user |
+| `DAC_OVERRIDE` | reading/writing files it does not own |
+| `NET_RAW` | healthcheck uses ping |
 
 ---
 
-## 快速診斷清單
+## Quick diagnostic checklist
 
-- [ ] 容器是否以非 root 使用者執行？（`docker inspect` 看 `User` 欄位）
-- [ ] 是否用 PUID/PGID 啟動然後降權？→ 這不是真正 rootless，考慮換 image
-- [ ] Image 是否必要地包含 shell 或系統工具？（考慮換 distroless/Alpine）
-- [ ] 是否直接掛載 `/var/run/docker.sock`？→ 改用 rootless + distroless 的 socket-proxy（如 11notes/socket-proxy）
-- [ ] 是否使用 Portainer/Dockge/Komodo 等管理工具？→ 這些需要完整 socket 存取，評估是否接受此風險
-- [ ] 是否使用 bind mounts 存放持久資料？→ 考慮改 named volumes（支援 NFS/CIFS/S3）
-- [ ] 是否設定 `no-new-privileges=true`？
-- [ ] 是否設定 `cap_drop: [ALL]`？
-- [ ] 需要寫入的服務是否加了 `read_only: true` + tmpfs？
-- [ ] 是否設定 `init: true`？（signal 傳遞、殭屍 process）
-- [ ] 是否設定 `deploy.resources.limits`？（pids、memory、CPU；Compose v2 本機 `up` 即生效，舊版 `docker-compose` v1 才需 Swarm/`--compatibility`）
-- [ ] Volume ownership 需要調整時，是否用 init container 而非手動 chown？
-- [ ] Config 是否能改用 inline env var 而非 bind mount 檔案？
-- [ ] Rootless 容器需綁定 port < 1024 時，是否用 `sysctls` 而非 `cap_add: NET_BIND_SERVICE`？
-- [ ] Host 層 daemon.json 是否設定 XFS data-root、log rotation、storage 限制、address-pools？
+- [ ] Does the container run as a non-root user? (`docker inspect`, `User` field)
+- [ ] Does it start with PUID/PGID and then drop privileges? → not truly rootless; consider another image
+- [ ] Does the image include a shell or system tools it does not need? (consider distroless/Alpine)
+- [ ] Is `/var/run/docker.sock` mounted directly? → use a read-only, distroless socket-proxy that serves the proxied socket as non-root (e.g. 11notes/socket-proxy, section 3: it opens the host socket as root and then drops to 1000:1000, so by the section 1 definition it is not itself rootless)
+- [ ] Are Portainer/Dockge/Komodo or similar management tools in use? → they need full socket access; decide whether that risk is acceptable
+- [ ] Are bind mounts used for persistent data? → consider named volumes (NFS/CIFS/S3 supported)
+- [ ] Is `no-new-privileges=true` set?
+- [ ] Is `cap_drop: [ALL]` set?
+- [ ] Do services that need to write have `read_only: true` + tmpfs?
+- [ ] Is `init: true` set? (signal forwarding, zombie processes)
+- [ ] Are `deploy.resources.limits` set? (pids, memory, CPU; applied by a local Compose v2 `up`, only legacy `docker-compose` v1 needs Swarm/`--compatibility`)
+- [ ] When volume ownership must change, is an init container used instead of a manual chown?
+- [ ] Can the config be an inline env var instead of a bind-mounted file?
+- [ ] When a rootless container must bind a port < 1024, is `sysctls` used instead of `cap_add: NET_BIND_SERVICE`?
+- [ ] Is the host daemon.json configured with XFS data-root, log rotation, storage limits, address-pools?

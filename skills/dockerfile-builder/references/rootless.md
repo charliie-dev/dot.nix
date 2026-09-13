@@ -1,3 +1,5 @@
+<!-- Sync note: this file is intentionally duplicated in container-security/skills/container-security/references/rootless.md (plugin skill references can't be shared across plugins). Update both together. -->
+
 # ROOTLESS - WHAT IS THAT?
 
 Source: [11notes/RTFM](https://github.com/11notes/RTFM/blob/main/linux/container/image/rootless.md)
@@ -8,6 +10,8 @@ Since the majority of users use Docker, we focus **only on Docker**, and the iss
 
 **I run Docker rootless so why should I care about this know-how?** Good point, you don't. This know-how targets the scenario where Docker daemon itself runs as root (the default).
 
+> Editorial note (ours, not part of the upstream text): a rootless daemon mitigates daemon and runtime vulnerabilities on the host, but UID 0 inside the container still holds elevated privileges over its own namespace and over anything exposed to it. SKILL.md's core principle 2 — the process never runs as root, from start to finish — therefore still applies under a rootless daemon; set `USER` by default rather than waiting to be asked.
+
 # ROOTLESS - THE EVIL WITHIN
 
 Docker will start each and every process inside a container **as root**, unless the creator of the container image told Docker to do otherwise or you yourself told Docker to do otherwise.
@@ -15,7 +19,7 @@ Docker will start each and every process inside a container **as root**, unless 
 We can easily check this by comparing the Linux capabilities of root on the host vs. root inside a container:
 
 **root on the Docker host**
-```
+```text upstream-quote
 Current: =ep
 Bounding set =cap_chown,cap_dac_override,cap_dac_read_search,cap_fowner,cap_fsetid,cap_kill,cap_setgid,cap_setuid,cap_setpcap,cap_linux_immutable,cap_net_bind_service,cap_net_broadcast,cap_net_admin,cap_net_raw,cap_ipc_lock,cap_ipc_owner,cap_sys_module,cap_sys_rawio,cap_sys_chroot,cap_sys_ptrace,cap_sys_pacct,cap_sys_admin,cap_sys_boot,cap_sys_nice,cap_sys_resource,cap_sys_time,cap_sys_tty_config,cap_mknod,cap_lease,cap_audit_write,cap_audit_control,cap_setfcap,cap_mac_override,cap_mac_admin,cap_syslog,cap_wake_alarm,cap_block_suspend,cap_audit_read,cap_perfmon,cap_bpf,cap_checkpoint_restore
 ```
@@ -23,7 +27,7 @@ Bounding set =cap_chown,cap_dac_override,cap_dac_read_search,cap_fowner,cap_fset
 vs.
 
 **root inside a container on the same host**
-```
+```text upstream-quote
 Current: cap_chown,cap_dac_override,cap_fowner,cap_fsetid,cap_kill,cap_setgid,cap_setuid,cap_setpcap,cap_net_bind_service,cap_net_raw,cap_sys_chroot,cap_mknod,cap_audit_write,cap_setfcap=ep
 Bounding set =cap_chown,cap_dac_override,cap_fowner,cap_fsetid,cap_kill,cap_setgid,cap_setuid,cap_setpcap,cap_net_bind_service,cap_net_raw,cap_sys_chroot,cap_mknod,cap_audit_write,cap_setfcap
 ```
@@ -31,7 +35,7 @@ Bounding set =cap_chown,cap_dac_override,cap_fowner,cap_fsetid,cap_kill,cap_setg
 vs.
 
 **a normal user account (doesn't have to exist)**
-```
+```text upstream-quote
 Current: =
 Bounding set =
 ```
@@ -46,7 +50,7 @@ Two options are at your disposal:
 ```yaml
 services:
   alpine:
-    image: "alpine"
+    image: "docker.io/library/alpine:<alpine-patch>"
     user: "11420:11420"
 ```
 
@@ -54,7 +58,7 @@ Now Docker will execute all processes in the container as **11420:11420** and no
 
 **Hoping the image maintainer set another user** — a container build file has a directive called `USER` which allows the image maintainer to set any user they like. It's usually the last line in any build file:
 
-```dockerfile
+```dockerfile upstream-quote
 # :: EXECUTE
   USER ${APP_UID}:${APP_GID}
   ENTRYPOINT ["/usr/local/bin/qbittorrent"]
@@ -67,7 +71,7 @@ Now Docker will execute all processes in the container as **11420:11420** and no
 
 **Bonus: security_opt** can be used to prevent a container image from gaining new privileges by privilege escalation:
 
-```yaml
+```yaml upstream-quote
 security_opt:
     - "no-new-privileges=true"
 ```

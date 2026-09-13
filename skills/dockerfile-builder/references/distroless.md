@@ -1,3 +1,5 @@
+<!-- Sync note: this file is intentionally duplicated in container-security/skills/container-security/references/distroless.md (plugin skill references can't be shared across plugins). Update both together. -->
+
 # DISTROLESS - WHAT IS THAT?
 
 Source: [11notes/RTFM](https://github.com/11notes/RTFM/blob/main/linux/container/image/distroless.md)

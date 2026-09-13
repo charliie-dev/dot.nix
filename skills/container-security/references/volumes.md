@@ -45,7 +45,7 @@ The last reason people are against using named volumes: they think **they can't 
 name: "reverse-proxy"
 services:
   traefik:
-    image: "11notes/traefik"
+    image: "docker.io/11notes/traefik:3.7.12"
     volumes:
       - "var:/traefik/var"
       - "plugins:/traefik/plugins"

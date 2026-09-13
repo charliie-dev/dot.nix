@@ -1,3 +1,5 @@
+<!-- Sync note: this file is intentionally duplicated (with minor drift) in container-security/skills/container-security/references/custom.md (plugin skill references can't be shared across plugins). Update both together. -->
+
 # WHY BUILD CUSTOM IMAGES AND NOT JUST UPDATE THE OFFICIAL ONES?
 
 Source: [11notes/RTFM](https://github.com/11notes/RTFM/blob/main/linux/container/image/custom.md)
