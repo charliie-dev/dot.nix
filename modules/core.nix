@@ -88,6 +88,7 @@
       BUNDLE_USER_PLUGIN = "${config.xdg.dataHome}/bundle";
       PARALLEL_HOME = "${config.xdg.configHome}/parallel";
       BUN_INSTALL = "${config.xdg.dataHome}/bun";
+      BUN_INSTALL_CACHE_DIR = "${config.xdg.cacheHome}/bun-install";
       D2_LAYOUT = "tala";
       TF_CLI_CONFIG_FILE = "${config.xdg.configHome}/terraform/terraformrc";
       DOPPLER_CONFIG_DIR = "${config.xdg.configHome}/doppler";
