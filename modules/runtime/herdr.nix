@@ -252,9 +252,9 @@
   xdg.configFile."herdr/agent-detection/grok.toml" = {
     text = ''
       id = "grok"
-      version = "2026.09.13.1"
+      version = "2026.09.15.1"
       min_engine_version = 3
-      updated_at = "2026-09-13T00:00:00Z"
+      updated_at = "2026-09-15T00:00:00Z"
       aliases = ["grok-build"]
 
       [[rules]]
@@ -327,6 +327,15 @@
       region = "top_non_empty_lines(1)"
       visible_working = true
       line_regex = ['◆\s+[1-9][0-9]*\s+│']
+
+      [[rules]]
+      id = "background_dock_working"
+      state = "working"
+      priority = 1168
+      region = "whole_recent"
+      visible_working = true
+      # Require a working row in the dock before the final Grok prompt box.
+      regex = ['(?m)^[ \t]*▾[ \t]+(?:Tasks|Subagents|Watches|Watchers)[ \t]+[1-9][0-9]*[ \t]*\n(?:[^\n╭╰]*\n)*?[ \t]*[⋅:⸬⁙][ \t]+\S[^\n]*\n[^╭╰]*╭─+[^\n]*╮\n(?:[ \t]*│[^\n]*\n)+[ \t]*╰─+[^\n]*╯(?:\n[^╭╰]*)?\z']
 
       [[rules]]
       id = "foreground_hints_working"

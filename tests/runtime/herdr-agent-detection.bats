@@ -124,6 +124,134 @@ SCREEN
   done
 }
 
+grok_idle_prompt() {
+  printf '%s\n' \
+    '╭──────────────────────────────────╮' \
+    '│ ❯                                │' \
+    '╰───── Test model · always-approve ─╯' \
+    'Shift+Tab:mode │ Ctrl+.:shortcuts'
+}
+
+@test "grok running subagents and watches at an idle prompt remain working" {
+  {
+    printf '%s\n' \
+      '  ~/Work/test  127K / 921K │ [Dashboard]' \
+      '  ⸬ Independently rerun the actual  + 1 more… 2m25s' \
+      '  ▾ Subagents 1' \
+      '  ⸬ Pilotfish:security-reviewer Review scanner policy – Running: Web search' \
+      '  ▾ Watches 1' \
+      '  ⸬ Monitor Watch publication through Auto-Release'
+    grok_idle_prompt
+  } > "$screen"
+  assert_grok_state working
+  jq -e '.visible_working and (.visible_idle | not)' <<<"$output"
+}
+
+grok_background_dock() {
+  printf '%s\n' "  ▾ ${1:-Subagents} ${3:-1}" "  ${2:-⸬} Background work"
+}
+
+@test "grok background dock groups remain working through every spinner frame" {
+  for group in Tasks Subagents Watches Watchers; do
+    for spinner in '⋅' ':' '⸬' '⁙'; do
+      {
+        grok_background_dock "$group" "$spinner"
+        grok_idle_prompt
+      } > "$screen"
+      assert_grok_state working
+      jq -e '.visible_working and (.visible_idle | not) and .matched_rule.id == "background_dock_working" and .matched_rule.priority > 1100' <<<"$output"
+    done
+  done
+}
+
+@test "grok long and wrapped background docks remain working" {
+  {
+    grok_background_dock Subagents '⁙' 12
+    for _ in {1..12}; do
+      printf '%s\n' '  ⁙ Background agent — Running:' '      Web search with wrapped details'
+    done
+    printf '%s\n' \
+      '╭──────────────────────────────────╮' \
+      '│ ❯ A multiline draft              │' \
+      '│   continuing here                │' \
+      '╰───── Test model · always-approve ─╯' \
+      'Shift+Tab:mode │' 'Ctrl+.:shortcuts'
+  } > "$screen"
+  assert_grok_state working
+}
+
+@test "grok background docks without active rows remain idle" {
+  for marker in '●' '○' '✓' '✗'; do
+    {
+      grok_background_dock Subagents "$marker"
+      grok_idle_prompt
+    } > "$screen"
+    assert_grok_state idle
+    jq -e '.visible_working | not' <<<"$output"
+  done
+}
+
+@test "grok zero and invalid background dock counts remain idle" {
+  for count in 0 -1 01; do
+    {
+      grok_background_dock Subagents '⁙' "$count"
+      grok_idle_prompt
+    } > "$screen"
+    assert_grok_state idle
+  done
+}
+
+@test "grok background dock headings alone remain idle" {
+  printf '%s\n' '  ▾ Subagents 1' > "$screen"
+  grok_idle_prompt >> "$screen"
+  assert_grok_state idle
+}
+
+@test "grok historical background docks do not keep a newer prompt working" {
+  {
+    grok_background_dock
+    grok_idle_prompt
+    printf '%s\n' 'The background work completed.'
+    grok_idle_prompt
+  } > "$screen"
+  assert_grok_state idle
+  jq -e '.visible_working | not' <<<"$output"
+}
+
+@test "grok quoted background dock text inside the prompt remains idle" {
+  printf '%s\n' \
+    '╭──────────────────────────────────╮' \
+    '│ ❯ Explain this dock:             │' \
+    '│   ▾ Subagents 1                  │' \
+    '│   ⁙ Background work              │' \
+    '╰───── Test model · always-approve ─╯' \
+    'Shift+Tab:mode │ Ctrl+.:shortcuts' > "$screen"
+  assert_grok_state idle
+}
+
+@test "grok prose about background groups and spinners remains idle" {
+  printf '%s\n' \
+    'The dock shows ▾ Subagents 1 with a ⁙ spinner while working.' \
+    '  ⁙ Background work' > "$screen"
+  grok_idle_prompt >> "$screen"
+  assert_grok_state idle
+}
+
+@test "grok approval and question controls outrank active background docks" {
+  for controls in \
+    'a:approve │ q:quit plan │ Tab:prompt' \
+    '1/3:select │ Ctrl+o:yolo │ Ctrl+c:cancel' \
+    'Esc:unselect │ Tab:scrollback │ Shift+x:dismiss'; do
+    {
+      grok_background_dock
+      grok_idle_prompt
+      printf '%s\n' "$controls"
+    } > "$screen"
+    assert_grok_state blocked
+    jq -e '.visible_blocker and (.visible_working | not)' <<<"$output"
+  done
+}
+
 @test "grok permission and question dialogs remain blocked" {
   for controls in '1/3:select │ Ctrl+o:yolo │ Ctrl+c:cancel' 'Esc:unselect │ Tab:scrollback │ Shift+x:dismiss'; do
     printf '%s\n' "$controls" > "$screen"
