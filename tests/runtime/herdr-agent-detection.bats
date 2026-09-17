@@ -132,6 +132,35 @@ grok_idle_prompt() {
     'Shift+Tab:mode │ Ctrl+.:shortcuts'
 }
 
+@test "grok upstream animated background chips remain working" {
+  for spinner in '⋅' ':' '⸬' '⁙' '.' '·'; do
+    printf '%s\n' "  test-workspace  $spinner 1 │ 20K / 100K" > "$screen"
+    grok_idle_prompt >> "$screen"
+    assert_grok_state working
+    jq -e '.visible_working and .matched_rule.id == "background_work_chip_working"' <<<"$output"
+  done
+}
+
+@test "grok background chips require a positive count" {
+  for marker in '◆' '⋅' ':' '⸬' '⁙' '.' '·'; do
+    for count in 0 -1 01; do
+      printf '%s\n' "  test-workspace  $marker $count │ 20K / 100K" > "$screen"
+      grok_idle_prompt >> "$screen"
+      assert_grok_state idle
+    done
+  done
+}
+
+@test "grok permission controls outrank every background chip" {
+  for marker in '◆' '⋅' ':' '⸬' '⁙' '.' '·'; do
+    printf '%s\n' \
+      "  test-workspace  $marker 1 │ 20K / 100K" \
+      '1/3:select │ Ctrl+o:yolo │ Ctrl+c:cancel' > "$screen"
+    assert_grok_state blocked
+    jq -e '.visible_blocker and .matched_rule.id == "permission_hints_blocked"' <<<"$output"
+  done
+}
+
 @test "grok running subagents and watches at an idle prompt remain working" {
   {
     printf '%s\n' \
