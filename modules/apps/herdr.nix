@@ -8,6 +8,9 @@
     settings = {
       onboarding = false;
 
+      # 本地 Kitty graphics 渲染;需外層終端支援(ghostty 有)
+      terminal.kitty_graphics = true;
+
       theme = {
         name = "catppuccin"; # 跟隨 ghostty (固定 Catppuccin Mocha)
         auto_switch = false;
@@ -78,8 +81,6 @@
           "pi"
         ];
         cjk_ime_cursor_shape = "bar";
-        # 本地 Kitty graphics 渲染;需外層終端支援(ghostty 有)
-        kitty_graphics = true;
       };
 
       keys = {
