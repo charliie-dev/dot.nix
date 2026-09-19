@@ -3,7 +3,38 @@
 load "../lib/home-config"
 
 setup() {
+  bats_require_minimum_version 1.5.0
   require_home_config
+}
+
+@test "bashka uses the GitHub backend" {
+  run --separate-stderr nix eval --raw --impure --expr "
+    let f = builtins.getFlake \"path:$REPO\"; in
+    f.homeConfigurations.\"$(home_config_name)\".config.programs.mise.globalConfig.tools.\"github:dmtrKovalenko/bashka\"
+  "
+  [ "$status" -eq 0 ]
+  [ "$output" = latest ]
+}
+
+@test "Tirith is absent from the home profile and Zsh configuration" {
+  run --separate-stderr nix eval --json --impure --expr "
+    let
+      f = builtins.getFlake \"path:$REPO\";
+      home = f.homeConfigurations.\"$(home_config_name)\";
+      inherit (home) config pkgs;
+    in
+    {
+      enabled = config.programs.tirith.enable;
+      installed = builtins.any (p: pkgs.lib.getName p == \"tirith\") config.home.packages;
+      policy = builtins.hasAttr \"tirith/policy.yaml\" config.xdg.configFile;
+      zshIntegration = pkgs.lib.hasInfix \"tirith\" config.programs.zsh.initContent;
+    }
+  "
+  [ "$status" -eq 0 ]
+
+  result="$output"
+  run jq -e 'all(.[]; . == false)' <<<"$result"
+  [ "$status" -eq 0 ]
 }
 
 @test "tombi uses the GitHub backend for Linux musl releases" {

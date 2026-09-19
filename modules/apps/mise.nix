@@ -76,6 +76,7 @@
         usage = "latest";
         # ruby = "latest";
         "cargo:tuicr" = "latest";
+        "github:dmtrKovalenko/bashka" = "latest";
         "go:github.com/perplexityai/bumblebee/cmd/bumblebee" = "latest";
         "go:github.com/retlehs/quien" = "latest";
         "go:golang.org/x/vuln/cmd/govulncheck" = "latest"; # project-wide Go vulnerability scanner

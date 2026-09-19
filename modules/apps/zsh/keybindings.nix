@@ -34,21 +34,5 @@
     }
     add-zle-hook-widget line-init _hm_zle_cursor_shape
     add-zle-hook-widget keymap-select _hm_zle_cursor_shape
-
-    # Tirith must initialize before deferred plugins so widget wrappers form a
-    # valid chain. Its zle -A snapshots are synthetic builtin widgets; F-Sy-H
-    # tries to call a nonexistent dot-widget when wrapping those. Re-register
-    # both snapshots as user widgets that delegate to the real builtins.
-    if (( $+commands[tirith] )); then
-      eval "$(tirith init --shell zsh)"
-      if (( ''${+widgets[_tirith_original_accept_line]} )); then
-        _tirith_orig_accept_line() { zle .accept-line "$@"; }
-        zle -N _tirith_original_accept_line _tirith_orig_accept_line
-      fi
-      if (( ''${+widgets[_tirith_original_bracketed_paste]} )); then
-        _tirith_orig_bp() { zle .bracketed-paste "$@"; }
-        zle -N _tirith_original_bracketed_paste _tirith_orig_bp
-      fi
-    fi
   '';
 }
