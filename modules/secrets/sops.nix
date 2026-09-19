@@ -518,5 +518,16 @@ lib.mkMerge [
       path = "${config.xdg.dataHome}/doppler/token";
       mode = "0400";
     };
+
+    # TypeSafe (Jev) SDK 只讀 TYPESAFE_API_KEY。這把 key 要跨專案常駐,不走
+    # doppler-run 的 process-scoped 注入,所以放 sops:activation 解密成 0400
+    # 檔,.zshenv 啟動時讀進環境;值不經 nix store。找不到檔案(尚未 switch、
+    # 尚未解密)就靜默跳過。
+    sops.secrets.typesafe_api_key.mode = "0400";
+    programs.zsh.envExtra = ''
+      if [[ -r ${lib.escapeShellArg config.sops.secrets.typesafe_api_key.path} ]]; then
+        export TYPESAFE_API_KEY="$(<${lib.escapeShellArg config.sops.secrets.typesafe_api_key.path})"
+      fi
+    '';
   })
 ]

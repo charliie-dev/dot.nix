@@ -52,10 +52,10 @@ assert_matrix() {
     .hosts[$name] as $h
     | ($h.secrets | sort) ==
         (if $app and $ssh then
-           ["allowed_signers", "doppler_token", "host_configuration", "ssh_ed25519", "ssh_ed25519_pub"]
+           ["allowed_signers", "doppler_token", "host_configuration", "ssh_ed25519", "ssh_ed25519_pub", "typesafe_api_key"]
          elif $ssh then
            ["allowed_signers", "host_configuration", "ssh_ed25519", "ssh_ed25519_pub"]
-         elif $app then ["doppler_token"] else [] end)
+         elif $app then ["doppler_token", "typesafe_api_key"] else [] end)
     and $h.hasDopplerPackage == $app
     and $h.hasDopplerWrapper == $app
     and $h.hostInclude == $ssh
@@ -104,7 +104,7 @@ assert_matrix() {
 
 @test "synthetic application-only policy decrypts Doppler and leaves SSH inert" {
   jq -e '
-    .appOnly.secrets == ["doppler_token"]
+    .appOnly.secrets == ["doppler_token", "typesafe_api_key"]
     and .appOnly.hasDopplerPackage
     and .appOnly.hasDopplerWrapper
     and (.appOnly.hostInclude | not)
