@@ -1,0 +1,3 @@
+[interaction]
+on_neutral = "proceed"
+on_red = "abort"

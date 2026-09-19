@@ -3,6 +3,7 @@
     ./core.nix
     ./apps
     ./platform
+    ./runtime/bashka.nix
     ./runtime/docker.nix
     ./runtime/herdr.nix
     ./runtime/mise.nix
