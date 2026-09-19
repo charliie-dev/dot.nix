@@ -281,7 +281,7 @@ sensitive = [
 ]
 agent = [
     "PATH", "SHELL", "TMPDIR", "TEMP", "TMP", "HOME", "LANG", "LC_ALL",
-    "LC_CTYPE", "LOGNAME", "USER", "HERDR_ENV", "HERDR_SOCKET_PATH",
+    "LC_CTYPE", "LOGNAME", "USER", "TYPESAFE_API_KEY", "HERDR_ENV", "HERDR_SOCKET_PATH",
     "HERDR_WORKSPACE_ID", "HERDR_TAB_ID", "HERDR_PANE_ID",
 ]
 root = tempfile.mkdtemp()
@@ -290,7 +290,7 @@ ns["validate_grok_policy"].__globals__["GROK_CONFIG"] = path
 
 exact = {
     "inherit": "all",
-    "ignore_default_excludes": False,
+    "ignore_default_excludes": True,
     "exclude": sensitive,
     "include_only": agent,
 }
@@ -313,11 +313,13 @@ def rejected(policy):
 write(exact)
 ns["validate_grok_policy"]()
 assert list(ns["SENSITIVE_NAMES"]) == sensitive
-assert list(ns["AGENT_SHELL_ENVIRONMENT_NAMES"]) == agent
+assert list(ns["GROK_SHELL_ENVIRONMENT_NAMES"]) == agent
 assert ns["SENSITIVE"] == set(sensitive)
 rejected({"inherit": "core", "ignore_default_excludes": False, "exclude": sensitive})
 rejected({key: value for key, value in exact.items() if key != "include_only"})
 rejected({**exact, "extra": True})
+rejected({**exact, "ignore_default_excludes": False})
+rejected({**exact, "include_only": [name for name in agent if name != "TYPESAFE_API_KEY"]})
 rejected({**exact, "exclude": sensitive + [sensitive[0]]})
 rejected({**exact, "include_only": agent + [agent[0]]})
 rejected({**exact, "include_only": [*agent[:-5], "HERDR_*"]})

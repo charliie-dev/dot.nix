@@ -34,6 +34,10 @@ let
     "USER"
   ];
   agentShellEnvironmentNames = unixCoreEnvironmentNames ++ herdrContextNames;
+  # grok 的 shell tool 額外放行 TYPESAFE_API_KEY(sops 解密、.zshenv 常駐的 key,
+  # 見 modules/secrets/sops.nix)。放在 HERDR 五元組前面,讓測試的尾端切片語意不變。
+  # codex-azure 維持 agentShellEnvironmentNames。
+  grokShellEnvironmentNames = unixCoreEnvironmentNames ++ [ "TYPESAFE_API_KEY" ] ++ herdrContextNames;
   sensitiveNames = [
     "DOPPLER_TOKEN"
     "DOPPLER_PROJECT"
@@ -77,7 +81,7 @@ let
         RUN_CONFIG_DIR = ${builtins.toJSON dopplerRunConfigDir}
         GROK_CONFIG = ${builtins.toJSON "${config.xdg.configHome}/grok/config.toml"}
         SENSITIVE_NAMES = tuple(${builtins.toJSON sensitiveNames})
-        AGENT_SHELL_ENVIRONMENT_NAMES = tuple(${builtins.toJSON agentShellEnvironmentNames})
+        GROK_SHELL_ENVIRONMENT_NAMES = tuple(${builtins.toJSON grokShellEnvironmentNames})
         SENSITIVE = set(SENSITIVE_NAMES)
         BOOTSTRAP_METADATA = {
             "DOPPLER_PROJECT",
@@ -256,9 +260,9 @@ let
                 fail("Grok shell environment policy has drifted")
             if (
                 policy.get("inherit") != "all"
-                or policy.get("ignore_default_excludes") is not False
+                or policy.get("ignore_default_excludes") is not True
                 or policy.get("exclude") != list(GROK_EXCLUDES)
-                or policy.get("include_only") != list(AGENT_SHELL_ENVIRONMENT_NAMES)
+                or policy.get("include_only") != list(GROK_SHELL_ENVIRONMENT_NAMES)
             ):
                 fail("Grok shell environment policy has drifted")
 
