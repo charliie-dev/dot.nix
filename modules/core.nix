@@ -49,7 +49,6 @@
       "${config.home.homeDirectory}/.local/bin"
       "${config.xdg.dataHome}/cargo/bin"
       "${config.xdg.dataHome}/go/bin"
-      "${config.xdg.dataHome}/pnpm"
       "${config.home.homeDirectory}/.local/share/mise/bin"
       "${config.home.homeDirectory}/.local/share/topgrade/bin"
     ]
@@ -76,7 +75,6 @@
       # enabled. Keep the native settings/file generation, but normalize the
       # exported path until the upstream module drops the extra slash.
       NPM_CONFIG_USERCONFIG = lib.mkForce "${config.xdg.configHome}/npm/npmrc";
-      PNPM_HOME = "${config.xdg.dataHome}/pnpm";
       DOCKER_CONFIG = "${config.xdg.configHome}/docker";
       FFMPEG_DATADIR = "${config.xdg.configHome}/ffmpeg";
       ANSIBLE_CONFIG = "${config.xdg.configHome}/ansible/ansible.cfg";
