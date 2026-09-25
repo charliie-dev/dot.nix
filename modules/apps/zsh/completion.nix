@@ -72,6 +72,9 @@ in
           mise shell-alias ls --no-header 2>/dev/null | awk -v n="$word" "\$1==n {for(i=2;i<=NF;i++) printf \"%s \",\$i; print \"\"}"
         fi'
 
+      # Carapace's executable-name matches are not valid kill targets.
+      zstyle ':completion:*:kill:*:process executables' ignored-patterns '*'
+
       # Carapace grouping and git ordering.
       zstyle ':completion:*' format $'\e[2;37mCompleting %d\e[m'
       zstyle ':completion:*:git:*' group-order 'main commands' 'alias commands' 'external commands'
