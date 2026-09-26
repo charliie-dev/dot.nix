@@ -20,6 +20,13 @@ build_topgrade_config() {
   [ "$output" = '["custom_commands","home_manager","brew_formula","brew_cask"]' ]
 }
 
+@test "topgrade disables sudo loop and drops its interval override" {
+  run --separate-stderr nix eval --json --impure --expr \
+    "let f = builtins.getFlake \"path:$REPO\"; misc = f.homeConfigurations.\"$(home_config_name)\".config.programs.topgrade.settings.misc; in !misc.sudo_loop && !(misc ? sudo_loop_interval)"
+  [ "$status" -eq 0 ]
+  [ "$output" = true ]
+}
+
 @test "topgrade runs determinate before one home-manager switch and then brew" {
   config_dir="$BATS_TEST_TMPDIR/topgrade"
   mkdir -p "$config_dir/topgrade.d"

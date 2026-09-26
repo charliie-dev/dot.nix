@@ -20,21 +20,10 @@
         # (default: false)
         # allow_root = false
 
-        # One Touch ID / password at run start, silent afterwards. Needed for
-        # the mas step: on macOS 26.1+ installd requires an Apple-only
-        # entitlement, so mas >= 4.1 installs via `sudo /usr/sbin/installer`
-        # internally and probes the ticket with `sudo -n true`. A scoped
-        # NOPASSWD rule is not possible there (installer/sh with variable
-        # args equals passwordless root). Linux fleet hosts use NOPASSWD; their
-        # mixed PASSWD/NOPASSWD rules make `sudo -v` prompt unnecessarily.
+        # Prime sudo on macOS for mas, which probes it with `sudo -n true`.
+        # Linux hosts use NOPASSWD rules; `sudo -v` can still prompt there.
         pre_sudo = pkgs.stdenv.hostPlatform.isDarwin;
-        sudo_loop = pkgs.stdenv.hostPlatform.isDarwin;
-        # Must stay well below the macOS sudo timestamp_timeout (300s): the
-        # loop refreshes with `sudo -n -v`, which silently fails on an expired
-        # ticket and never revives it. Topgrade's default 240s leaves only 60s
-        # of slack, which a slow step or a nap already blew once; 120s keeps
-        # half the window as margin.
-        sudo_loop_interval = 120;
+        sudo_loop = false;
 
         # Sudo command to be used
         sudo_command = "sudo";
@@ -51,7 +40,8 @@
         # first = ["chezmoi"]
 
         # Run Determinate Nix before Home Manager, after Git updates.
-        # Homebrew resets the sudo timestamp, so both Brew steps run last.
+        # misc.last overrides Topgrade's default Brew ordering; keep both Brew
+        # steps here so their sudo timestamp reset follows Home Manager.
         last = [
           "custom_commands"
           "home_manager"
