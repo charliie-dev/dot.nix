@@ -63,6 +63,7 @@
       # XDG-aware tool homes shared by macOS and Linux.
       PYTHONSTARTUP = "${src}/modules/apps/python/pythonrc";
       PYTHON_HISTORY = "${config.xdg.stateHome}/python/history";
+      RUFF_CACHE_DIR = "${config.xdg.cacheHome}/ruff";
       CARGO_HOME = "${config.xdg.dataHome}/cargo";
       RUSTUP_HOME = "${config.xdg.dataHome}/rustup";
       GOPATH = "${config.xdg.dataHome}/go";
