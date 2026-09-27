@@ -4,5 +4,6 @@
     ./linux.nix
     ./services/brew-env.nix
     ./services/colima.nix
+    ./services/sfm-warp-watch.nix
   ];
 }
