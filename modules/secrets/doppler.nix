@@ -38,7 +38,7 @@ let
   # 見 modules/secrets/sops.nix)。放在 HERDR 五元組前面,讓測試的尾端切片語意不變。
   # codex-azure 維持 agentShellEnvironmentNames。
   grokShellEnvironmentNames = unixCoreEnvironmentNames ++ [ "TYPESAFE_API_KEY" ] ++ herdrContextNames;
-  sensitiveNames = [
+  baseSensitiveNames = [
     "DOPPLER_TOKEN"
     "DOPPLER_PROJECT"
     "DOPPLER_CONFIG"
@@ -58,6 +58,27 @@ let
     "CF_ZONE_ID"
     "CF_ZONE_NAME"
   ];
+  sensitiveNames = baseSensitiveNames ++ lib.optional enableSecrets "AWS_BEARER_TOKEN_BEDROCK";
+  grokShellPolicy = {
+    "inherit" = "all";
+    ignore_default_excludes = true;
+    exclude = sensitiveNames;
+    include_only = grokShellEnvironmentNames;
+  };
+  grokPolicySource = pkgs.writeText "bedrock-grok-policy.py" (
+    builtins.readFile ../../conf.d/bedrock-api-key/grok_policy.py
+  );
+  bedrockRuntime = import ../../conf.d/bedrock-api-key/runtime.nix {
+    inherit
+      config
+      pkgs
+      lib
+      dopplerRun
+      sensitiveNames
+      grokShellPolicy
+      grokPolicySource
+      ;
+  };
   dopplerRun = pkgs.writeShellApplication {
     name = "doppler-run";
     runtimeInputs = [
@@ -71,15 +92,16 @@ let
       exec python3 -I ${pkgs.writeText "doppler-run.py" ''
         import os
         import re
+        import runpy
         import stat
         import sys
-        import tomllib
         from urllib.parse import urlsplit
 
         TOKEN_PATH = ${builtins.toJSON dopplerTokenPath}
         TOKEN_TARGET = ${builtins.toJSON dopplerTokenTarget}
         RUN_CONFIG_DIR = ${builtins.toJSON dopplerRunConfigDir}
         GROK_CONFIG = ${builtins.toJSON "${config.xdg.configHome}/grok/config.toml"}
+        GROK_POLICY = runpy.run_path(${builtins.toJSON (toString grokPolicySource)})
         SENSITIVE_NAMES = tuple(${builtins.toJSON sensitiveNames})
         GROK_SHELL_ENVIRONMENT_NAMES = tuple(${builtins.toJSON grokShellEnvironmentNames})
         SENSITIVE = set(SENSITIVE_NAMES)
@@ -113,6 +135,14 @@ let
             "cloudflare-charliie": ("CF_TOKEN_CHARLIIE_RO",),
             "cloudflare-anmo": ("CF_TOKEN_ANMO_RO",),
         }
+        PROFILES.update(${
+          builtins.toJSON (
+            lib.optionalAttrs enableSecrets {
+              bedrock-grok-token = [ "AWS_BEARER_TOKEN_BEDROCK" ];
+              bedrock-claude = [ "AWS_BEARER_TOKEN_BEDROCK" ];
+            }
+          )
+        })
         CF = {
             "cloudflare-charliie": (
                 "CF_TOKEN_CHARLIIE_RO",
@@ -249,21 +279,14 @@ let
         def validate_grok_policy():
             safe_regular(GROK_CONFIG)
             try:
-                with open(GROK_CONFIG, "rb") as handle:
-                    doc = tomllib.load(handle)
-            except (OSError, tomllib.TOMLDecodeError):
-                fail("Grok config is unreadable or malformed")
-            policy = doc.get("shell_environment_policy")
-            if not isinstance(policy, dict) or set(policy) != {
-                "inherit", "ignore_default_excludes", "exclude", "include_only"
-            }:
-                fail("Grok shell environment policy has drifted")
-            if (
-                policy.get("inherit") != "all"
-                or policy.get("ignore_default_excludes") is not True
-                or policy.get("exclude") != list(GROK_EXCLUDES)
-                or policy.get("include_only") != list(GROK_SHELL_ENVIRONMENT_NAMES)
-            ):
+                doc, _ = GROK_POLICY["read_config"](GROK_CONFIG)
+                GROK_POLICY["validate_shell_policy"](doc, {
+                    "inherit": "all",
+                    "ignore_default_excludes": True,
+                    "exclude": list(GROK_EXCLUDES),
+                    "include_only": list(GROK_SHELL_ENVIRONMENT_NAMES),
+                })
+            except ValueError:
                 fail("Grok shell environment policy has drifted")
 
         def clean_environment(source):
@@ -495,6 +518,8 @@ lib.mkMerge [
       (wrapper "pi-azure" "azure-pi" "pi" "")
       (wrapper "claude-oauth" "claude-oauth" "claude" "")
       codexAzure
-    ];
+    ]
+    ++ bedrockRuntime.packages;
+    xdg.configFile = bedrockRuntime.files;
   })
 ]

@@ -5,7 +5,9 @@ load "../lib/home-config"
 MODULE="$REPO/modules/secrets/doppler.nix"
 
 setup() {
+  bats_require_minimum_version 1.5.0
   require_home_config
+  export TMPDIR="$BATS_TEST_TMPDIR"
 }
 
 configured_xdg_config_home() {
@@ -16,11 +18,11 @@ configured_xdg_config_home() {
 @test "fixed profiles pin Doppler source and repeated selective retrieval" {
   grep -Fq '"--project", "dot-nix", "--config", "dev_personal"' "$MODULE"
   grep -Fq 'argv.extend(("--only-secrets", name))' "$MODULE"
-  ! grep -q -- '--no-exit-on-missing-only-secrets' "$MODULE"
+  run ! grep -q -- '--no-exit-on-missing-only-secrets' "$MODULE"
 }
 
 @test "bootstrap pins its source with flags and strips every DOPPLER_ override" {
-  ! grep -q -- '--no-read-env' "$MODULE"
+  run ! grep -q -- '--no-read-env' "$MODULE"
   grep -Fq '"--api-host", "https://api.doppler.com",' "$MODULE"
   grep -Fq '"--config-dir", RUN_CONFIG_DIR,' "$MODULE"
   grep -Fq '"--no-verify-tls=false", "--no-check-version",' "$MODULE"
@@ -29,8 +31,8 @@ configured_xdg_config_home() {
   grep -Fq 'if k not in SANITIZE and not k.startswith("DOPPLER_")' "$MODULE"
   # 不綁縮排,嵌入腳本重排時不會靜默變成永真。只釘 base64:signal 有正當用途
   # (exec 前把 SIGPIPE 還原成 SIG_DFL),不該被測試擋在門外。
-  ! grep -Eq '^ *import base64$' "$MODULE"
-  ! grep -Fq 'env["DOPPLER_CONFIG_DIR"]' "$MODULE"
+  run ! grep -Eq '^ *import base64$' "$MODULE"
+  run ! grep -Fq 'env["DOPPLER_CONFIG_DIR"]' "$MODULE"
   grep -Fq 'dopplerRunConfigDir = "${config.xdg.cacheHome}/doppler-run"' "$MODULE"
   grep -Fq 'reset_run_config_file()' "$MODULE"
   grep -Fq 'SANITIZE = SENSITIVE | {"DOPPLER_CONFIG_DIR"}' "$MODULE"
@@ -198,6 +200,7 @@ argv = ns['bootstrap_argv']('azure-codex', ['/bin/true'])
 assert argv[argv.index('--') + 2] == '-I', 'the re-exec must be isolated too'
 assert '--no-verify-tls=false' in argv, 'verify-tls not pinned'
 assert '--no-check-version' in argv, 'version check not disabled'
+assert '--no-fallback' in argv, 'secret fallback reads and writes must stay disabled'
 assert argv[argv.index('--api-host') + 1] == 'https://api.doppler.com'
 assert argv[argv.index('--config-dir') + 1] == ns['RUN_CONFIG_DIR']
 assert argv[argv.index('--project') + 1] == 'dot-nix'
@@ -256,11 +259,11 @@ PY
 }
 
 @test "HERDR-ENV-SIMPLE-R5 source has no requirements or migration subsystem" {
-  ! grep -q 'grokRequirements' "$MODULE"
-  ! grep -q 'grok/requirements.toml' "$MODULE"
-  ! grep -q 'grokPolicyMigration' "$MODULE"
-  ! grep -q 'grok-policy-migration.py' "$MODULE"
-  ! grep -q 'migrateGrokShellEnvironmentPolicy' "$MODULE"
+  run ! grep -q 'grokRequirements' "$MODULE"
+  run ! grep -q 'grok/requirements.toml' "$MODULE"
+  run ! grep -q 'grokPolicyMigration' "$MODULE"
+  run ! grep -q 'grok-policy-migration.py' "$MODULE"
+  run ! grep -q 'migrateGrokShellEnvironmentPolicy' "$MODULE"
 }
 
 @test "HERDR-ENV-SIMPLE-R5 mutable Grok validator accepts only the exact policy" {
@@ -279,6 +282,8 @@ sensitive = [
     "CF_API_TOKEN", "CLOUDFLARE_API_TOKEN", "CF_ACCOUNT_ID", "CLOUDFLARE_ACCOUNT_ID",
     "CF_ZONE_ID", "CF_ZONE_NAME",
 ]
+if "bedrock-grok-token" in ns["PROFILES"]:
+    sensitive.append("AWS_BEARER_TOKEN_BEDROCK")
 agent = [
     "PATH", "SHELL", "TMPDIR", "TEMP", "TMP", "HOME", "LANG", "LC_ALL",
     "LC_CTYPE", "LOGNAME", "USER", "TYPESAFE_API_KEY", "HERDR_ENV", "HERDR_SOCKET_PATH",
@@ -371,12 +376,13 @@ PY
     return 0
   fi
   fixture="$BATS_TEST_TMPDIR/codex-home"
-  mkdir -p "$fixture"
+  sandbox_home="$BATS_TEST_TMPDIR/sandbox-home"
+  mkdir -p "$fixture" "$sandbox_home"
   cat > "$fixture/config.toml" <<'TOML'
 [shell_environment_policy]
 set = { HERDR_ENV = "lower", HERDR_SOCKET_PATH = "lower", HERDR_WORKSPACE_ID = "lower", HERDR_TAB_ID = "lower", HERDR_PANE_ID = "lower" }
 TOML
-  run env -i HOME="$HOME" PATH=/usr/bin:/bin CODEX_HOME="$fixture" \
+  run env -i HOME="$sandbox_home" PATH=/usr/bin:/bin CODEX_HOME="$fixture" \
     HERDR_ENV=caller-env HERDR_SOCKET_PATH='caller socket' \
     HERDR_WORKSPACE_ID=caller-workspace HERDR_TAB_ID=caller-tab HERDR_PANE_ID=caller-pane \
     "$codex_bin" \
@@ -461,8 +467,8 @@ PY
 }
 
 @test "legacy global loader is gone and cleanup is unconditional" {
-  ! grep -q 'programs.zsh.envExtra' "$MODULE"
-  ! grep -q 'doppler secrets download' "$MODULE"
+  run ! grep -q 'programs.zsh.envExtra' "$MODULE"
+  run ! grep -q 'doppler secrets download' "$MODULE"
   grep -q 'home.activation.dopplerLegacyCleanup' "$MODULE"
   grep -q '\$DRY_RUN_CMD rm' "$MODULE"
 }

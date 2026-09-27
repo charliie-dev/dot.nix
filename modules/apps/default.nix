@@ -5,6 +5,7 @@
   src,
   roles ? [ ],
   nvidiaGpu ? false,
+  enableSecrets ? false,
   ...
 }:
 let
@@ -53,7 +54,12 @@ let
     filename:
     let
       raw = import (./. + "/${filename}");
-      app = if lib.isFunction raw then raw appArgs else raw;
+      fragmentArgs =
+        appArgs
+        // lib.optionalAttrs (filename == "zsh.nix") {
+          inherit enableSecrets;
+        };
+      app = if lib.isFunction raw then raw fragmentArgs else raw;
     in
     if lib.isAttrs app && app != { } then
       app

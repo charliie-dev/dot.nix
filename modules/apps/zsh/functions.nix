@@ -1,4 +1,8 @@
-{ lib, ... }:
+{
+  lib,
+  enableSecrets ? false,
+  ...
+}:
 
 {
   sessionVariables = {
@@ -108,12 +112,25 @@
       (( ''${#anames} )) && _wanted aliases expl 'shell-alias' compadd -ld adisp -a anames
     '';
 
+    _cct_enabled = ''
+      setopt localoptions extendedglob
+      local value="''${1:-}"
+      # UTF-8 byte escapes match JavaScript trim() even in the C locale.
+      local edge_space=$'(\t|\n|\v|\f|\r| |\xc2\xa0|\xe1\x9a\x80|\xe2\x80\x80|\xe2\x80\x81|\xe2\x80\x82|\xe2\x80\x83|\xe2\x80\x84|\xe2\x80\x85|\xe2\x80\x86|\xe2\x80\x87|\xe2\x80\x88|\xe2\x80\x89|\xe2\x80\x8a|\xe2\x80\xa8|\xe2\x80\xa9|\xe2\x80\xaf|\xe2\x81\x9f|\xe3\x80\x80|\xef\xbb\xbf)#'
+      value="''${value##''${~edge_space}}"
+      value="''${value%%''${~edge_space}}"
+      case "''${value:l}" in
+        1|true|yes|on) return 0 ;;
+        *) return 1 ;;
+      esac
+    '';
+
     _cct_current = ''
-      if [[ -n "$CLAUDE_CODE_USE_VERTEX" ]]; then
+      if _cct_enabled "''${CLAUDE_CODE_USE_VERTEX:-}"; then
         echo "vertex"
-      elif [[ -n "$CLAUDE_CODE_USE_BEDROCK" ]]; then
+      elif _cct_enabled "''${CLAUDE_CODE_USE_BEDROCK:-}"; then
         echo "bedrock"
-      elif [[ -n "$CLAUDE_CODE_USE_FOUNDRY" ]]; then
+      elif _cct_enabled "''${CLAUDE_CODE_USE_FOUNDRY:-}"; then
         echo "azure"
       else
         echo "team"
@@ -169,6 +186,12 @@
     # Claude Code remote control needs feature-flag evaluation. Keep the global
     # DNT policy for other tools, but remove it only for this executable.
     claude = ''
+      ${lib.optionalString enableSecrets ''
+        if _cct_enabled "''${CLAUDE_CODE_USE_BEDROCK:-}"; then
+          command claude-bedrock "$@"
+          return $?
+        fi
+      ''}
       env -u DO_NOT_TRACK claude "$@"
     '';
 
