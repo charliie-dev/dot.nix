@@ -196,7 +196,15 @@ SH
 #!/bin/sh
 case "${1-}" in
   --version) printf '1.2.3 fixture\n' ;;
-  completion) printf '#compdef mise\n_native_mise_completion\n' ;;
+  completion)
+    case "${2-}" in
+      bash)
+        [ "${3-}" = --include-bash-completion-lib ] || exit 1
+        printf '_native_mise_completion() { :; }\ncomplete -F _native_mise_completion mise\n'
+        ;;
+      zsh) printf '#compdef mise\n_native_mise_completion\n' ;;
+    esac
+    ;;
   *) printf 'native mise: %s\n' "$*" ;;
 esac
 SH
@@ -256,6 +264,11 @@ SH
   grep -q '^fixture man page$' "$data/man/man1/mise.1"
   grep -q '^fixture fish activation$' "$data/fish/vendor_conf.d/mise-activate.fish"
   grep -q '^v1.2.3$' "$state/home-manager/mise-assets-version"
+  unset BASH_ENV
+  run bash --noprofile --norc -c '. "$1"; complete -p mise' \
+    _ "$data/bash-completion/completions/mise.bash"
+  [ "$status" -eq 0 ]
+  [ "$output" = 'complete -F _native_mise_completion mise' ]
 }
 
 @test "existing native mise remains usable when asset refresh is offline" {
@@ -269,7 +282,15 @@ SH
 #!/bin/sh
 case "${1-}" in
   --version) printf '1.2.3 fixture\n' ;;
-  completion) printf '#compdef mise\n_native_mise_completion\n' ;;
+  completion)
+    case "${2-}" in
+      bash)
+        [ "${3-}" = --include-bash-completion-lib ] || exit 1
+        printf '_native_mise_completion() { :; }\ncomplete -F _native_mise_completion mise\n'
+        ;;
+      zsh) printf '#compdef mise\n_native_mise_completion\n' ;;
+    esac
+    ;;
   *) printf 'native mise: %s\n' "$*" ;;
 esac
 SH
@@ -285,6 +306,7 @@ SH
   [ "$status" -eq 0 ]
   [[ "$output" = *"native mise: doctor"* ]]
   grep -q '^_native_mise_completion$' "$data/zsh/site-functions/_mise"
+  grep -q '^complete -F _native_mise_completion mise$' "$data/bash-completion/completions/mise.bash"
 
   run env HOME="$home" XDG_DATA_HOME="$data" XDG_STATE_HOME="$state" "$package/bin/mise" doctor
   [ "$status" -eq 0 ]
@@ -298,7 +320,7 @@ SH
   [[ "$output" = *"compdef _mise mise"* ]]
 }
 
-@test "mise stub refreshes Zsh completion from the native binary" {
+@test "mise stub generates Bash and Zsh completions from the native binary" {
   package=$(nix build --no-link --print-out-paths --impure --expr \
     "let f = builtins.getFlake \"path:$REPO\"; in f.homeConfigurations.\"$(home_config_name)\".config.programs.mise.package")
   home="$TEST_ROOT/home"
@@ -307,9 +329,18 @@ SH
   mkdir -p "$data/mise/bin" "$data/man/man1" "$state/home-manager"
   cat > "$data/mise/bin/mise" <<'SH'
 #!/bin/sh
-if [ "${1-}" = completion ] && [ "${2-}" = zsh ]; then
-  printf '#compdef mise\n_native_mise_completion\n'
-  exit 0
+if [ "${1-}" = completion ]; then
+  case "${2-}" in
+    bash)
+      [ "${3-}" = --include-bash-completion-lib ] || exit 1
+      printf '_native_mise_completion() { :; }\ncomplete -F _native_mise_completion mise\n'
+      exit 0
+      ;;
+    zsh)
+      printf '#compdef mise\n_native_mise_completion\n'
+      exit 0
+      ;;
+  esac
 fi
 printf 'native mise: %s\n' "$*"
 SH
@@ -321,4 +352,5 @@ SH
   [ "$status" -eq 0 ]
   [ "$output" = "native mise: doctor" ]
   grep -q '^_native_mise_completion$' "$data/zsh/site-functions/_mise"
+  grep -q '^complete -F _native_mise_completion mise$' "$data/bash-completion/completions/mise.bash"
 }

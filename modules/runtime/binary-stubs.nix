@@ -342,6 +342,14 @@ in
     archiveMember = "mise/bin/mise";
     generatedAssets = [
       {
+        path = "bash-completion/completions/mise.bash";
+        args = [
+          "completion"
+          "bash"
+          "--include-bash-completion-lib"
+        ];
+      }
+      {
         path = "zsh/site-functions/_mise";
         args = [
           "completion"
