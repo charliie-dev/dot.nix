@@ -15,6 +15,11 @@ configured_xdg_config_home() {
     "let f = builtins.getFlake \"git+file://$REPO\"; in f.homeConfigurations.\"$(home_config_name)\".config.xdg.configHome"
 }
 
+configured_xdg_cache_home() {
+  nix eval --raw --impure --expr \
+    "let f = builtins.getFlake \"git+file://$REPO\"; in f.homeConfigurations.\"$(home_config_name)\".config.xdg.cacheHome"
+}
+
 @test "fixed profiles pin Doppler source and repeated selective retrieval" {
   grep -Fq '"--project", "dot-nix", "--config", "dev_personal"' "$MODULE"
   grep -Fq 'argv.extend(("--only-secrets", name))' "$MODULE"
@@ -45,7 +50,7 @@ configured_xdg_config_home() {
 
 @test "internal boundary requires automatic metadata and removes all bootstrap names from target" {
   runner="$(build_home_package doppler-run)"
-  isolated="${XDG_CACHE_HOME:-$HOME/.cache}/doppler-run"
+  isolated="$(configured_xdg_cache_home)/doppler-run"
   run env -i HOME="$HOME" PATH=/usr/bin:/bin \
     DOPPLER_TOKEN=SYNTHETIC_BOOTSTRAP_TOKEN \
     DOPPLER_PROJECT=dot-nix \
@@ -60,7 +65,7 @@ configured_xdg_config_home() {
 
 @test "target environment carries no caller-supplied DOPPLER_ override" {
   runner="$(build_home_package doppler-run)"
-  isolated="${XDG_CACHE_HOME:-$HOME/.cache}/doppler-run"
+  isolated="$(configured_xdg_cache_home)/doppler-run"
   run env -i HOME="$HOME" PATH=/usr/bin:/bin \
     DOPPLER_TOKEN=SYNTHETIC_BOOTSTRAP_TOKEN \
     DOPPLER_PROJECT=dot-nix \
@@ -92,8 +97,8 @@ configured_xdg_config_home() {
 @test "internal boundary rejects missing and extra automatic metadata" {
   runner="$(build_home_package doppler-run)"
   base=(env -i HOME="$HOME" PATH=/usr/bin:/bin \
-    DOPPLER_TOKEN=SYNTHETIC_BOOTSTRAP_TOKEN \
-    DOPPLER_PROJECT=dot-nix DOPPLER_CONFIG=dev_personal \
+      DOPPLER_TOKEN=SYNTHETIC_BOOTSTRAP_TOKEN \
+      DOPPLER_PROJECT=dot-nix DOPPLER_CONFIG=dev_personal \
     AZURE_OPENAI_API_KEY=SYNTHETIC_PROFILE_VALUE)
   run "${base[@]}" "$runner/bin/doppler-run" --internal-launch azure-grok -- /bin/true
   [ "$status" -ne 0 ]
