@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+#MISE description="Offline Bedrock and Doppler contracts with explicit host fixtures"
+#MISE raw=true
+set -euo pipefail
+
+system=$(nix eval --impure --raw --expr 'builtins.currentSystem')
+case "$system" in
+  aarch64-darwin) fixture='charles@24041-LABNB01' ;;
+  x86_64-linux) fixture='charles@callisto' ;;
+  aarch64-linux) fixture='charles@pluto' ;;
+  *) printf 'Unsupported test platform: %s\n' "$system" >&2; exit 1 ;;
+esac
+export HM_CONFIG="${HM_CONFIG:-$fixture}"
+if [[ ! "$HM_CONFIG" =~ ^[a-zA-Z0-9@._-]+$ ]]; then
+  printf 'Invalid host fixture name\n' >&2
+  exit 1
+fi
+
+host=$(nix eval --json --file hosts.nix --apply "h:
+  let chosen = h.\"$HM_CONFIG\" or (throw \"missing required host fixture\");
+      base = if chosen ? sharedConfig then h.\${chosen.sharedConfig} else {};
+  in base // chosen")
+if ! jq -e --arg system "$system" '.system == $system and .enableSecrets == true' <<< "$host" >/dev/null; then
+  printf 'The required fixture must match the platform and enable Doppler packages\n' >&2
+  exit 1
+fi
+
+if [[ "$system" == aarch64-darwin ]]; then
+  nix eval --json --impure --expr '
+    let f = builtins.getFlake (toString ./.);
+        base = f.homeConfigurations."charles@24041-LABNB01";
+        alias = f.homeConfigurations."charles@24041-LABNB01.local";
+    in assert base.activationPackage.drvPath == alias.activationPackage.drvPath;
+       assert base.config.programs.zsh.siteFunctions.claude == alias.config.programs.zsh.siteFunctions.claude;
+       true' | jq -e . >/dev/null
+fi
+nix eval --json --impure --expr '
+  let f = builtins.getFlake (toString ./.);
+      names = map (p: p.name or "") f.homeConfigurations."charles@RDSrv01".config.home.packages;
+  in assert !(builtins.elem "doppler-run" names);
+     assert !(builtins.elem "bedrock-api-key" names);
+     true' | jq -e . >/dev/null
+
+temporary=$(mktemp -d "${TMPDIR:-/tmp}/bedrock-ci.XXXXXX")
+trap 'rm -rf -- "$temporary"' EXIT
+export TMPDIR="$temporary"
+suites=(tests/secrets/doppler-run.bats tests/secrets/bedrock-api-key.bats)
+expected=$(bats --count "${suites[@]}")
+status=0
+bats --formatter tap "${suites[@]}" > "$temporary/results.tap" 2>&1 || status=$?
+python3 - "$temporary/results.tap" "$expected" "$status" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+text = Path(sys.argv[1]).read_text()
+expected = int(sys.argv[2])
+status = int(sys.argv[3])
+print(text, end="")
+plans = re.findall(r"^1\.\.(\d+)$", text, re.MULTILINE)
+executed = re.findall(r"^(?:ok|not ok) \d+\b", text, re.MULTILINE)
+skipped = re.findall(r"^ok .*#\s*skip\b", text, re.MULTILINE | re.IGNORECASE)
+if status or expected < 1 or plans != [str(expected)] or len(executed) != expected or skipped:
+    raise SystemExit("Required Bedrock/Doppler tests failed, did not execute, or skipped")
+print(f"[OK] {expected} required Bats tests executed without skips.")
+PY
