@@ -82,6 +82,10 @@
         "go:github.com/retlehs/quien" = "latest";
         "go:golang.org/x/vuln/cmd/govulncheck" = "latest"; # project-wide Go vulnerability scanner
         "npm:@rivolink/leaf" = "latest";
+        # Cloudflare CLI; replaces flarectl and wrangler. opentofu and
+        # cf-terraforming stay pinned in home-lab's cloudflare/.mise/tasks/cf/*
+        # #MISE tools headers because they are tied to the tofu state format.
+        "npm:cf" = "latest";
       }
       // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
         "github:docker/compose" = "latest"; # avoid the deprecated aqua alias

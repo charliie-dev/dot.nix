@@ -123,6 +123,9 @@
       GROK_DISABLE_AUTOUPDATER = "1";
       COPILOT_AUTO_UPDATE = "0";
       DO_NOT_TRACK = "1";
+      # cf 也認 DO_NOT_TRACK,但 claude wrapper 會 env -u 掉它,agent 裡跑的
+      # cf 就只剩這個專屬變數擋著。
+      CF_SEND_TELEMETRY = "false";
 
       # Cloud CLIs.
       AWS_SHARED_CREDENTIALS_FILE = "${config.xdg.configHome}/aws/credentials";
