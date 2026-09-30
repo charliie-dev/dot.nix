@@ -9,7 +9,7 @@ let
     agent: sha256:
     builtins.readFile (
       builtins.fetchurl {
-        url = "https://raw.githubusercontent.com/herdrdev/herdr/v0.9.1/src/detect/manifests/${agent}.toml";
+        url = "https://raw.githubusercontent.com/herdrdev/herdr/v0.9.3/src/detect/manifests/${agent}.toml";
         inherit sha256;
       }
     );
@@ -25,18 +25,38 @@ let
         ''updated_at = "${metadata.updated_at}"''
       ]
       [
-        ''version = "2026.09.17.1"''
-        ''updated_at = "2026-09-17T00:00:00Z"''
+        ''version = "2026.09.30.1"''
+        ''updated_at = "2026-09-30T00:00:00Z"''
       ]
       base
     + rules;
   claudeUpstream = upstreamManifest "claude" "sha256-A40Koj/uP5s5yzycoRfQ+VsLOlhzzw84KEzLrCeclmQ=";
-  grokUpstream = upstreamManifest "grok" "sha256-YYr8PQnXhDQ/xsS87lgBkG3ywP1ipltEfPX0sb0hW7I=";
-  # Grok 1.0.30 also uses a diamond for its background-task count.
+  grokUpstream = upstreamManifest "grok" "sha256-QpjdLqfRJPO6XXK2Sbu0+27cUz1+blRtUjqCFPoxRW0=";
+  grokSummaryPattern =
+    builtins.head
+      (builtins.head (
+        builtins.filter (rule: rule.id == "background_status_working")
+          (builtins.fromTOML grokUpstream).rules
+      )).line_regex;
+  # Keep the upstream count/type checks, but allow only the final composer after a summary.
+  grokLiveSummaryPattern =
+    builtins.replaceStrings
+      [ "$" ]
+      [
+        ''$(?:\n[^╭╰]*╭─+[^\n]*╮\n(?:[ \t]*│[^\n]*\n)+[ \t]*╰─+[^\n]*╯)?[^╭╰]*\z''
+      ]
+      grokSummaryPattern;
   grokBase =
     builtins.replaceStrings
-      [ ''line_regex = ['[⋅:⸬⁙.·]\s+[1-9][0-9]*\s+│']'' ]
-      [ ''line_regex = ['[◆⋅:⸬⁙.·]\s+[1-9][0-9]*\s+│']'' ]
+      [
+        ''line_regex = ['[⋅:⸬⁙.·]\s+[1-9][0-9]*\s+│']''
+        "line_regex = ['${grokSummaryPattern}']"
+      ]
+      [
+        # Grok 1.0.30 also uses a diamond for its background-task count.
+        ''line_regex = ['[◆⋅:⸬⁙.·]\s+[1-9][0-9]*\s+│']''
+        "regex = ['(?m)${grokLiveSummaryPattern}']"
+      ]
       grokUpstream;
 in
 {
@@ -76,14 +96,6 @@ in
       ]
 
       [[rules]]
-      id = "background_work_status_working"
-      state = "working"
-      priority = 1175
-      region = "bottom_non_empty_lines(6)"
-      visible_working = true
-      line_regex = ['^\s*[◎◉○]\s+.*\bstill running(?:\s+·\s+send a message to interrupt)?\s*$']
-
-      [[rules]]
       id = "background_dock_working"
       state = "working"
       priority = 1168
@@ -100,14 +112,6 @@ in
       visible_working = true
       contains = ["ctrl+.:shortcuts"]
       line_regex = ['^\s*(?:Shift\+Tab:mode\s+│\s+)?Ctrl\+b:send to bg(?:\s+│\s*(?:Ctrl\+\.:shortcuts)?)?\s*$']
-
-      [[rules]]
-      id = "live_status_working"
-      state = "working"
-      priority = 1160
-      region = "bottom_non_empty_lines(6)"
-      visible_working = true
-      line_regex = ['^\s*[⠋⠙⠹⠸⠼⠴⠦⠧]\s+.*\[stop\]\s*$']
     '';
     onChange = ''
       ${config.home.homeDirectory}/.local/bin/herdr server reload-agent-manifests || true
