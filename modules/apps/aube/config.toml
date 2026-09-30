@@ -14,7 +14,6 @@ allowedUnpopularPackages = [
   "@google-cloud/storage-mcp",
   "@hackmd/hackmd-cli",
   "@readwise/cli",
-  "ctx7",
   "tokscale",
 ]
 
