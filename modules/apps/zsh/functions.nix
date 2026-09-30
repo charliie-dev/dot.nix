@@ -183,8 +183,6 @@
       command grok-azure "$@"
     '';
 
-    # Claude Code remote control needs feature-flag evaluation. Keep the global
-    # DNT policy for other tools, but remove it only for this executable.
     claude = ''
       ${lib.optionalString enableSecrets ''
         if _cct_enabled "''${CLAUDE_CODE_USE_BEDROCK:-}"; then
@@ -192,7 +190,7 @@
           return $?
         fi
       ''}
-      env -u DO_NOT_TRACK claude "$@"
+      command claude "$@"
     '';
 
     # skipDangerousModePermissionPrompt suppresses the workspace-trust dialog,

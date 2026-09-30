@@ -66,7 +66,8 @@ enabled = json.loads(sys.argv[3])
 expected = {"bedrock-api-key", "grok-bedrock", "claude-bedrock", "bedrock-key-admin", "bedrock-grok-config", "bedrock-verify", "bedrock-build-manifest"}
 assert (names & expected) == (expected if enabled else set())
 assert ("command claude-bedrock" in functions["claude"]) == enabled
-assert 'env -u DO_NOT_TRACK claude "$@"' in functions["claude"]
+assert 'command claude "$@"' in functions["claude"]
+assert 'env -u DO_NOT_TRACK' not in functions["claude"]
 assert 'claude "$@"' in functions["cc"]
 assert 'command grok-azure "$@"' in functions["grok"]
 print("host-flags-ok")
@@ -114,8 +115,8 @@ ZSH
 import json, sys
 from pathlib import Path
 enabled = json.loads(sys.argv[2])
-first = "claude-bedrock|1" if enabled else "claude|unset"
-assert Path(sys.argv[1]).read_text().splitlines() == [first + "|two words", first + "|cc words", "claude|unset|azure words"]
+first = "claude-bedrock|1" if enabled else "claude|1"
+assert Path(sys.argv[1]).read_text().splitlines() == [first + "|two words", first + "|cc words", "claude|1|azure words"]
 print("dispatch-ok")
 PY
   [ "$status" -eq 0 ]

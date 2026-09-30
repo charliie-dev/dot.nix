@@ -666,13 +666,28 @@ class EnvironmentAndArguments(Fixture):
             clean = self.prepare().environment
         self.assertNotIn(CANARY, json.dumps(clean))
         self.assertNotIn(L.KEY_NAME, clean)
-        self.assertNotIn("DO_NOT_TRACK", clean)
+        self.assertEqual(clean["DO_NOT_TRACK"], "1")
         self.assertEqual(clean["CLAUDE_CONFIG_DIR"], str(self.claude_home))
         self.assertEqual(clean["AWS_CONFIG_FILE"], self.runtime["empty_aws_config"])
         self.assertEqual(
             clean["AWS_SHARED_CREDENTIALS_FILE"], self.runtime["empty_aws_credentials"]
         )
         self.assertEqual(clean["AWS_EC2_METADATA_DISABLED"], "true")
+
+    def test_do_not_track_value_and_absence_are_preserved(self):
+        for value in (None, "", "0", "1"):
+            with self.subTest(value=value):
+                env = dict(self.env)
+                env.pop("DO_NOT_TRACK", None)
+                if value is not None:
+                    env["DO_NOT_TRACK"] = value
+                clean = L.sanitize_environment(
+                    env, self.runtime, self.overlay["env"], self.home
+                )
+                if value is None:
+                    self.assertNotIn("DO_NOT_TRACK", clean)
+                else:
+                    self.assertEqual(clean["DO_NOT_TRACK"], value)
 
     def test_trusted_proxy_tls_and_terminal_env_are_preserved(self):
         env = self.env | {
