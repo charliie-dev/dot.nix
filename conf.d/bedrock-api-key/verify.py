@@ -16,7 +16,7 @@ from typing import Any
 CLAUDE_MODELS = {
     "fable[1m]": "global.anthropic.claude-fable-5-1",
     "opus[1m]": "global.anthropic.claude-opus-5-5",
-    "sonnet": "global.anthropic.claude-sonnet-5",
+    "sonnet": "global.anthropic.claude-sonnet-5-5",
     "haiku": "global.anthropic.claude-haiku-4-5-20251001-v1:0",
 }
 MANUAL_GATES = (
@@ -42,7 +42,11 @@ KNOWN_MODEL_LABELS = (
     | {"grok", "unknown"}
     | {
         profile.removeprefix(prefix)
-        for profile in {*CLAUDE_MODELS.values(), "global.xai.grok-4.6"}
+        for profile in {
+            *CLAUDE_MODELS.values(),
+            "global.xai.grok-4.6",
+            "global.anthropic.claude-sonnet-5",
+        }
         for prefix in ("", "global.", "global.anthropic.", "global.xai.")
     }
 )

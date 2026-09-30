@@ -23,13 +23,12 @@ STORE_ROOT = Path("/nix/store")
 SCRIPT_PATH = Path(__file__).resolve()
 # Reviewed macOS ARM64 native builds, keyed by exact binary digest.
 REVIEWED_CLIENTS = {
-    "fcfd837103965c64de34a6b9b94370d77a347ea71819715a27d5f0ef01775ea4": "2.1.282",
-    "d8cb1e5c79684cc12a8bfc813e3a2073406921b6245744b3009be3ab5651d21e": "2.1.283",
+    "50a14c2f50f56668380fdda490167f1d3630d5cc18fb8aed3073c2c7ea7314fe": "2.1.284",
 }
 MODEL_PINS = {
     "FABLE": "global.anthropic.claude-fable-5-1[1m]",
     "OPUS": "global.anthropic.claude-opus-5-5[1m]",
-    "SONNET": "global.anthropic.claude-sonnet-5",
+    "SONNET": "global.anthropic.claude-sonnet-5-5",
     "HAIKU": "global.anthropic.claude-haiku-4-5-20251001-v1:0",
 }
 FIXED_ENV = {
@@ -244,7 +243,7 @@ BOOTSTRAP_ENV = {
 ERRORS = {
     "arguments": "caller settings, host/source overrides, or unsupported model arguments are not allowed",
     "runtime": "rebuild the Home Manager launcher with its public store runtime and artifacts",
-    "unsupported-client": "use a reviewed Claude Code 2.1.282 or 2.1.283 macOS ARM64 native build; other builds require source review and a launcher digest update",
+    "unsupported-client": "use the reviewed Claude Code 2.1.284 macOS ARM64 native build; other builds require source review and a launcher digest update",
     "unsupported-platform": "this launcher is reviewed for standalone macOS; use an approved entry on other platforms",
     "settings-unreadable": "repair the indicated settings source's readability, regular-file type, or size, then retry",
     "settings-format": "repair the indicated settings source as an unambiguous JSON object or JSON-compatible plist",

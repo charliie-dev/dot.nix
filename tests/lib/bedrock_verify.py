@@ -68,9 +68,9 @@ class VerifyContracts(unittest.TestCase):
             },
         ]
 
-    def verify(self, events):
+    def verify(self, events, profile=PROFILE):
         raw = b"\n".join(json.dumps(event).encode() for event in events)
-        return VERIFY["inspect_stream"](raw, self.fixture, NONCE, "Read", PROFILE)
+        return VERIFY["inspect_stream"](raw, self.fixture, NONCE, "Read", profile)
 
     def test_actual_round_trip_is_required(self):
         result = self.verify(self.events)
@@ -97,6 +97,49 @@ class VerifyContracts(unittest.TestCase):
             "global.xai.grok-4.6",
             client_alias=alias,
         )
+
+    def test_sonnet55_requires_its_concrete_model_identity(self):
+        profile = "global.anthropic.claude-sonnet-5-5"
+        self.assertEqual(VERIFY["CLAUDE_MODELS"]["sonnet"], profile)
+        for reported in (profile, "anthropic.claude-sonnet-5-5", "claude-sonnet-5-5"):
+            events = copy.deepcopy(self.events)
+            events[0]["message"]["model"] = reported
+            events[2]["message"]["model"] = reported
+            events[-1]["modelUsage"] = {profile: {"contextWindow": 1000000}}
+            self.assertTrue(self.verify(events, profile)["response_model_verified"])
+        for reported in (
+            "global.anthropic.claude-sonnet-5",
+            "claude-sonnet-5",
+            "sonnet",
+        ):
+            events = copy.deepcopy(self.events)
+            events[0]["message"]["model"] = reported
+            events[2]["message"]["model"] = reported
+            self.assertRaisesRegex(
+                ValueError, "response-model-mismatch", self.verify, events, profile
+            )
+
+    def test_legacy_grok_sonnet_remains_verifiable(self):
+        profile = "global.anthropic.claude-sonnet-5"
+        self.assertEqual(VERIFY["safe_model_label"](profile), profile)
+        self.assertEqual(
+            VERIFY["safe_model_label"]("claude-sonnet-5"), "claude-sonnet-5"
+        )
+        for reported in (profile, "bedrock-sonnet-5"):
+            events = self.grok_events(reported, reported)
+            events[-1]["modelUsage"] = {reported: {"contextWindow": 1000000}}
+            raw = b"\n".join(json.dumps(event).encode() for event in events)
+            result = VERIFY["inspect_stream"](
+                raw,
+                self.fixture,
+                NONCE,
+                "read_file",
+                profile,
+                client_alias="bedrock-sonnet-5",
+            )
+            self.assertTrue(result["tool_round_trip"])
+            self.assertTrue(result["client_model_label_verified"])
+            self.assertEqual(result["response_model_verified"], reported == profile)
 
     def test_grok_catalog_key_only_verifies_the_client_label(self):
         result = self.verify_grok(self.grok_events())

@@ -43,8 +43,10 @@ CI 使用明確的 Mac／Linux fixtures，檢查兩個 Bats suites 的執行數�
 
 ## 1. Build 與 staging
 
-以下各段在同一個使用者 shell 執行。先完成 AWS 文件中的 IAM 部署與權限核對，
-並確認寫入者與 runtime 的 Doppler 讀取身分屬於同一 workplace／project／config。
+以下各段在同一個使用者 shell 執行。Build、staging 與 Claude preflight 可在 IAM
+更新前完成；它們檢查本機程式與設定。進入秘密操作、真實模型驗收或正式切換前，
+須完成 AWS 文件中的 IAM 部署與權限核對，並確認寫入者與 runtime 的 Doppler
+讀取身分屬於同一 workplace／project／config。
 
 ```sh
 umask 077
@@ -72,11 +74,13 @@ stage=$(mktemp -d "${TMPDIR:-/tmp}/bedrock-stage.XXXXXX")
 stdout 僅包含白名單 metadata。
 遇到衝突先處理指定來源，再重新檢查；保持其他 provider 的秘密與設定分開管理。
 
-目前 Claude launcher 接受已核對的 **2.1.282 與 2.1.283 macOS ARM64 native builds**，
-依 `claude.py` 中的完整 SHA-256 清單核對實際執行檔。
+目前 Claude launcher 只接受已核對的 **2.1.284 macOS ARM64 native build**，
+依 `claude.py` 中的完整 SHA-256 核對實際執行檔。共用 Sonnet pin 已升為
+`global.anthropic.claude-sonnet-5-5`；Sonnet 5.5 要求 Claude Code 2.1.284 以上，
+因此這份配置不再接受 2.1.282／2.1.283。歷史來源核對仍保留於本文末尾。
+Grok 的 `bedrock-sonnet-5` 維持 Sonnet 5，IAM 模板同時保留兩個 Sonnet 版本。
 `enableSecrets` 控制程式部署；Linux 的 Claude 執行仍會被既有平台檢查拒絕，須另做相容性審查。
 更新 client 後需重新核對來源／測試並更新 reviewed digest。
-2.1.283 的來源核對與限制記錄於本文末尾。
 它支援 standalone CLI 與既有普通 linked worktree；建立新 worktree、remote／host-managed
 session、SDK stream-input 等會改變有效來源的入口會停止，須另做相容性審查。
 GUI／IDE 只有採同樣受支援的 standalone 呼叫方式時才能使用此 launcher。
@@ -338,3 +342,68 @@ Prettier 排版的 JavaScript。審查以已核對的 2.1.282 為比較基準。
 真實 discovery／counting、模型請求、context budget 與互動流程依第 3 節另行驗收。
 
 [release-283]: https://downloads.claude.ai/claude-code-releases/2.1.283/manifest.json
+
+## Claude 2.1.284 與 Sonnet 5.5 來源核對
+
+官方 [release manifest][release-284] 的 darwin-arm64 checksum 與本機公開執行檔一致，
+大小為 226563088 bytes：
+
+```text
+50a14c2f50f56668380fdda490167f1d3630d5cc18fb8aed3073c2c7ea7314fe
+```
+
+[官方模型文件][model-config] 明載 Sonnet 5.5 要求 v2.1.284 以上。這份共用配置
+採用 Sonnet 5.5，所以 active allowlist 只保留上述 build。舊 build 的 pass-through
+測試涵蓋字串傳遞；新模型相容性的版本下限依官方要求判定。
+
+以下路徑相對於 `/$bunfs/root/`，行號對應從原生 `__BUN` 解包後，以 Prettier
+3.9.9、babel、printWidth 80 排版的 JavaScript。比較基準為先前核准的 2.1.283。
+
+- **推論認證**：`chunk-9gy1t01w.js:24139–24190` 的
+  `sn = !Dt && !Ke && !an ? await x5() : null` 避免 bearer 路徑選用 AWS helpers
+  或 provider chain。`chunk-8v0m6q2z.js:490–519,549–588` 將 key 傳入
+  `authToken`，並只在 `if (!this.skipAuth && !this.authToken)` 時簽 SigV4。
+- **Discovery／counting**：`chunk-f5tnbmwk.js:660–747` 以
+  `if (!r && !a.AWS_BEARER_TOKEN_BEDROCK)` 限制顯式 credentials；
+  `chunk-0qharv6h.js:4098–4117` 優先選擇 `httpBearerAuth`。
+  `chunk-et43s63y.js:24–42` 從 signingName 導出 bearer env key；
+  `chunk-vhsp24zz.js:120–155,328–336` 選定 identity 後停止搜尋並建立 Bearer header。
+- **模型識別**：`chunk-f5tnbmwk.js:14154–14157,15137–15164` 讓 `sonnet` 使用明確的
+  env pin；`:15262–15267` 的 `if (!Object.hasOwn(e1, r)) return n` 保留 global ID。
+  `chunk-qb91b6mb.js:62–64` 移除 context suffix，
+  `chunk-ra61p37g.js:96944–96972` 以 `model: AD(h.model)` 組裝請求。
+  `chunk-8x984w3d.js:295–318` 包含 Sonnet 5.5 與 Bedrock native 1M metadata；
+  實際 context budget 仍須驗收。
+- **Backing model**：`chunk-f5tnbmwk.js:770–805` 從
+  `models?.[0]?.modelArn` 取得 foundation ID，
+  `chunk-ra61p37g.js:35920–35940` 將它交給 CountTokens。合成回應測試涵蓋這項轉換；
+  服務對該模型的 CountTokens 支援仍須驗收。
+- **來源／控制**：設定 schema 的完整 field union 為 189 → 189；新增 static CLI
+  registration 僅 marketplace add 的 `--from-link`。
+  `chunk-fs3nw7w7.js:190–205` 仍在 signed loader 以
+  `Ie() !== "firstParty"` 拒絕第三方 provider。既有 host／SDK／來源變更與 managed
+  模型限制仍由 launcher 停止，未放寬這些 guards。
+- **子程序環境**：`chunk-e5vhf14c.js:1056–1075,1434–1441` 包含 bearer 與 `INPUT_`
+  形式；`chunk-cvnzry36.js:788–798,1063–1078` 在 scrub latch 啟用時執行
+  `delete x[p]`。普通 Bash／command hooks 的 `hs()` 使用點位於
+  `chunk-ra61p37g.js:41423–41440,104989–105074`；MCP-stdio 位於
+  `chunk-1fy6q12v.js:3112–3136`，LSP 位於 `chunk-kdmtx73x.js:3491–3498`。
+  LSP 使用 `extendEnv: !1`。MCP 展開的
+  `chunk-ra61p37g.js:12042–12077` 使用 `let ze = He ? "" : Ne`，使存在的 bearer
+  env reference 成為空值，並避免取回 `${VAR:-default}`。
+
+獨立來源審查與主流程重跑通過 84 項 native core cases、272 項 scrub／MCP cases，
+另有 lazy-provider 負向控制與來源邊界檢查。原始 JS records 逐個與 binary byte spans
+核對。測試涵蓋抽出來源的 VM／合成案例；machine code 等價性與 live Bedrock 行為
+仍待另外驗證。
+
+核准限於既有可信任主機與 standalone macOS 範圍。必須維持
+`CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1`、空 AWS config／credentials files、helper／source
+限制與 DNT 傳遞。明確 child-env literals、function hooks、plugins、shell startup、
+同使用者檔案／程序存取與 proxy／TLS 仍屬原信任界線；沒有新增每請求目的地或模型綁定保證。
+
+IAM 部署、候選程式 preflight、Home Manager activation、真實模型與工具往返、
+discovery／counting、fallback、1M budget 及背景流程，依上方使用者驗收流程分別確認。
+
+[release-284]: https://downloads.claude.ai/claude-code-releases/2.1.284/manifest.json
+[model-config]: https://code.claude.com/docs/en/model-config

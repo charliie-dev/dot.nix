@@ -78,8 +78,7 @@ class ReviewedBuilds(unittest.TestCase):
         self.assertEqual(
             L.REVIEWED_CLIENTS,
             {
-                "fcfd837103965c64de34a6b9b94370d77a347ea71819715a27d5f0ef01775ea4": "2.1.282",
-                "d8cb1e5c79684cc12a8bfc813e3a2073406921b6245744b3009be3ab5651d21e": "2.1.283",
+                "50a14c2f50f56668380fdda490167f1d3630d5cc18fb8aed3073c2c7ea7314fe": "2.1.284",
             },
         )
 
@@ -176,7 +175,7 @@ class Fixture(unittest.TestCase):
         self.enterContext(mock.patch.object(L, "STORE_ROOT", self.store))
         self.enterContext(mock.patch.object(L, "SCRIPT_PATH", self.script))
         self.enterContext(
-            mock.patch.object(L, "REVIEWED_CLIENTS", {self.digest: "2.1.282"})
+            mock.patch.object(L, "REVIEWED_CLIENTS", {self.digest: "2.1.284"})
         )
         self.enterContext(mock.patch.object(L, "host_layout", return_value=self.layout))
         self.enterContext(mock.patch.dict(os.environ, self.env, clear=True))
@@ -231,7 +230,7 @@ class Fixture(unittest.TestCase):
             "import importlib.util, sys\nfrom pathlib import Path\n"
             f"s=importlib.util.spec_from_file_location('fixture_launcher', {str(self.script)!r})\n"
             "m=importlib.util.module_from_spec(s); sys.modules[s.name]=m; s.loader.exec_module(m)\n"
-            f"m.STORE_ROOT=Path({str(self.store)!r}); m.REVIEWED_CLIENTS={{{self.digest!r}: '2.1.282'}}\n"
+            f"m.STORE_ROOT=Path({str(self.store)!r}); m.REVIEWED_CLIENTS={{{self.digest!r}: '2.1.284'}}\n"
             f"m.host_layout=lambda: m.Layout(Path({str(self.cwd)!r}), Path({str(self.home)!r}), Path({str(self.layout.managed_dir)!r}), (), Path({str(self.root)!r}))\n"
             "sys.exit(m.main(sys.argv[1:]))\n"
         )
@@ -327,8 +326,22 @@ class PublicArtifacts(Fixture):
         execute.assert_not_called()
         self.assertFalse(self.runner_log.exists())
 
+    def test_legacy_native_digests_are_rejected(self):
+        for digest in (
+            "fcfd837103965c64de34a6b9b94370d77a347ea71819715a27d5f0ef01775ea4",
+            "d8cb1e5c79684cc12a8bfc813e3a2073406921b6245744b3009be3ab5651d21e",
+        ):
+            with (
+                self.subTest(digest=digest),
+                mock.patch.object(L.hashlib, "file_digest") as file_digest,
+            ):
+                file_digest.return_value.hexdigest.return_value = digest
+                self.reject(
+                    "unsupported-client", L.reviewed_client, self.runtime, self.env
+                )
+
     def test_client_version_cannot_be_asserted_by_runtime(self):
-        self.runtime["claude_version"] = "2.1.282"
+        self.runtime["claude_version"] = "2.1.284"
         self.runtime["claude_sha256"] = self.digest
         with mock.patch.object(L, "REVIEWED_CLIENTS", {}):
             self.reject("unsupported-client", self.prepare)
@@ -388,6 +401,17 @@ class Settings(Fixture):
     def test_managed_json_cannot_be_neutralized_by_overlay(self):
         self.setting(
             {"env": {"CLAUDE_CODE_USE_VERTEX": "1"}},
+            self.layout.managed_dir / "managed-settings.json",
+        )
+        self.reject("routing-conflict", self.prepare)
+
+    def test_managed_legacy_sonnet_pin_cannot_be_overridden(self):
+        self.setting(
+            {
+                "env": {
+                    "ANTHROPIC_DEFAULT_SONNET_MODEL": "global.anthropic.claude-sonnet-5"
+                }
+            },
             self.layout.managed_dir / "managed-settings.json",
         )
         self.reject("routing-conflict", self.prepare)
@@ -736,6 +760,21 @@ class EnvironmentAndArguments(Fixture):
             ("fable[1m]", ["sonnet"]),
         )
         self.assertEqual(L.validate_arguments(["--model=haiku"]), ("haiku", ["sonnet"]))
+
+    def test_sonnet55_alias_and_pin_replace_legacy_arguments(self):
+        pin = "global.anthropic.claude-sonnet-5-5"
+        self.assertEqual(L.MODEL_PINS["SONNET"], pin)
+        for model in ("sonnet", pin):
+            self.assertEqual(
+                L.validate_arguments(["--model", model, "--fallback-model", model]),
+                (model, [model]),
+            )
+        for flag in ("--model", "--fallback-model"):
+            self.reject(
+                "arguments",
+                L.validate_arguments,
+                [flag, "global.anthropic.claude-sonnet-5"],
+            )
 
     def test_invalid_empty_or_duplicate_models_stop(self):
         for args in (
