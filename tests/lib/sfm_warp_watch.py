@@ -51,6 +51,7 @@ class StubCommands:
         self.service = WATCH.Result(0, b"Connected\n<dictionary> {}\n")
         self.dictionaries = [dictionary("en0", "192.0.2.10")]
         self.health = WATCH.Result(0, b"warp=off\n\n200")
+        self.proxy = WATCH.Result(0, b"warp=off\n\n200")
         self.underlay: dict[tuple[str, str], object] = {}
         self.default_underlay = WATCH.Result(0, b"HTTP/2 200\r\n\r\n\n200")
 
@@ -62,6 +63,8 @@ class StubCommands:
             return self.scutil(options["input_data"])
         if arguments[0] != WATCH.CURL or arguments[1] != "-q":
             raise AssertionError("unexpected command")
+        if "--proxy" in arguments:
+            return self.proxy
         if "--interface" not in arguments:
             return self.health
         interface = arguments[arguments.index("--interface") + 1]
@@ -96,10 +99,10 @@ class Fixture(unittest.TestCase):
         }
         self.state_root = self.root / "state/sfm-warp-maintenance"
 
-    def invoke(self, action):
+    def invoke(self, action, *options):
         output = io.StringIO()
         with mock.patch.dict(os.environ, self.env, clear=True), redirect_stdout(output):
-            code = WATCH.main([action])
+            code = WATCH.main([action, *options])
         return code, json.loads(output.getvalue())
 
 
@@ -432,6 +435,173 @@ class Probes(unittest.TestCase):
         with mock.patch.object(WATCH, "run_command", return_value=response):
             return WATCH.warp_health(time.monotonic() + 20)
 
+    def direct_result(self, proxy, service="connected"):
+        stub = StubCommands()
+        stub.proxy = proxy
+        stub.service = WATCH.Result(0, service.encode() + b"\n")
+        with mock.patch.object(WATCH, "run_command", side_effect=stub):
+            health = WATCH.warp_health(1040, allow_sfm_direct_probe=True)
+        return health, stub.calls
+
+    def test_direct_confirmation_off_is_healthy_on_and_plus_are_failed(self):
+        for value, expected in (
+            (b"off", "healthy"),
+            (b"on", "failed"),
+            (b"plus", "failed"),
+        ):
+            response = WATCH.Result(0, b"warp=" + value + b"\n200")
+            health, calls = self.direct_result(response)
+            self.assertEqual(health, expected)
+            self.assertEqual(len(calls), 3)
+            self.assertEqual(calls[-1][0], [WATCH.SCUTIL, "--nc", "status", "SFM"])
+
+    def test_direct_proxy_arguments_are_fixed_verified_and_never_bypassed(self):
+        _, calls = self.direct_result(WATCH.Result(0, b"warp=off\n200"))
+        self.assertEqual(
+            calls[1],
+            (
+                [
+                    "/usr/bin/curl",
+                    "-q",
+                    "--noproxy",
+                    "",
+                    "--silent",
+                    "--fail",
+                    "--ipv4",
+                    "--proto",
+                    "=https",
+                    "--connect-timeout",
+                    "2",
+                    "--max-time",
+                    "4",
+                    "--max-filesize",
+                    "8192",
+                    "--write-out",
+                    "\n%{http_code}",
+                    "--proxy",
+                    "socks5h://127.0.0.1:18082",
+                    "https://1.1.1.1/cdn-cgi/trace",
+                ],
+                {"deadline": 1040, "limit": 4096},
+            ),
+        )
+        self.assertEqual(calls[0][0], WATCH.curl_arguments(WATCH.TRACE))
+        self.assertEqual(calls[-1][1], {"timeout": 3, "deadline": 1040})
+
+    def test_proxy_errors_and_ambiguous_traces_are_unknown_without_direct_fallback(
+        self,
+    ):
+        responses = [
+            WATCH.Result(code) for code in sorted(WATCH.NETWORK_ERRORS | {60, 97})
+        ]
+        responses += [
+            WATCH.Result(),
+            WATCH.Result(7, b"warp=off\n200"),
+            WATCH.Result(0, b"warp=off\n301"),
+            WATCH.Result(0, b"warp=off\n500"),
+            WATCH.Result(0, b"warp=off"),
+            WATCH.Result(0, b"\n200"),
+            WATCH.Result(0, b"warp=OFF\n200"),
+            WATCH.Result(0, b"ip=192.0.2.1\n200"),
+            WATCH.Result(0, b"warp=off\nwarp=off\n200"),
+            WATCH.Result(0, b"warp=off\nwarp=on\n200"),
+            WATCH.Result(0, b"warp=plus\nwarp=plus\n200"),
+            WATCH.Result(0, b"warp=off\ninvalid\n200"),
+            WATCH.Result(0, b"\xff\n200"),
+        ]
+        for response in responses:
+            health, calls = self.direct_result(response)
+            self.assertEqual(health, "unknown", response)
+            self.assertEqual(len(calls), 2)
+            self.assertIn("--proxy", calls[-1][0])
+
+    def test_service_changes_after_proxy_cannot_confirm_direct_or_failure(self):
+        for service in ("disconnected", "connecting", "disconnecting", "unknown"):
+            off = self.direct_result(WATCH.Result(0, b"warp=off\n200"), service)
+            on = self.direct_result(WATCH.Result(0, b"warp=on\n200"), service)
+            self.assertEqual((off[0], on[0]), ("unknown", "unknown"))
+
+    def test_opt_in_does_not_rescue_transport_errors_or_probe_other_system_results(
+        self,
+    ):
+        responses = [WATCH.Result(code) for code in sorted(WATCH.NETWORK_ERRORS)]
+        expected = ["failed"] * len(responses)
+        responses += [
+            WATCH.Result(0, b"warp=on\n200"),
+            WATCH.Result(0, b"warp=plus\n200"),
+            WATCH.Result(0, b"warp=off\nwarp=off\n200"),
+            WATCH.Result(0, b"warp=off\n301"),
+            WATCH.Result(0, b"warp=off\n500"),
+            WATCH.Result(60, b"warp=off\n200"),
+            WATCH.Result(),
+        ]
+        expected += [
+            "healthy",
+            "healthy",
+            "unknown",
+            "unknown",
+            "unknown",
+            "unknown",
+            "unknown",
+        ]
+        for response, health in zip(responses, expected, strict=True):
+            self.assert_system_result_without_proxy(response, health)
+
+    def assert_system_result_without_proxy(self, response, expected):
+        with mock.patch.object(WATCH, "run_command", return_value=response) as runner:
+            health = WATCH.warp_health(1040, allow_sfm_direct_probe=True)
+        self.assertEqual(health, expected)
+        runner.assert_called_once_with(
+            WATCH.curl_arguments(WATCH.TRACE), deadline=1040, limit=4096
+        )
+
+    def test_direct_confirmation_requires_opt_in_and_connected_initial_service(self):
+        for enabled, service in ((False, "connected"), (True, "disconnected")):
+            stub = StubCommands()
+            stub.service = WATCH.Result(0, service.encode() + b"\n")
+            self.assert_observation_without_proxy(stub, enabled)
+
+    def assert_observation_without_proxy(self, stub, enabled):
+        with mock.patch.object(WATCH, "run_command", side_effect=stub):
+            observation = WATCH.observe(allow_sfm_direct_probe=enabled)
+        self.assertEqual(observation.health, "failed")
+        self.assertEqual(observation.underlay, "reachable")
+        self.assertFalse(any("--proxy" in arguments for arguments, _ in stub.calls))
+
+    def test_direct_observation_shares_deadline_and_skips_underlay(self):
+        stub = StubCommands()
+        with (
+            mock.patch.object(WATCH, "run_command", side_effect=stub),
+            mock.patch.object(WATCH.time, "monotonic", return_value=1000),
+        ):
+            observation = WATCH.observe(allow_sfm_direct_probe=True)
+        self.assertEqual(
+            observation, replace(BAD, health="healthy", underlay="unknown")
+        )
+        self.assertEqual(len(stub.calls), 6)
+        self.assertEqual({options["deadline"] for _, options in stub.calls}, {1040})
+        self.assertFalse(any("--interface" in arguments for arguments, _ in stub.calls))
+
+    def test_expired_direct_probe_deadline_never_launches_a_process(self):
+        with mock.patch.object(WATCH.subprocess, "Popen") as popen:
+            self.assertEqual(WATCH.sfm_direct_health(0), "unknown")
+        popen.assert_not_called()
+
+    def test_direct_and_warp_path_changes_do_not_cache_previous_health(self):
+        stub = StubCommands()
+        with mock.patch.object(WATCH, "run_command", side_effect=stub):
+            direct = WATCH.observe(allow_sfm_direct_probe=True)
+            stub.proxy = WATCH.Result(0, b"warp=on\n200")
+            mismatch = WATCH.observe(allow_sfm_direct_probe=True)
+            stub.health = WATCH.Result(0, b"warp=on\n200")
+            warp = WATCH.observe(allow_sfm_direct_probe=True)
+        state = WATCH.transition(replace(BASE, failures=2), direct, 1060, 1060)
+        self.assertEqual((state.health, state.failures), ("healthy", 0))
+        state = WATCH.transition(state, mismatch, 1120, 1120)
+        self.assertEqual((state.health, state.failures), ("failed", 1))
+        state = WATCH.transition(state, warp, 1180, 1180)
+        self.assertEqual((state.health, state.failures), ("healthy", 0))
+
 
 class Runtime(Fixture):
     def setUp(self):
@@ -441,6 +611,7 @@ class Runtime(Fixture):
         self.enterContext(mock.patch.object(WATCH.sys, "platform", "darwin"))
         self.enterContext(mock.patch.object(WATCH.time, "time", return_value=1060))
         self.enterContext(mock.patch.object(WATCH.time, "monotonic", return_value=1060))
+        self.real_observe = WATCH.observe
         self.observation = self.enterContext(
             mock.patch.object(WATCH, "observe", return_value=BAD)
         )
@@ -530,7 +701,7 @@ class Runtime(Fixture):
         self.assertEqual(self.store.load().failures, 0)
         self.commands.assert_not_called()
 
-    def pause_in_probe(self):
+    def pause_in_probe(self, allow_sfm_direct_probe=False):
         WATCH.atomic_write(self.store.fd, "paused", b"")
         return BAD
 
@@ -591,6 +762,79 @@ class Runtime(Fixture):
         self.assertEqual(self.invoke("check")[1]["result"], "service-unknown")
         self.assertEqual(self.store.load().failures, 0)
         self.commands.assert_not_called()
+
+    def test_cli_direct_probe_flag_propagates_to_check_and_probe_only(self):
+        self.observation.return_value = replace(BAD, health="healthy")
+        cases = [
+            ("check", (), False),
+            ("probe", (), False),
+            ("check", ("--allow-sfm-direct-probe",), True),
+            ("probe", ("--allow-sfm-direct-probe",), True),
+        ]
+        for action, options, enabled in cases:
+            self.observation.reset_mock()
+            self.assertEqual(self.invoke(action, *options)[0], 0)
+            self.observation.assert_called_once_with(allow_sfm_direct_probe=enabled)
+        self.observation.reset_mock()
+        for action in ("status", "pause", "resume"):
+            self.assertEqual(self.invoke(action, "--allow-sfm-direct-probe")[0], 0)
+        self.observation.assert_not_called()
+        self.commands.assert_not_called()
+
+    def test_opted_in_paused_check_skips_all_observation(self):
+        self.invoke("pause")
+        _, report = self.invoke("check", "--allow-sfm-direct-probe")
+        self.assertEqual(report["result"], "paused")
+        self.observation.assert_not_called()
+        self.commands.assert_not_called()
+
+    def test_pause_during_opted_in_observation_still_prevents_repair(self):
+        self.observation.side_effect = self.pause_in_probe
+        _, report = self.invoke("check", "--allow-sfm-direct-probe")
+        self.assertEqual((report["result"], report["failures"]), ("paused", 0))
+        self.observation.assert_called_once_with(allow_sfm_direct_probe=True)
+        self.commands.assert_not_called()
+
+    def test_proxy_failures_reset_existing_streak_without_underlay_or_repair(self):
+        for response in (
+            WATCH.Result(7),
+            WATCH.Result(60),
+            WATCH.Result(0, b"bad\n200"),
+        ):
+            self.assert_unknown_proxy_checks(response)
+
+    def assert_unknown_proxy_checks(self, response):
+        stub = StubCommands()
+        stub.proxy = response
+        self.commands.side_effect = stub
+        self.observation.side_effect = self.real_observe
+        self.store.save(replace(BASE, failures=2))
+        for _ in range(3):
+            _, report = self.invoke("check", "--allow-sfm-direct-probe")
+            self.assertEqual((report["health"], report["failures"]), ("unknown", 0))
+            self.assertEqual(report["result"], "health-unknown")
+            self.assertEqual(report["last_restart"], 0)
+        self.assertFalse(any("--interface" in arguments for arguments, _ in stub.calls))
+        self.assertFalse(any("--nc" in arguments for arguments, _ in stub.calls))
+
+    def test_confirmed_direct_check_is_healthy_without_schema_or_report_changes(self):
+        self.commands.side_effect = StubCommands()
+        self.observation.side_effect = self.real_observe
+        before = set(asdict(self.store.load()))
+        _, report = self.invoke("check", "--allow-sfm-direct-probe")
+        self.assertEqual((report["result"], report["failures"]), ("healthy", 0))
+        self.assertEqual(report["last_restart"], 0)
+        self.assertEqual(set(asdict(self.store.load())), before)
+        self.assertNotIn("127.0.0.1", json.dumps(report))
+        self.assertNotIn("socks5h", json.dumps(report))
+
+    def test_service_change_during_direct_probe_resets_streak_without_repair(self):
+        self.commands.side_effect = StubCommands()
+        self.observation.side_effect = self.real_observe
+        self.service.side_effect = ["connected", "disconnected"]
+        _, report = self.invoke("check", "--allow-sfm-direct-probe")
+        self.assertEqual((report["result"], report["failures"]), ("health-unknown", 0))
+        self.assertEqual(report["last_restart"], 0)
 
 
 class Storage(Fixture):
@@ -866,7 +1110,10 @@ in {
         self.assertFalse(agent["waitForNixStore"])
         self.assertEqual(agent["config"]["StartInterval"], 60)
         self.assertTrue(agent["config"]["RunAtLoad"])
-        self.assertEqual(agent["config"]["ProgramArguments"][1:], ["check"])
+        self.assertEqual(
+            agent["config"]["ProgramArguments"][1:],
+            ["check", "--allow-sfm-direct-probe"],
+        )
         self.assertEqual(
             agent["config"]["EnvironmentVariables"]["XDG_STATE_HOME"],
             str(self.root / "state"),

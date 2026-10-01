@@ -21,6 +21,7 @@ let
       ProgramArguments = [
         "${watch}/bin/sfm-watch"
         "check"
+        "--allow-sfm-direct-probe"
       ];
       EnvironmentVariables.XDG_STATE_HOME = config.xdg.stateHome;
       StartInterval = 60;

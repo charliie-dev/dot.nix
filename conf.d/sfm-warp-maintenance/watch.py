@@ -34,6 +34,7 @@ SCUTIL = "/usr/sbin/scutil"
 CURL = "/usr/bin/curl"
 TRACE = "https://1.1.1.1/cdn-cgi/trace"
 GOOGLE = "https://dns.google/"
+SFM_PROXY = "socks5h://127.0.0.1:18082"
 CLEAN_ENV = {"PATH": "/usr/bin:/bin:/usr/sbin:/sbin", "LC_ALL": "C"}
 NETWORK_ERRORS = {5, 6, 7, 28, 52, 55, 56}
 SERVICE_KEY = r"State:/Network/Service/[A-Za-z0-9._:-]{1,64}/IPv[46]"
@@ -250,12 +251,12 @@ def signature(interfaces: dict[str, tuple[str, ...]]) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def curl_arguments(target: str) -> list[str]:
+def curl_arguments(target: str, *, sfm_proxy: bool = False) -> list[str]:
     return [
         CURL,
         "-q",
         "--noproxy",
-        "*",
+        "" if sfm_proxy else "*",
         "--silent",
         "--fail",
         "--ipv4",
@@ -269,6 +270,7 @@ def curl_arguments(target: str) -> list[str]:
         "8192",
         "--write-out",
         "\n%{http_code}",
+        *(["--proxy", SFM_PROXY] if sfm_proxy else []),
         target,
     ]
 
@@ -293,12 +295,27 @@ def trace_health(body: bytes) -> str:
     return "failed" if values == ["off"] else "unknown"
 
 
-def warp_health(deadline: float) -> str:
+def sfm_direct_health(deadline: float) -> str:
+    result = run_command(
+        curl_arguments(TRACE, sfm_proxy=True), deadline=deadline, limit=4096
+    )
+    body = https_body(result)
+    health = trace_health(body) if body is not None else "unknown"
+    if health == "unknown" or service_status(deadline) != "connected":
+        return "unknown"
+    return "healthy" if health == "failed" else "failed"
+
+
+def warp_health(deadline: float, allow_sfm_direct_probe: bool = False) -> str:
     result = run_command(curl_arguments(TRACE), deadline=deadline, limit=4096)
     if result.code in NETWORK_ERRORS:
         return "failed"
     body = https_body(result)
-    return trace_health(body) if body is not None else "unknown"
+    health = trace_health(body) if body is not None else "unknown"
+    # Only a valid warp=off response can use SFM's direct-path confirmation.
+    if health == "failed" and allow_sfm_direct_probe:
+        return sfm_direct_health(deadline)
+    return health
 
 
 def underlay_probe(interface: str, target: str, deadline: float) -> str:
@@ -325,7 +342,7 @@ def underlay_health(interfaces: dict[str, tuple[str, ...]], deadline: float) -> 
     )
 
 
-def observe() -> Observation:
+def observe(allow_sfm_direct_probe: bool = False) -> Observation:
     deadline = time.monotonic() + PROBE_BUDGET
     service = service_status(deadline)
     if service not in {"connected", "disconnected"}:
@@ -333,7 +350,10 @@ def observe() -> Observation:
     before = discover(deadline)
     if not before:
         return Observation(service=service)
-    health = warp_health(deadline)
+    health = warp_health(
+        deadline,
+        allow_sfm_direct_probe=allow_sfm_direct_probe and service == "connected",
+    )
     underlay = underlay_health(before, deadline) if health == "failed" else "unknown"
     after = discover(deadline) if underlay == "reachable" else before
     return Observation(
@@ -597,7 +617,9 @@ def emit(value: dict[str, object]) -> int:
     return 0
 
 
-def locked_command(store: Store, command: str) -> int:
+def locked_command(
+    store: Store, command: str, allow_sfm_direct_probe: bool = False
+) -> int:
     if command == "resume":
         state = replace(
             store.load(),
@@ -612,7 +634,7 @@ def locked_command(store: Store, command: str) -> int:
     if sys.platform != "darwin":
         return emit({"result": "unsupported-platform"})
     if command == "probe":
-        observation = observe()
+        observation = observe(allow_sfm_direct_probe=allow_sfm_direct_probe)
         return emit(
             {
                 "result": "probe",
@@ -624,7 +646,11 @@ def locked_command(store: Store, command: str) -> int:
             }
         )
     state = store.load()
-    observation = Observation() if store.paused() else observe()
+    observation = (
+        Observation()
+        if store.paused()
+        else observe(allow_sfm_direct_probe=allow_sfm_direct_probe)
+    )
     state = transition(
         state, observation, time.time(), time.monotonic(), store.paused()
     )
@@ -634,7 +660,7 @@ def locked_command(store: Store, command: str) -> int:
     return emit(report(state, store.paused()))
 
 
-def command(store: Store, action: str) -> int:
+def command(store: Store, action: str, allow_sfm_direct_probe: bool = False) -> int:
     if action == "pause":
         # Pause does not wait for a potentially in-flight probe's lock.
         atomic_write(store.fd, "paused", b"")
@@ -642,7 +668,11 @@ def command(store: Store, action: str) -> int:
     if action == "status":
         return emit(report(store.load(), store.paused()))
     with check_lock(store) as acquired:
-        return locked_command(store, action) if acquired else emit({"result": "busy"})
+        return (
+            locked_command(store, action, allow_sfm_direct_probe)
+            if acquired
+            else emit({"result": "busy"})
+        )
 
 
 def main(arguments: list[str] | None = None) -> int:
@@ -650,10 +680,15 @@ def main(arguments: list[str] | None = None) -> int:
     parser.add_argument(
         "command", choices=("pause", "resume", "status", "check", "probe")
     )
+    parser.add_argument(
+        "--allow-sfm-direct-probe",
+        action="store_true",
+        help="confirm intentional direct traffic through SFM's fixed loopback proxy",
+    )
     args = parser.parse_args(arguments)
     try:
         with Store(state_directory()) as store:
-            return command(store, args.command)
+            return command(store, args.command, args.allow_sfm_direct_probe)
     except (OSError, ValueError, OverflowError):
         emit({"result": "state-unavailable"})
         return 1

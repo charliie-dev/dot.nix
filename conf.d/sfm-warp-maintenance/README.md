@@ -129,6 +129,23 @@ DNS 例外、拒絕規則與原順序保留。原本送至最終 HTTPS 伺服器
 `1.1.1.1:443`，其他目的與 UDP 拒絕。這是 IP／連接埠限制；本機程序仍可存取，
 也不限於某個 HTTP 路徑。入口、一般流量與 DNS 使用同一組原生網路條件。
 
+匯入、選取並啟動新檔後，可在監控仍暫停時檢查：
+
+```sh
+python3 -IS "$tools/watch.py" probe --allow-sfm-direct-probe
+```
+
+此旗標預設關閉，僅作用於該次呼叫。有效的系統 `warp=off` 回應，須再經 SFM
+本機入口取得 `off` 且服務仍連線，才視為健康；入口不明或不可用回報 unknown。
+系統傳輸錯誤及原本 WARP 模式的故障處理維持原有行為。
+
+Darwin 排程已明確帶入相同旗標；手動 `probe`／`check` 仍須帶入，`resume` 本身不會保存此選項。
+隔離更新後，可使用 `~/.local/state/sfm-warp-maintenance/watch-runtime/home-path/bin/sfm-watch`
+取得與目前排程相同的版本；整份 Home Manager 尚未切換時，PATH 中的版本可能較舊。
+原生網路條件、目標網路的實際直連、其他網路的既有路徑、私人 DNS、LAN 與
+Tailscale 都通過驗證後，再決定是否恢復排程。SSID 模式另需驗證 SFM 能取得
+可用的 Wi-Fi 名稱；網段模式不依賴該資訊。
+
 ## reserved 實測
 
 ### 本機封包對照
