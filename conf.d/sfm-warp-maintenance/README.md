@@ -88,6 +88,47 @@ python3 -IS "$tools/reserved_probe.py" audit \
 切換手機熱點後，SFM 的網域規則維持原樣；自動介面偵測跟隨底層網路。固定介面／來源位址、行動業者對 UDP 的限制及既有連線中斷，仍可能影響切換結果。
 SFM 的 Include All Networks 維持關閉。
 
+## GL-XE3000 指定 Wi-Fi 直連
+
+`gl_profile.py` 從日常設定產生獨立的新檔。目標網路的一般流量與私人
+AdGuard DoH 採直連，YouTube／GitHub 可各自選擇 `direct` 或 `warp`。
+其他網路保留原有策略。
+
+目前使用 `--networks`：預設介面必須是 Wi-Fi，且其位址同時符合指定的
+IPv4 與 IPv6 內網前綴。同一個 GL 內網的 2.4／5 GHz Wi-Fi 都會套用；
+修改 LAN 網段或停用 LAN IPv6 後需更新條件。路由器更換 WAN 時仍會符合相同條件。
+也支援精確 SSID 模式 `--ssid`，須先通過 SFM 原生匹配實測，且不能與 `--networks` 同用。
+
+先完成路徑比較、暫停監控，並停止 SFM。版本化的官方 sing-box 1.14.2 檢查器
+保存在維護工具目錄，於自己的互動式終端執行：
+
+```sh
+tools="$HOME/.config/home-manager/conf.d/sfm-warp-maintenance"
+checker="$HOME/.local/share/sfm-warp-maintenance/sing-box-1.14.2"
+python3 -IS "$tools/gl_profile.py" --user-run \
+  --profile "$HOME/.config/sfm-warp/warp-tun-youtube-v4.json" \
+  --output "$HOME/.config/sfm-warp/warp-tun-gl-xe3000.json" \
+  --binary "$checker" \
+  --networks "192.168.8.0/24" "fd40:ffeb:eb06::/64" \
+  --youtube direct --github direct
+```
+
+輸入 `CREATE` 後，工具以官方執行檔檢查候選設定，再建立權限為 `0600` 的新檔。
+原檔保持原樣；輸出已存在、來源結構不受支援或檢查失敗時停止。
+兩個服務都選 `direct` 時，既有直連規則及順序完整保留，GL 網路的預設直連規則接在其後。
+保留的條件語法仍須通過官方檢查器，檢查失敗會清除暫存檔並保留原檔。
+選用 WARP 例外時，仍會嚴格檢查既有規則，避免例外被較早的直連規則遮蔽。
+DNS 例外、拒絕規則與原順序保留。原本送至最終 HTTPS 伺服器的一般路由規則，
+會在前面加入「目標網路且原條件成立」的直連版本；解析選項、反向及邏輯條件保持原意。
+其他 DNS 伺服器的規則維持原樣。需要改寫 `race`、`speculative` 或 `evaluate` 動作時會停止；
+官方檢查器拒絕舊版 DNS `strategy` 時，會回報 `legacy_dns_rule_strategy_requires_migration`。
+結果只回報建立、檢查、來源保持原樣等狀態及輸出路徑，檢查器的原始錯誤內容不會輸出。
+私人設定的讀取、產生與匯入由使用者操作。
+
+新設定另有 `127.0.0.1:18082` 的本機 SOCKS 健康檢查入口，僅允許 TCP 到
+`1.1.1.1:443`，其他目的與 UDP 拒絕。這是 IP／連接埠限制；本機程序仍可存取，
+也不限於某個 HTTP 路徑。入口、一般流量與 DNS 使用同一組原生網路條件。
+
 ## reserved 實測
 
 ### 本機封包對照
