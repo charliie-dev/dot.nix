@@ -111,6 +111,12 @@
       # GOOGLE_CLOUD_PROJECT,避免順手改掉 gcloud/terraform 的預設專案。
       ANTHROPIC_VERTEX_PROJECT_ID = "dp-vertex-ai";
       CLOUD_ML_REGION = "global";
+      # stingray 的開關。Claude Code 從 settings.json env 讀同一組值;grok 的
+      # stingray plugin hook 只能從啟動 grok 的環境繼承,所以兩邊要保持一致。
+      STINGRAY = "1";
+      STINGRAY_SHAPE3 = "1";
+      STINGRAY_LANG = "1";
+      STINGRAY_MAX_BLOCKS = "30";
       GROK_TELEMETRY_ENABLED = "0";
       GROK_FEEDBACK_ENABLED = "0";
       GROK_TELEMETRY_TRACE_UPLOAD = "0";
