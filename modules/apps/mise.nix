@@ -93,11 +93,13 @@
         "aqua:docker/cli" = "latest"; # colima's VM auto-updates dockerd; keep the client in step
 
         # Code agent tools
+        "npm:@aloth/olcli" = "latest"; # Overleaf CLI: sync, compile, files, comments
         "npm:@google-cloud/backupdr-mcp" = "latest";
         "npm:@google-cloud/gcloud-mcp" = "latest";
         "npm:@google-cloud/observability-mcp" = "latest";
         "npm:@google-cloud/storage-mcp" = "latest";
         "npm:@hackmd/hackmd-cli" = "latest";
+        "npm:@netique/overleaf-mcp" = "latest"; # Overleaf MCP over Socket.IO OT; edits land as tracked changes
         "npm:@readwise/cli" = "latest";
         "npm:tokscale" = "latest";
       };
