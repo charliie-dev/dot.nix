@@ -1,6 +1,5 @@
 """Synthetic-only Claude launcher contracts; no native client or credential reads."""
 
-import hashlib
 import importlib.util
 import io
 import json
@@ -71,16 +70,6 @@ def wait_for_ready(path: Path, process: subprocess.Popen[bytes]) -> dict[str, in
             return json.loads(path.read_text())
         time.sleep(0.01)
     raise AssertionError("synthetic runner did not become ready")
-
-
-class ReviewedBuilds(unittest.TestCase):
-    def test_only_reviewed_native_digests_are_allowed(self):
-        self.assertEqual(
-            L.REVIEWED_CLIENTS,
-            {
-                "50a14c2f50f56668380fdda490167f1d3630d5cc18fb8aed3073c2c7ea7314fe": "2.1.284",
-            },
-        )
 
 
 class Fixture(unittest.TestCase):
@@ -174,9 +163,6 @@ class Fixture(unittest.TestCase):
             )
         self.enterContext(mock.patch.object(L, "STORE_ROOT", self.store))
         self.enterContext(mock.patch.object(L, "SCRIPT_PATH", self.script))
-        self.enterContext(
-            mock.patch.object(L, "REVIEWED_CLIENTS", {self.digest: "2.1.284"})
-        )
         self.enterContext(mock.patch.object(L, "host_layout", return_value=self.layout))
         self.enterContext(mock.patch.dict(os.environ, self.env, clear=True))
 
@@ -184,8 +170,13 @@ class Fixture(unittest.TestCase):
         self.assertFalse(self.native_marker.exists())
 
     def write_client(self, body: str) -> None:
-        executable(self.client, body)
-        self.digest = hashlib.sha256(self.client.read_bytes()).hexdigest()
+        prefix = (
+            "import sys\nfrom pathlib import Path\n"
+            "if '--version' in sys.argv[1:]:\n"
+            f"    Path({str(self.native_marker)!r}).touch()\n"
+            "    raise SystemExit(93)\n"
+        )
+        executable(self.client, prefix + body)
 
     def save_overlay(self) -> None:
         write_json(Path(self.runtime["claude_overlay"]), self.overlay)
@@ -230,7 +221,7 @@ class Fixture(unittest.TestCase):
             "import importlib.util, sys\nfrom pathlib import Path\n"
             f"s=importlib.util.spec_from_file_location('fixture_launcher', {str(self.script)!r})\n"
             "m=importlib.util.module_from_spec(s); sys.modules[s.name]=m; s.loader.exec_module(m)\n"
-            f"m.STORE_ROOT=Path({str(self.store)!r}); m.REVIEWED_CLIENTS={{{self.digest!r}: '2.1.284'}}\n"
+            f"m.STORE_ROOT=Path({str(self.store)!r})\n"
             f"m.host_layout=lambda: m.Layout(Path({str(self.cwd)!r}), Path({str(self.home)!r}), Path({str(self.layout.managed_dir)!r}), (), Path({str(self.root)!r}))\n"
             "sys.exit(m.main(sys.argv[1:]))\n"
         )
@@ -316,35 +307,72 @@ class PublicArtifacts(Fixture):
         self.save_overlay()
         self.reject("overlay", L.validate_overlay, self.runtime)
 
-    def test_unknown_client_version_is_not_executed(self):
-        self.client.write_text(f"#!{PYTHON}\nraise Exception({CANARY!r})\n")
-        status, stdout, stderr, execute = self.run_main()
-        self.assertEqual(status, 1)
-        self.assertEqual(stdout, "")
-        self.assertIn("unsupported-client", stderr)
-        self.assertNotIn(CANARY, stderr)
-        execute.assert_not_called()
-        self.assertFalse(self.runner_log.exists())
+    def test_ordinary_future_and_changed_clients_launch_without_version_probes(self):
+        for label in ("ordinary-client", "future-client-99.0.0", "changed-bytes"):
+            with self.subTest(label=label):
+                self.write_client(f"print({label!r})")
+                prepared = self.prepare()
+                self.assertEqual(prepared.binary, self.client)
+                self.assertIn(("client", str(self.client)), prepared.snapshot)
+                self.assertNotIn("client_version", prepared.report)
+                result = self.run_driver()
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(result.stdout.decode().strip(), label)
+                self.assertEqual(result.stderr, b"")
 
-    def test_legacy_native_digests_are_rejected(self):
-        for digest in (
-            "fcfd837103965c64de34a6b9b94370d77a347ea71819715a27d5f0ef01775ea4",
-            "d8cb1e5c79684cc12a8bfc813e3a2073406921b6245744b3009be3ab5651d21e",
+    def test_client_resolution_does_not_read_hash_or_execute_binary(self):
+        with (
+            mock.patch.object(Path, "open", side_effect=AssertionError),
+            mock.patch.object(L.os, "open", side_effect=AssertionError),
+            mock.patch.object(L.hashlib, "file_digest", side_effect=AssertionError),
+            mock.patch.object(subprocess, "Popen", side_effect=AssertionError),
         ):
-            with (
-                self.subTest(digest=digest),
-                mock.patch.object(L.hashlib, "file_digest") as file_digest,
-            ):
-                file_digest.return_value.hexdigest.return_value = digest
-                self.reject(
-                    "unsupported-client", L.reviewed_client, self.runtime, self.env
-                )
+            self.assertEqual(L.resolve_client(self.runtime, self.env), self.client)
 
-    def test_client_version_cannot_be_asserted_by_runtime(self):
-        self.runtime["claude_version"] = "2.1.284"
-        self.runtime["claude_sha256"] = self.digest
-        with mock.patch.object(L, "REVIEWED_CLIENTS", {}):
-            self.reject("unsupported-client", self.prepare)
+    def test_configured_binary_and_path_resolve_symlinks(self):
+        target = self.bin / "custom-client"
+        self.client.rename(target)
+        link = self.bin / "configured-client"
+        link.symlink_to(target)
+        for name in (link.name, str(link)):
+            with self.subTest(name=name):
+                runtime = self.runtime | {"claude_binary": name}
+                self.assertEqual(L.resolve_client(runtime, self.env), target)
+
+    def test_missing_nonexecutable_and_nonregular_clients_stop_safely(self):
+        candidates = {
+            "missing": self.bin / ("missing-" + CANARY),
+            "nonexecutable": self.bin / ("nonexecutable-" + CANARY),
+            "directory": self.bin / ("directory-" + CANARY),
+            "fifo": self.bin / ("fifo-" + CANARY),
+        }
+        candidates["nonexecutable"].write_text(CANARY)
+        candidates["nonexecutable"].chmod(0o600)
+        candidates["directory"].mkdir()
+        os.mkfifo(candidates["fifo"], 0o700)
+        for kind, path in candidates.items():
+            for name in (path.name, str(path)):
+                with self.subTest(kind=kind, name=name):
+                    self.runtime["claude_binary"] = name
+                    write_json(self.runtime_path, self.runtime)
+                    status, stdout, stderr, execute = self.run_main()
+                    self.assertEqual(status, 1)
+                    self.assertEqual(stdout, "")
+                    self.assertIn("unsupported-client", stderr)
+                    self.assertNotIn(CANARY, stderr)
+                    execute.assert_not_called()
+                    self.assertFalse(self.runner_log.exists())
+
+    def test_client_resolution_errors_are_sanitized(self):
+        for error in (OSError(CANARY), RuntimeError(CANARY)):
+            with mock.patch.object(L.shutil, "which", side_effect=error):
+                status, stdout, stderr, execute = self.run_main()
+            self.assertEqual(status, 1)
+            self.assertEqual(stdout, "")
+            self.assertIn("unsupported-client", stderr)
+            self.assertNotIn(CANARY, stderr)
+            execute.assert_not_called()
+            self.assertFalse(self.runner_log.exists())
 
 
 class Settings(Fixture):
@@ -1024,6 +1052,42 @@ class BootstrapAndLaunch(Fixture):
     def test_changed_settings_during_bootstrap_stop(self):
         self.write_runner(
             f"Path({str(self.claude_home / 'settings.json')!r}).write_text('{{}}')\nsys.stdout.write({FAKE_KEY!r})"
+        )
+        status, stdout, stderr, execute = self.run_main()
+        self.assertEqual(status, 1)
+        self.assertEqual(stdout, "")
+        self.assertIn("settings-changed", stderr)
+        execute.assert_not_called()
+
+    def test_valid_settings_content_changed_during_bootstrap_stops(self):
+        path = self.setting({"theme": "dark"})
+        self.write_runner(
+            f"Path({str(path)!r}).write_text({json.dumps({'theme': 'light'})!r})\nsys.stdout.write({FAKE_KEY!r})"
+        )
+        status, stdout, stderr, execute = self.run_main()
+        self.assertEqual(status, 1)
+        self.assertEqual(stdout, "")
+        self.assertIn("settings-changed", stderr)
+        execute.assert_not_called()
+
+    def test_client_bytes_changed_during_bootstrap_are_accepted(self):
+        replacement = f"#!{PYTHON}\nprint('upgraded-synthetic-client')\n"
+        self.write_runner(
+            f"Path({str(self.client)!r}).write_text({replacement!r})\nsys.stdout.write({FAKE_KEY!r})"
+        )
+        result = self.run_driver()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, b"upgraded-synthetic-client\n")
+        self.assertEqual(result.stderr, b"")
+
+    def test_resolved_client_path_changed_during_bootstrap_stops(self):
+        original = self.bin / "original-client"
+        replacement = self.bin / "replacement-client"
+        self.client.rename(original)
+        executable(replacement, "raise SystemExit(94)")
+        self.client.symlink_to(original)
+        self.write_runner(
+            f"client = Path({str(self.client)!r})\nclient.unlink()\nclient.symlink_to({str(replacement)!r})\nsys.stdout.write({FAKE_KEY!r})"
         )
         status, stdout, stderr, execute = self.run_main()
         self.assertEqual(status, 1)

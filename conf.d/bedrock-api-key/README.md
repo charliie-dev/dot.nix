@@ -74,13 +74,16 @@ stage=$(mktemp -d "${TMPDIR:-/tmp}/bedrock-stage.XXXXXX")
 stdout 僅包含白名單 metadata。
 遇到衝突先處理指定來源，再重新檢查；保持其他 provider 的秘密與設定分開管理。
 
-目前 Claude launcher 只接受已核對的 **2.1.284 macOS ARM64 native build**，
-依 `claude.py` 中的完整 SHA-256 核對實際執行檔。共用 Sonnet pin 已升為
-`global.anthropic.claude-sonnet-5-5`；Sonnet 5.5 要求 Claude Code 2.1.284 以上，
-因此這份配置不再接受 2.1.282／2.1.283。歷史來源核對仍保留於本文末尾。
+Claude launcher 允許一般 client 升級，不再要求每個版本的來源審查或 SHA-256 白名單。
+它依 runtime 的 `claude_binary` 與 `PATH` 解析現存、可執行的一般檔案，不讀取或雜湊
+binary，也不執行 `--version`；preflight 不再回報 `client_version`。
+Bootstrap 前後仍比對設定內容雜湊與解析後的執行檔路徑；同一路徑的 binary 內容變更
+不會被這項檢查阻擋。Client 及其升級來源仍須可信任；新版的原生認證與 scrub 行為
+不由 launcher 保證，本文末尾的來源核對僅為歷史紀錄，不是目前的版本准入條件。
+共用 Sonnet pin 為 `global.anthropic.claude-sonnet-5-5`；官方要求 Claude Code
+2.1.284 以上才能使用 Sonnet 5.5，此為相容性資訊，launcher 不強制版本下限。
 Grok 的 `bedrock-sonnet-5` 維持 Sonnet 5，IAM 模板同時保留兩個 Sonnet 版本。
 `enableSecrets` 控制程式部署；Linux 的 Claude 執行仍會被既有平台檢查拒絕，須另做相容性審查。
-更新 client 後需重新核對來源／測試並更新 reviewed digest。
 它支援 standalone CLI 與既有普通 linked worktree；建立新 worktree、remote／host-managed
 session、SDK stream-input 等會改變有效來源的入口會停止，須另做相容性審查。
 GUI／IDE 只有採同樣受支援的 standalone 呼叫方式時才能使用此 launcher。
@@ -283,7 +286,7 @@ expected_hash=$(printf '%s' "$review" | jq -r .sha256)
 本機回復與更新 Doppler 都不會撤銷 AWS key。停用／永久刪除 key 及 IAM 資源另行確認。
 全部 staged clients 結束後，清理這次由 `mktemp` 建立的 staging 目錄。
 
-## Claude 2.1.283 來源核對
+## 歷史紀錄：Claude 2.1.283 來源核對
 
 已核對 [官方 release manifest][release-283] 的
 `platforms["darwin-arm64"].checksum`、本機公開執行檔及解包來源，SHA-256 為：
@@ -343,7 +346,7 @@ Prettier 排版的 JavaScript。審查以已核對的 2.1.282 為比較基準。
 
 [release-283]: https://downloads.claude.ai/claude-code-releases/2.1.283/manifest.json
 
-## Claude 2.1.284 與 Sonnet 5.5 來源核對
+## 歷史紀錄：Claude 2.1.284 與 Sonnet 5.5 來源核對
 
 官方 [release manifest][release-284] 的 darwin-arm64 checksum 與本機公開執行檔一致，
 大小為 226563088 bytes：
@@ -353,8 +356,8 @@ Prettier 排版的 JavaScript。審查以已核對的 2.1.282 為比較基準。
 ```
 
 [官方模型文件][model-config] 明載 Sonnet 5.5 要求 v2.1.284 以上。這份共用配置
-採用 Sonnet 5.5，所以 active allowlist 只保留上述 build。舊 build 的 pass-through
-測試涵蓋字串傳遞；新模型相容性的版本下限依官方要求判定。
+採用 Sonnet 5.5；版本下限僅作相容性資訊，不是 launcher 的准入檢查。
+以下為當時的來源審查紀錄，不能推論後續版本具有相同行為。
 
 以下路徑相對於 `/$bunfs/root/`，行號對應從原生 `__BUN` 解包後，以 Prettier
 3.9.9、babel、printWidth 80 排版的 JavaScript。比較基準為先前核准的 2.1.283。

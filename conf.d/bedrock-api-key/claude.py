@@ -21,10 +21,6 @@ MAX_SETTINGS_BYTES = 8 * 1024 * 1024
 BOOTSTRAP_TIMEOUT = 20.0
 STORE_ROOT = Path("/nix/store")
 SCRIPT_PATH = Path(__file__).resolve()
-# Reviewed macOS ARM64 native builds, keyed by exact binary digest.
-REVIEWED_CLIENTS = {
-    "50a14c2f50f56668380fdda490167f1d3630d5cc18fb8aed3073c2c7ea7314fe": "2.1.284",
-}
 MODEL_PINS = {
     "FABLE": "global.anthropic.claude-fable-5-1[1m]",
     "OPUS": "global.anthropic.claude-opus-5-5[1m]",
@@ -243,7 +239,7 @@ BOOTSTRAP_ENV = {
 ERRORS = {
     "arguments": "caller settings, host/source overrides, or unsupported model arguments are not allowed",
     "runtime": "rebuild the Home Manager launcher with its public store runtime and artifacts",
-    "unsupported-client": "use the reviewed Claude Code 2.1.284 macOS ARM64 native build; other builds require source review and a launcher digest update",
+    "unsupported-client": "the configured Claude executable must resolve to an existing executable regular file",
     "unsupported-platform": "this launcher is reviewed for standalone macOS; use an approved entry on other platforms",
     "settings-unreadable": "repair the indicated settings source's readability, regular-file type, or size, then retry",
     "settings-format": "repair the indicated settings source as an unambiguous JSON object or JSON-compatible plist",
@@ -256,7 +252,7 @@ ERRORS = {
     "service-tier": "USER-RUN: set ANTHROPIC_BEDROCK_SERVICE_TIER to default, priority, flex, reserved, or empty",
     "overlay": "rebuild the nonsecret Bedrock overlay with the required pins, neutralizers, display names, and scrub enabled",
     "project-layout": "use the canonical checkout with ordinary .git metadata, or review this repository layout before enabling the launcher",
-    "settings-changed": "settings or the client changed during bootstrap; review the change and restart",
+    "settings-changed": "settings or the resolved client path changed during bootstrap; review the change and restart",
     "bootstrap-start": "Doppler bootstrap could not start; USER-RUN: check the fixed Home Manager runner",
     "bootstrap-failed": "Doppler bootstrap failed; USER-RUN: check the fixed profile and existing authentication in a separate shell",
     "bootstrap-timeout": "Doppler bootstrap timed out; no credential fallback was attempted",
@@ -265,7 +261,7 @@ ERRORS = {
     "invalid-key": "Doppler did not deliver one bounded, nonempty printable bearer value",
     "emitter-boundary": "the fixed emitter received an unexpected credential environment",
     "cancelled": "cancelled; bootstrap children were terminated",
-    "client-exec": "the reviewed Claude executable could not start; no fallback was attempted",
+    "client-exec": "the resolved Claude executable could not start; no fallback was attempted",
     "unexpected": "startup failed safely; no settings values or child diagnostics were forwarded",
 }
 
@@ -695,24 +691,19 @@ def discover_sources(runtime: dict[str, Any], layout: Layout) -> list[Source]:
     ]
 
 
-def reviewed_client(
-    runtime: dict[str, Any], env: dict[str, str]
-) -> tuple[Path, str, str]:
-    candidate = shutil.which(runtime["claude_binary"], path=env.get("PATH", os.defpath))
-    if candidate is None:
-        fail("unsupported-client")
-    path = Path(candidate).resolve()
+def resolve_client(runtime: dict[str, Any], env: dict[str, str]) -> Path:
     try:
-        if not stat.S_ISREG(path.stat().st_mode):
+        candidate = shutil.which(
+            runtime["claude_binary"], path=env.get("PATH", os.defpath)
+        )
+        if candidate is None:
             fail("unsupported-client")
-        with path.open("rb") as handle:
-            digest = hashlib.file_digest(handle, "sha256").hexdigest()
-    except OSError:
+        path = Path(candidate).resolve(strict=True)
+        if not stat.S_ISREG(path.stat().st_mode) or not os.access(path, os.X_OK):
+            fail("unsupported-client")
+    except (OSError, RuntimeError):
         fail("unsupported-client")
-    version = REVIEWED_CLIENTS.get(digest)
-    if version is None:
-        fail("unsupported-client")
-    return path, version, digest
+    return path
 
 
 def validate_arguments(arguments: list[str]) -> tuple[str, list[str]]:
@@ -758,8 +749,8 @@ def preflight(
     validate_ambient(ambient)
     overlay = validate_overlay(runtime)
     clean = sanitize_environment(ambient, runtime, overlay, layout.home)
-    binary, version, digest = reviewed_client(runtime, clean)
-    snapshot = [("client", digest)]
+    binary = resolve_client(runtime, clean)
+    snapshot = [("client", str(binary))]
     labels: list[str] = []
     for source in discover_sources(runtime, layout):
         raw = read_bytes(source.path, source.label, optional=True)
@@ -775,7 +766,6 @@ def preflight(
         labels.append(source.label)
     report = {
         "status": "ok",
-        "client_version": version,
         "checked_sources": sorted(set(labels)),
         "persisted_bearer_present": False,
         "credential_helpers_present": False,
