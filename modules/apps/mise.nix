@@ -147,6 +147,19 @@
           output = "keep-order";
         };
 
+        # Keep the OS interpreter behind these names so macOS scripts that expect
+        # the system python keep working; mise's own build stays reachable as
+        # python3.<minor>. Only shims are affected: under `mise activate` the tool
+        # bin directory still joins PATH.
+        shims = {
+          exclude = [
+            "python"
+            "python3"
+            "pip"
+            "pip3"
+          ];
+        };
+
         cargo = {
           binstall = true;
         };
