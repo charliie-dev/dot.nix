@@ -134,10 +134,14 @@
                     boost = nixBoost;
                     enableWasm = false;
                   };
-                  nix-store = prevC.nix-store.override {
-                    boost = nixBoost;
-                    enableWasm = false;
-                  };
+                  # meson >= 1.12 treats libstore's `build/` source subdir as
+                  # generated output when the builddir is also `build`.
+                  nix-store =
+                    (prevC.nix-store.override {
+                      boost = nixBoost;
+                      enableWasm = false;
+                    }).overrideAttrs
+                      { mesonBuildDir = "meson-build"; };
                 }
               );
               # Use nix-cli, not nix-everything: nix-cli deliberately excludes
