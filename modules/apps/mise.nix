@@ -83,11 +83,6 @@
         # Interactive CLIs nothing invokes on PATH except a human: lazy, so a
         # fresh machine does not download them until first use. Non-registry
         # backends must name their commands in lazy_bins.
-        "cargo:tuicr" = {
-          version = "latest";
-          lazy = true;
-          lazy_bins = [ "tuicr" ];
-        };
         "github:dmtrKovalenko/bashka" = "latest"; # Claude Code hook; must exist before any session
         "go:github.com/perplexityai/bumblebee/cmd/bumblebee" = {
           version = "latest";
