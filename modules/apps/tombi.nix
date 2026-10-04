@@ -8,6 +8,11 @@
           "mise.toml"
           ".mise.toml"
           ".mise/*.toml"
+          # SchemaStore's patterns for the global config, so the rendered
+          # ~/.config/mise/config.toml is validated when opened too.
+          "**/mise/config.toml"
+          "**/mise/config.*.toml"
+          "**/mise/conf.d/*.toml"
         ];
       }
     ];
