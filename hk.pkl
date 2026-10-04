@@ -1,0 +1,50 @@
+amends "package://github.com/jdx/hk/releases/download/v2.5.0/hk@2.5.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.5.0/hk@2.5.0#/Builtins.pkl"
+
+// File-scoped checks for each commit. These top-level steps create the
+// `check`, `fix` and `pre-commit` hooks; pre-commit fixes staged files only,
+// with unstaged work stashed. Repo-wide gates stay in `mise run ci`; the
+// pre-push hook runs the ones that finish in seconds. The linters come from
+// the global mise config except betterleaks, declared in mise.toml.
+exclude = List("archive/**")
+
+steps {
+  ["nixfmt"] = Builtins.nix_fmt
+  ["deadnix"] = Builtins.deadnix
+  ["ruff"] = Builtins.ruff
+  ["ruff-format"] = Builtins.ruff_format
+  // Same threshold as CI elsewhere: info-level findings do not block a commit.
+  ["shellcheck"] = (Builtins.shellcheck) {
+    check = new CommandSpec {
+      command = new Command { argv = List("shellcheck", "--severity=warning", "{{files}}") }
+      effect = "read"
+    }
+  }
+  ["actionlint"] = Builtins.actionlint
+  ["betterleaks"] = Builtins.betterleaks
+}
+
+hooks {
+  ["commit-msg"] {
+    steps {
+      ["conventional-commit"] = Builtins.check_conventional_commit
+    }
+  }
+  // ci:bedrock-api-key is left to CI: its offline contracts take minutes.
+  ["pre-push"] {
+    steps {
+      ["ci-eval"] {
+        check = new CommandSpec {
+          command = "mise run ci:eval"
+          effect = "read"
+        }
+      }
+      ["ci-mise-schema"] {
+        check = new CommandSpec {
+          command = "mise run ci:mise-schema"
+          effect = "read"
+        }
+      }
+    }
+  }
+}
