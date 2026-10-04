@@ -99,6 +99,40 @@ jobs:
           fi
           exit "$failed"
 
+      # The global mise config is rendered from modules/apps/mise.nix, so a
+      # wrong tool-option type there only shows up at mise runtime. Build just
+      # that file per host and validate it against mise's published schema,
+      # which types each backend's options. Mirrors `mise run ci:mise-schema`.
+      - name: Validate rendered mise config against mise's schema
+        run: |
+          set -uo pipefail
+          hosts=$(nix eval --file hosts.nix --apply "
+            hosts: builtins.filter
+              (name: hosts.\${name}.system == \"${{ matrix.system }}\" && !(hosts.\${name}.nvidiaGpu or false) && !(hosts.\${name} ? sharedConfig))
+              (builtins.attrNames hosts)
+          " --json) || { echo "::error::nix eval failed"; exit 1; }
+          count=$(jq 'length' <<< "$hosts") || { echo "::error::jq failed to parse hosts"; exit 1; }
+          if [ "$count" -eq 0 ]; then
+            echo "No hosts for ${{ matrix.system }}, skipping"
+            exit 0
+          fi
+          failed=0
+          while IFS= read -r host; do
+            echo "::group::mise schema $host"
+            if cfg=$(nix build ".#homeConfigurations.\"$host\".config.xdg.configFile.\"mise/config.toml\".source" --no-link --print-out-paths) \
+               && nix run nixpkgs#check-jsonschema -- --schemafile https://mise.jdx.dev/schema/mise.json --default-filetype toml "$cfg"; then
+              echo " ✅"
+            else
+              echo " ❌"
+              failed=1
+            fi
+            echo "::endgroup::"
+          done < <(jq -r '.[]' <<< "$hosts")
+          if [ "$failed" -gt 0 ]; then
+            echo "::error::One or more rendered mise configs violate the schema"
+          fi
+          exit "$failed"
+
   bedrock-contracts:
     needs: [flake-check]
     strategy:

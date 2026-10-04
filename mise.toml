@@ -34,11 +34,17 @@ run = [
 # ==============================================================================
 #  CI — run the same gates as .github/workflows/ci.yml before pushing
 # ==============================================================================
-# `mise run ci` mirrors CI: formatting, host eval, then offline contracts.
-# Host evaluation and contract fixtures follow the current system. `mise run fmt` fixes.
+# `mise run ci` mirrors CI: formatting, host eval, rendered mise config schema,
+# then offline contracts. Host evaluation and contract fixtures follow the
+# current system. `mise run fmt` fixes.
 [tasks.ci]
-description = "Run formatting, host evaluation, and offline Bedrock/Doppler contracts"
-run = [{ task = "ci:fmt" }, { task = "ci:eval" }, { task = "ci:bedrock-api-key" }]
+description = "Run formatting, host evaluation, mise schema check, and offline Bedrock/Doppler contracts"
+run = [
+  { task = "ci:fmt" },
+  { task = "ci:eval" },
+  { task = "ci:mise-schema" },
+  { task = "ci:bedrock-api-key" },
+]
 
 # ==============================================================================
 #  Herdr

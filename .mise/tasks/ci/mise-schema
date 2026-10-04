@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+#MISE description="CI schema gate: validate each host's rendered mise config.toml against mise's JSON schema"
+#MISE raw=true
+#MISE tools={"pipx:check-jsonschema"="latest"}
+# tombi validates mise.toml files while editing; the global config is rendered
+# by modules/apps/mise.nix, so a wrong option type there only surfaces at
+# `mise` runtime. Build just the rendered ~/.config/mise/config.toml for every
+# host of this system and check it against the published schema, which types
+# each backend's tool options. Mirrors the `mise-schema` step of the
+# eval-hosts job in .github/workflows/ci.yml.
+set -uo pipefail
+
+schema="https://mise.jdx.dev/schema/mise.json"
+sys=$(nix eval --impure --raw --expr 'builtins.currentSystem')
+hosts=$(nix eval --file hosts.nix --apply "
+  hosts: builtins.filter
+    (name: hosts.\${name}.system == \"$sys\" && !(hosts.\${name}.nvidiaGpu or false) && !(hosts.\${name} ? sharedConfig))
+    (builtins.attrNames hosts)
+" --json) || { echo "[ERROR] nix eval of hosts.nix failed" >&2; exit 1; }
+
+count=$(jq 'length' <<<"$hosts")
+if [ "$count" -eq 0 ]; then
+  echo "[INFO] No hosts for $sys, skipping."
+  exit 0
+fi
+
+failed=0
+while IFS= read -r host; do
+  echo "[INFO] Rendering mise config for $host ..."
+  if ! cfg=$(nix build ".#homeConfigurations.\"$host\".config.xdg.configFile.\"mise/config.toml\".source" --no-link --print-out-paths); then
+    echo "  ❌ $host: could not render config.toml" >&2
+    failed=1
+    continue
+  fi
+  if check-jsonschema --schemafile "$schema" --default-filetype toml "$cfg"; then
+    echo "  ✅ $host"
+  else
+    echo "  ❌ $host" >&2
+    failed=1
+  fi
+done < <(jq -r '.[]' <<<"$hosts")
+
+[ "$failed" -eq 0 ] || { echo "[ERROR] One or more rendered mise configs violate the schema" >&2; exit 1; }
+echo "[OK] All $count host(s) render a schema-valid mise config."
+
+# vim: ft=sh
