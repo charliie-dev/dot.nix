@@ -113,16 +113,58 @@
         "aqua:docker/buildx" = "latest"; # nixpkgs can lag upstream
         "aqua:docker/cli" = "latest"; # colima's VM auto-updates dockerd; keep the client in step
 
-        # Code agent tools
-        "npm:@aloth/olcli" = "latest"; # Overleaf CLI: sync, compile, files, comments
-        "npm:@google-cloud/backupdr-mcp" = "latest";
-        "npm:@google-cloud/gcloud-mcp" = "latest";
-        "npm:@google-cloud/observability-mcp" = "latest";
-        "npm:@google-cloud/storage-mcp" = "latest";
-        "npm:@hackmd/hackmd-cli" = "latest";
-        "npm:@netique/overleaf-mcp" = "latest"; # Overleaf MCP over Socket.IO OT; edits land as tracked changes
-        "npm:@readwise/cli" = "latest";
-        "npm:tokscale" = "latest";
+        # Code agent tools. Lazy: MCP servers are started by the agent client by
+        # command name and the CLIs are used by hand, so the shim installs them on
+        # first call instead of on every machine bootstrap.
+        "npm:@aloth/olcli" = {
+          version = "latest";
+          lazy = true;
+          lazy_bins = [
+            "olcli"
+            "olcli-mcp"
+            "git-remote-overleaf"
+          ];
+        }; # Overleaf CLI: sync, compile, files, comments
+        "npm:@google-cloud/backupdr-mcp" = {
+          version = "latest";
+          lazy = true;
+          lazy_bins = [ "backupdr-mcp" ];
+        };
+        "npm:@google-cloud/gcloud-mcp" = {
+          version = "latest";
+          lazy = true;
+          lazy_bins = [ "gcloud-mcp" ];
+        };
+        "npm:@google-cloud/observability-mcp" = {
+          version = "latest";
+          lazy = true;
+          lazy_bins = [ "observability-mcp" ];
+        };
+        "npm:@google-cloud/storage-mcp" = {
+          version = "latest";
+          lazy = true;
+          lazy_bins = [ "storage-mcp" ];
+        };
+        "npm:@hackmd/hackmd-cli" = {
+          version = "latest";
+          lazy = true;
+          lazy_bins = [ "hackmd-cli" ];
+        };
+        "npm:@netique/overleaf-mcp" = {
+          version = "latest";
+          lazy = true;
+          lazy_bins = [ "overleaf-mcp" ];
+        }; # Overleaf MCP over Socket.IO OT; edits land as tracked changes
+        "npm:@readwise/cli" = {
+          version = "latest";
+          lazy = true;
+          lazy_bins = [ "readwise" ];
+        };
+        "npm:tokscale" = {
+          version = "latest";
+          lazy = true;
+          lazy_bins = [ "tokscale" ];
+        };
       };
       settings = {
         # https://mise.jdx.dev/configuration/settings.html
