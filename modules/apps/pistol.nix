@@ -20,7 +20,7 @@
       }
       {
         mime = "image/.*";
-        command = "sh: chafa --format=symbols --polite=on --align=top,left --size=\${FZF_PREVIEW_COLUMNS:-80}x\${FZF_PREVIEW_LINES:-24} %pistol-filename%";
+        command = "sh: chafa --format=kitty --polite=on --align=top,left --size=\${FZF_PREVIEW_COLUMNS:-80}x\${FZF_PREVIEW_LINES:-24} %pistol-filename%";
       }
       {
         mime = "application/gzip";
