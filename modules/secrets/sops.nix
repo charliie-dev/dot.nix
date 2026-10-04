@@ -581,11 +581,13 @@ lib.mkMerge [
       Install.WantedBy = [ "default.target" ];
     };
 
-    # Without lingering the user manager, and with it the agent, stops at logout.
+    # Without lingering the user manager, and with it the agent, stops at logout. Read the
+    # linger flag file: activation's PATH has no /usr/bin, so loginctl is not reachable.
     home.activation.sshSigningAgentLinger = lib.mkIf (signingEnabled && !isDarwin) (
       lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-        if [ "$(loginctl show-user "$USER" --property=Linger --value 2>/dev/null)" != yes ]; then
-          warnEcho "ssh-signing-agent: run 'sudo loginctl enable-linger $USER' so signing survives logout"
+        user=$(id -un)
+        if [ ! -e "/var/lib/systemd/linger/$user" ]; then
+          warnEcho "ssh-signing-agent: run 'sudo loginctl enable-linger $user' so signing survives logout"
         fi
       ''
     );
