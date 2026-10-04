@@ -68,12 +68,16 @@ Commit and tag signing must stay on: `--no-gpg-sign`, `--no-sign`, a false
 `-c commit.gpgsign=`/`-c tag.gpgsign=` and `git config` writes or unsets of those
 keys are denied. These policy denials share one "Policy guard" reason.
 
-`~/.config/bashka/post-tool-use-failure` is a separate `PostToolUseFailure`/`Bash`
-hook. When a failed command's error shows an unreachable signing agent or missing
-signing key, it adds context telling the agent to stop and ask the user to restart
-`org.nix-community.home.ssh-signing-agent` instead of bypassing signing; other
-failures and malformed input produce no output. Register it in Claude settings
-directly; `register-hooks` manages only the PreToolUse group.
+`~/.config/bashka/post-tool-use-failure` is a separate hook for failed shell calls.
+When the failure text shows an unreachable signing agent or missing signing key, it
+adds context telling the agent to stop and ask the user to restart the
+ssh-signing-agent service instead of bypassing signing; other failures, successes
+and malformed input produce no output. Claude reports the failure as
+`PostToolUseFailure` with an `error` string, registered in Claude settings directly
+(`register-hooks` manages only the PreToolUse group). Grok reads those settings too,
+but reports a non-zero `run_terminal_command` exit as `PostToolUse` with
+`toolResult.exit_code`, so home-manager also installs `~/.config/grok/hooks/bashka.json`
+registering the same script for Grok's `PostToolUse` only.
 
 ## Startup and limits
 

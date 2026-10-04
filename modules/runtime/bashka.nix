@@ -31,6 +31,22 @@ in
     "bashka/post-tool-use-failure".source =
       script "bashka-post-tool-use-failure" ../../conf.d/bashka/post_tool_use_failure.py
         { };
+    # Grok reads Claude's settings (~/.claude -> this config) for PostToolUseFailure, but
+    # reports a non-zero shell exit as PostToolUse; register that event for Grok only.
+    "grok/hooks/bashka.json".text = builtins.toJSON {
+      hooks.PostToolUse = [
+        {
+          matcher = "Bash";
+          hooks = [
+            {
+              type = "command";
+              command = "${config.xdg.configHome}/bashka/post-tool-use-failure";
+              timeout = 5;
+            }
+          ];
+        }
+      ];
+    };
     "bashka/agent-run".source = script "bashka-agent-run" ../../conf.d/bashka/agent_run.py {
       "@binary@" =
         builtins.toJSON "${config.xdg.dataHome}/mise/installs/github-dmtr-kovalenko-bashka/latest/bashka";

@@ -575,11 +575,47 @@ class SigningFailure(Fixture):
                 self.assertEqual(output["hookEventName"], "PostToolUseFailure")
                 self.assertIn("launchctl kickstart -k", output["additionalContext"])
 
+    def grok_result(self, event, exit_code, text):
+        return {
+            "hook_event_name": event,
+            "hookEventName": "post_tool_use",
+            "toolName": "run_terminal_command",
+            "toolResult": {
+                "type": "Bash",
+                "command": "git commit -m x",
+                "exit_code": exit_code,
+                "output_for_prompt": text,
+            },
+        }
+
+    def test_grok_shapes_add_context(self):
+        for value in (
+            self.grok_result("PostToolUse", 128, "error: No private key found"),
+            {
+                "hook_event_name": "PostToolUseFailure",
+                "toolName": "run_terminal_command",
+                "error": "Error connecting to agent",
+            },
+        ):
+            with self.subTest(value=value):
+                result = self.failure(value)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                output = json.loads(result.stdout)["hookSpecificOutput"]
+                self.assertEqual(output["hookEventName"], value["hook_event_name"])
+                self.assertIn("ssh-signing-agent", output["additionalContext"])
+
     def test_other_failures_stay_silent(self):
         for value in (
             {"tool_name": "Bash", "error": "Exit code 1\nfatal: not a git repository"},
             {"tool_name": "Read", "error": "Error connecting to agent"},
             {"tool_name": "Bash"},
+            # Grok success, and Claude's success-only PostToolUse without an exit code.
+            self.grok_result("PostToolUse", 0, "Error connecting to agent"),
+            {
+                "hook_event_name": "PostToolUse",
+                "tool_name": "Bash",
+                "tool_response": {"stdout": "No private key found", "stderr": ""},
+            },
             b"not json",
         ):
             with self.subTest(value=value):
