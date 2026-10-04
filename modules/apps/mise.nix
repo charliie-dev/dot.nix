@@ -11,10 +11,10 @@
     globalConfig = {
       tools = {
         # Runtimes and package managers
-        # Repo moved jdx/aube -> aubepkg/aube; the aqua registry entry (baked into
-        # mise) still expects the jdx workflow identity, so attestation fails.
-        # https://github.com/aquaproj/aqua-registry/pull/60040
-        "github:aubepkg/aube" = "latest"; # npm backend; lifecycle scripts stay jailed
+        # npm backend; lifecycle scripts stay jailed. The vendor publishes a signed
+        # packslip, which pins the release signer and checks host requirements, so
+        # it needs neither the stale aqua registry entry nor the github backend.
+        "packslip:github.com/aubepkg/aube" = "latest";
         cargo-binstall = "latest"; # install cargo tools from prebuilt releases
         go = "latest";
         node = "latest"; # runtime for npm tools and nub
@@ -66,25 +66,46 @@
         "pipx:systemdlint" = "latest";
 
         # DAP
+        # Lazy: nvim-dap starts it by command name through the shim, so the first
+        # debug session installs it; nothing else calls it by absolute path.
         "github:vadimcn/codelldb" = {
           version = "latest";
-          bin_path = "extension/adapter";
-        }; # executable is nested in the release archive
+          bin_path = "extension/adapter"; # executable is nested in the release archive
+          lazy = true;
+          lazy_bins = [ "codelldb" ];
+        };
         "go:github.com/go-delve/delve/cmd/dlv" = "latest";
 
         # General CLI tools
         nub = "latest"; # Node toolchain frontend; requires node
         usage = "latest";
         # ruby = "latest";
-        "cargo:tuicr" = "latest";
-        "github:dmtrKovalenko/bashka" = "latest";
-        "go:github.com/perplexityai/bumblebee/cmd/bumblebee" = "latest";
-        "go:github.com/retlehs/quien" = "latest";
+        # Interactive CLIs nothing invokes on PATH except a human: lazy, so a
+        # fresh machine does not download them until first use. Non-registry
+        # backends must name their commands in lazy_bins.
+        "cargo:tuicr" = {
+          version = "latest";
+          lazy = true;
+          lazy_bins = [ "tuicr" ];
+        };
+        "github:dmtrKovalenko/bashka" = "latest"; # Claude Code hook; must exist before any session
+        "go:github.com/perplexityai/bumblebee/cmd/bumblebee" = {
+          version = "latest";
+          lazy = true;
+          lazy_bins = [ "bumblebee" ];
+        };
+        "go:github.com/retlehs/quien" = {
+          version = "latest";
+          lazy = true;
+          lazy_bins = [ "quien" ];
+        };
         "go:golang.org/x/vuln/cmd/govulncheck" = "latest"; # project-wide Go vulnerability scanner
         "npm:@rivolink/leaf" = "latest";
         # Cloudflare CLI; replaces flarectl and wrangler. opentofu and
         # cf-terraforming stay pinned in home-lab's cloudflare/.mise/tasks/cf/*
         # #MISE tools headers because they are tied to the tofu state format.
+        # Stays on npm:cf rather than the `cloudflare-cf` registry alias: the alias
+        # needs a pinned beta while cf is pre-1.0, which would stop auto-updates.
         "npm:cf" = "latest";
       }
       // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
