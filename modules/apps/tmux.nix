@@ -93,7 +93,7 @@
       bind s choose-tree
       bind S choose-session
       bind C-w new-window -n "Workspace-session-picker" "ta ~/Workspace"
-      bind C-j new-window -n "session-switcher" "tmux list-sessions | sed -E 's/:.*$//' | grep -v \"^$(tmux display-message -p '#S')\$\" | fzf --reverse | xargs tmux switch-client -t"
+      bind C-j display-popup -w80% -h60% -E "tmux list-sessions -F '#S' | grep -vx \"$(tmux display-message -p '#S')\" | fzf --reverse --border-label ' sessions ' | xargs -r tmux switch-client -t"
       bind C-t new-session -A -s todo "cd ~/Workspace/todo && nvim -O backlog.md doing.md done.md"
       bind -n M-i new-session -A -s nvim "cd ~/.config/nvim/ && nvim"
 
