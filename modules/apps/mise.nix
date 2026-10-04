@@ -80,9 +80,10 @@
         # General CLI tools
         nub = "latest"; # Node toolchain frontend; requires node
         usage = "latest";
-        # git hooks manager; `hk install --global --mise` wires the launcher once
-        # per machine and repos without hk.pkl are skipped. Signed packslip.
-        "packslip:github.com/jdx/hk" = "latest";
+        # git hooks manager; the global hooks in git.nix run `mise x hk`, which
+        # resolves the short name, so declare it by short name (registry maps it
+        # to the signed packslip) or mise keeps a second install for the hooks.
+        hk = "latest";
         # ruby = "latest";
         # Interactive CLIs nothing invokes on PATH except a human: lazy, so a
         # fresh machine does not download them until first use. Non-registry
