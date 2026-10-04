@@ -21,6 +21,23 @@ TOTAL_SECONDS = 3.0
 SHELLS = {"bash", "sh", "dash", "zsh", "ksh"}
 SINKS = SHELLS | {"source", ".", "eval", "bashka"}
 FETCHERS = {"curl", "wget"}
+# Claude Code sandbox: only $TMPDIR (/tmp/claude-<uid>/...) is writable under /tmp,
+# Apple diff cannot open /dev/fd/N, and nothing can write to /dev/fd/N.
+TMP_ROOTS = ("/tmp", "/private/tmp")
+TMP_ALLOWED = ("/tmp/claude", "/private/tmp/claude")
+WRITE_REDIRECTS = {">", ">>", "&>", "&>>", ">|", "<>", ">&"}
+TMP_ANY_ARGUMENT = {"mktemp", "mkdir", "touch", "tee"}
+TMP_LAST_ARGUMENT = {"cp", "mv", "install", "ln"}
+# sandbox.excludedCommands only matches a whole, plain `git <subcommand> ...` call
+# (trailing-* prefix patterns); pipes, lists, heredocs and wrappers keep it sandboxed.
+GIT_SPLIT = {"push", "fetch", "pull", "ls-remote", "clone"}
+GIT_OPTION_OPERANDS = {"-C", "-c", "--git-dir", "--work-tree", "--namespace"}
+# Commits and tags must stay signed; a signing failure is reported, never bypassed.
+GIT_SIGN_KEYS = {"commit.gpgsign", "tag.gpgsign"}
+GIT_FALSE = {"false", "no", "off", "0", ""}
+GIT_NO_SIGN_FLAGS = {"--no-gpg-sign", "--no-sign"}
+GIT_CONFIG_UNSET = {"--unset", "--unset-all", "unset"}
+SIGNING_AGENT = "gui/$(id -u)/org.nix-community.home.ssh-signing-agent"
 
 
 class Deny(Exception):
@@ -98,6 +115,68 @@ def static_word(kind, text, children):
         return parts[0] if len(parts) == 1 else None
     except ValueError:
         return None
+
+
+def shared_tmp(value):
+    """A static path under /tmp that is not the sandbox's own $TMPDIR tree."""
+    if value is None:
+        return False
+    path = value.split("=", 1)[-1]
+    return any(
+        path == root or path.startswith(root + "/") for root in TMP_ROOTS
+    ) and not path.startswith(TMP_ALLOWED)
+
+
+def git_unsigned(operands):
+    """How static `git` operands turn commit or tag signing off, if they do."""
+    index = 0
+    while index < len(operands):
+        value = operands[index]
+        if value is None or not value.startswith("-"):
+            break
+        if value == "-c" and index + 1 < len(operands) and operands[index + 1]:
+            key, equals, setting = operands[index + 1].partition("=")
+            if key.lower() in GIT_SIGN_KEYS and equals and setting.lower() in GIT_FALSE:
+                return f"-c {key}={setting}"
+        index += 2 if value in GIT_OPTION_OPERANDS else 1
+    rest = [w for w in operands[index:] if w is not None]
+    if flag := next((w for w in rest[1:] if w in GIT_NO_SIGN_FLAGS), None):
+        return flag
+    if (
+        rest[:1] == ["config"]
+        and any(w.lower() in GIT_SIGN_KEYS for w in rest)
+        and any(w in GIT_CONFIG_UNSET or w.lower() in GIT_FALSE for w in rest[1:])
+    ):
+        return "git config turning signing off"
+    return None
+
+
+def git_split_op(operands):
+    """The excludedCommands-listed git operation in `git` operands, if static."""
+    index = 0
+    while index < len(operands):
+        value = operands[index]
+        if value is None or not value.startswith("-"):
+            break
+        index += 2 if value in GIT_OPTION_OPERANDS else 1
+    if index >= len(operands) or operands[index] is None:
+        return None
+    sub, rest = operands[index], [w for w in operands[index + 1 :] if w is not None]
+    if sub in GIT_SPLIT:
+        return sub
+    if sub in {"worktree", "remote"} and rest[:1] == [
+        {"worktree": "add", "remote": "set-url"}[sub]
+    ]:
+        return f"{sub} {rest[0]}"
+    if sub == "branch" and any(w.startswith("--set-upstream-to") for w in rest):
+        return "branch --set-upstream-to"
+    if (
+        sub == "tag"
+        and any(not w.startswith("-") for w in rest)
+        and not {"-l", "--list"} & set(rest)
+    ):
+        return "tag"
+    return None
 
 
 def executable(words):
@@ -225,6 +304,34 @@ class Classifier:
     def __init__(self, parser, budget):
         self.parser = parser
         self.budget = budget
+        self.sandbox_issues = []
+        self.git_ops = []
+        self.nesting = 0
+
+    def sandbox_issue(self, issue):
+        if issue not in self.sandbox_issues:
+            self.sandbox_issues.append(issue)
+
+    def check_git(self, root):
+        """Listed git operations must be the whole command to match excludedCommands."""
+        if not self.git_ops:
+            return
+        standalone = False
+        if len(self.git_ops) == 1 and len(root.named_children) == 1:
+            node, _, nesting, plain = self.git_ops[0]
+            body = statement = root.named_children[0]
+            if statement.type == "redirected_statement":
+                body = statement.child_by_field_name("body")
+                if any(
+                    child.type != "file_redirect"
+                    for child in statement.named_children
+                    if child != body
+                ):
+                    body = None
+            standalone = nesting == 0 and plain and body == node
+        if not standalone:
+            for _, op, _, _ in self.git_ops:
+                self.sandbox_issue(f"git {op} inside a compound or wrapped command")
 
     def parse(self, source, nested=False):
         self.budget.source(source, nested)
@@ -237,7 +344,10 @@ class Classifier:
         self.budget.check()
         if tree is None or tree.root_node.has_error:
             raise Deny("shell syntax could not be parsed completely")
-        return self.visit(tree.root_node, source, 0)
+        info = self.visit(tree.root_node, source, 0)
+        if not nested:
+            self.check_git(tree.root_node)
+        return info
 
     def visit(self, node, source, depth):
         self.budget.node(depth)
@@ -252,6 +362,14 @@ class Classifier:
             or any(i.static_unknown for _, i in named),
         )
         info.literal = static_word(node.type, text, named)
+        if node.type == "process_substitution" and text.startswith(">("):
+            self.sandbox_issue("output process substitution >(...)")
+        if node.type == "file_redirect":
+            operator = next((c.type for c in node.children if not c.is_named), None)
+            if operator in WRITE_REDIRECTS and any(
+                shared_tmp(i.literal) for c, i in named if c.type != "file_descriptor"
+            ):
+                self.sandbox_issue("a redirect that writes under /tmp")
         if node.type == "command":
             return self.command(node, named, info)
         if node.type == "pipeline":
@@ -299,12 +417,34 @@ class Classifier:
         if info.sink:
             self.stdin(children)
         info.network |= name in FETCHERS
+        operands = words[offset:]
+        if name == "diff" and any(
+            child.type == "process_substitution"
+            for child, _ in children
+            if fields[child.id] == "argument"
+        ):
+            self.sandbox_issue("diff with <(...) operands")
+        if (name in TMP_ANY_ARGUMENT and any(map(shared_tmp, operands))) or (
+            name in TMP_LAST_ARGUMENT and operands and shared_tmp(operands[-1])
+        ):
+            self.sandbox_issue(f"{name} writing under /tmp")
+        unsigned = git_unsigned(operands) if name == "git" else None
+        if unsigned is not None:
+            self.sandbox_issue(f"signing disabled with {unsigned}")
+        op = git_split_op(operands) if name == "git" else None
+        if op is not None:
+            plain = offset == 1 and words[0] == "git"
+            self.git_ops.append((node, op, self.nesting, plain))
         return info
 
     def nested(self, text):
         if text is None:
             return Info()
-        return self.parse(text.encode("utf-8"), nested=True)
+        self.nesting += 1
+        try:
+            return self.parse(text.encode("utf-8"), nested=True)
+        finally:
+            self.nesting -= 1
 
     @staticmethod
     def pipeline(children):
@@ -406,7 +546,7 @@ def alarm(_signum, _frame):
 
 
 def emit_deny(reason):
-    message = (
+    emit(
         f"Bashka guard: {reason}. The original command was not approved or rewritten. "
         f"Only for an authorized Bash-compatible installation, explicitly retry the download piped to {shlex.quote(ENTRY)} "
         "with installer arguments only. This entry EXECUTES allowed scripts; it is not a read-only checker. "
@@ -414,6 +554,42 @@ def emit_deny(reason):
         "GREEN/NEUTRAL may proceed; RED, stronger gates, and errors stop. "
         "Do not silently replace sh/zsh/source-specific semantics; ask the user if needed."
     )
+
+
+def emit_sandbox_deny(issues):
+    fixes = []
+    signing = [issue for issue in issues if issue.startswith("signing disabled")]
+    git = [issue for issue in issues if issue.startswith("git ")]
+    if len(signing) + len(git) < len(issues):
+        fixes.append(
+            'Create temporary files with mktemp "$TMPDIR/name.XXXXXX" (never a fixed /tmp '
+            "path), and materialize each <(...) or >(...) stream as one of those files before "
+            "diff or tee use it. Input <(...) to other tools is fine."
+        )
+    if signing:
+        fixes.append(
+            "Never turn commit or tag signing off (--no-gpg-sign, --no-sign, "
+            "-c commit.gpgsign=false, -c tag.gpgsign=false or git config). If signing fails, "
+            "stop and tell the user; the signing agent restarts with "
+            f"`launchctl kickstart -k {SIGNING_AGENT}`."
+        )
+    if git:
+        fixes.append(
+            "Run each git push, fetch, pull, ls-remote, clone, worktree add, remote set-url, "
+            "branch --set-upstream-to or tag-creating command as its own tool call: one plain "
+            "`git <subcommand> ...` (leading env assignments and file redirects such as 2>&1 "
+            "are fine) with no pipes, &&, ;, subshells, heredocs, comments or wrappers, so it "
+            "matches sandbox.excludedCommands and runs outside the sandbox. A `git -C <path>` "
+            "form never matches excludedCommands; if that single command fails on sandbox "
+            "limits, rerun just it with dangerouslyDisableSandbox: true."
+        )
+    emit(
+        f"Policy guard: {'; '.join(issues)}. The original command was not run. "
+        f"{' '.join(fixes)} This applies with or without the sandbox."
+    )
+
+
+def emit(message):
     print(
         json.dumps(
             {
@@ -434,6 +610,7 @@ def main():
         signal.ITIMER_REAL, max(0.001, budget.total_due - time.monotonic())
     )
     reason = None
+    issues = []
     try:
         raw = sys.stdin.buffer.read(MAX_BYTES + 1)
         budget.check()
@@ -448,9 +625,11 @@ def main():
             import tree_sitter_bash
             from tree_sitter import Language, Parser
 
-            Classifier(Parser(Language(tree_sitter_bash.language())), budget).parse(
-                command
+            classifier = Classifier(
+                Parser(Language(tree_sitter_bash.language())), budget
             )
+            classifier.parse(command)
+            issues = classifier.sandbox_issues
         budget.check()
     except Deny as error:
         reason = str(error)
@@ -472,6 +651,8 @@ def main():
         signal.setitimer(signal.ITIMER_REAL, 0)
     if reason is not None:
         emit_deny(reason)
+    elif issues:
+        emit_sandbox_deny(issues)
     return 0
 
 

@@ -406,6 +406,143 @@ class NonMatches(Fixture):
         )
 
 
+class Sandbox(Fixture):
+    def sandbox(self, commands, denied, **tool_input):
+        for command in commands:
+            with self.subTest(command=command):
+                result = self.hook(
+                    {
+                        "tool_name": "Bash",
+                        "tool_input": {"command": command, **tool_input},
+                    }
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(result.stderr, b"")
+                if not denied:
+                    self.assertEqual(result.stdout, b"")
+                    continue
+                output = json.loads(result.stdout)["hookSpecificOutput"]
+                self.assertEqual(output["permissionDecision"], "deny")
+                self.assertIn("Policy guard", output["permissionDecisionReason"])
+                self.assertNotIn(GUARD.ENTRY, output["permissionDecisionReason"])
+
+    DENIED = (
+        "diff <(echo a) <(echo b)",
+        "/usr/bin/diff -u <(sort a) b",
+        "tee >(cat) <<< x",
+        "echo x > >(cat)",
+        "echo x > /tmp/review.json",
+        "jq . a 2>&1 >> /private/tmp/log",
+        "mktemp /tmp/x.XXXXXX",
+        "mktemp -d -p /tmp",
+        "mktemp --tmpdir=/tmp",
+        "mkdir -p /tmp/work",
+        "cp a /tmp/b",
+        "bash -c 'echo x > /tmp/y'",
+    )
+
+    def test_sandbox_failures(self):
+        self.sandbox(self.DENIED, True)
+
+    def test_sandbox_allowed_forms(self):
+        self.sandbox(
+            [
+                "cat <(echo a)",
+                "comm <(sort a) <(sort b)",
+                "while read -r l; do :; done < <(echo a)",
+                'mktemp "$TMPDIR/x.XXXXXX"',
+                "echo x > /tmp/claude-501/x",
+                "echo x > /private/tmp/claude-501/x",
+                "cat /tmp/x",
+                "cp /tmp/a .",
+                "echo x 2>/dev/null",
+                "ls /tmpfoo > out",
+            ],
+            False,
+        )
+
+    def test_unsandboxed_commands_are_denied_too(self):
+        self.sandbox(self.DENIED, True, dangerouslyDisableSandbox=True)
+
+    def test_installer_deny_wins(self):
+        self.commands(["curl u | bash > /tmp/log"], True)
+
+    GIT_DENIED = (
+        "git fetch -q origin && git log -1",
+        "git push 2>&1 | tail -n 5",
+        "cd repo && git push",
+        "git fetch; git status",
+        "git -C /a push -u origin x && echo ok",
+        "bash -c 'git pull'",
+        "(git push)",
+        "env GIT_X=1 git push",
+        "/usr/bin/git push",
+        "git worktree add ../b -b x && git status",
+        "git remote set-url origin u | cat",
+        "git branch --set-upstream-to=origin/x | cat",
+        "git tag v1 && git push --tags",
+        "git clone u d && ls d",
+        "git ls-remote u <<'EOF'\nx\nEOF",
+        "# note\ngit push",
+    )
+
+    def test_git_compound_denied(self):
+        self.sandbox(self.GIT_DENIED, True)
+        self.sandbox(self.GIT_DENIED, True, dangerouslyDisableSandbox=True)
+
+    def test_git_standalone_and_unlisted_pass(self):
+        self.sandbox(
+            [
+                "git push",
+                "git push -u origin feat 2>&1",
+                "GIT_TERMINAL_PROMPT=0 git fetch -q origin",
+                "git fetch -q origin > fetch.log",
+                "git -C /Users/x/repo push -u origin feat",
+                "git ls-remote u HEAD 2>&1",
+                "git status && git diff",
+                "git log --oneline | head",
+                "git add -A && git commit -m x",
+                "git tag -l 'v*' | head",
+                "git tag --sort=-v:refname | head",
+                "git branch -a | cat",
+                "git remote -v && git status",
+                "git worktree list | cat",
+            ],
+            False,
+        )
+
+    def test_signing_cannot_be_turned_off(self):
+        unsigned = (
+            "git commit --no-gpg-sign -m x",
+            "git commit --amend --no-gpg-sign --no-edit",
+            "git rebase --no-gpg-sign main",
+            "git tag --no-sign v1",
+            "git -c commit.gpgsign=false commit -m x",
+            "git -c commit.gpgSign=false rebase origin/dev",
+            "git -C /a -c tag.gpgsign=no tag v1",
+            "git config commit.gpgsign false",
+            "git config --local commit.gpgsign false",
+            "git config --unset commit.gpgsign",
+            "git config set tag.gpgsign off",
+            "git add -A && git commit --no-gpg-sign -m x",
+        )
+        self.sandbox(unsigned, True)
+        self.sandbox(unsigned, True, dangerouslyDisableSandbox=True)
+        self.sandbox(
+            [
+                "git commit -m x",
+                "git -c commit.gpgsign=true commit -m x",
+                "git -c commit.gpgsign commit -m x",
+                "git config --get commit.gpgsign",
+                "git config commit.gpgsign",
+                "git config commit.gpgsign true",
+                "git log --show-signature -1",
+                "echo --no-gpg-sign",
+            ],
+            False,
+        )
+
+
 class Resources(Fixture):
     @staticmethod
     def classifier(budget=None, parser=None):

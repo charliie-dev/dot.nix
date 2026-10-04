@@ -44,6 +44,30 @@ There is no credential isolation, and ordinary installer environment remains
 available. The installed Bashka binary and Nix store dependencies are trusted;
 this does not defend against a malicious process running as the same user.
 
+## Sandbox compatibility
+
+The hook also denies forms that fail with `Operation not permitted` under the
+Claude Code sandbox, with a separate "Sandbox guard" reason. It applies with or
+without `dangerouslyDisableSandbox`, so disabling the sandbox is no way around it: `diff` with `<(...)` operands, any output
+`>(...)`, and static writes under `/tmp` or `/private/tmp` outside the sandbox's
+own `/tmp/claude*` tree (write redirects, `mktemp`/`mkdir`/`touch`/`tee` operands,
+and the destination of `cp`/`mv`/`install`/`ln`). Input `<(...)` to other tools
+passes. An installer deny takes precedence. Dynamic paths such as `$TMPDIR/...`
+and temp paths chosen inside other languages are out of scope.
+
+Git operations listed in `sandbox.excludedCommands` (`push`, `fetch`, `pull`,
+`ls-remote`, `clone`, `worktree add`, `remote set-url`, `branch
+--set-upstream-to`, tag creation) must be the whole command: one plain `git ...`
+call, optionally with leading env assignments and file redirects. Measured on
+Claude Code 2.1.288, excludedCommands only honors trailing-`*` prefix patterns and
+keeps pipes, lists, heredocs and wrapped calls sandboxed, so a compound or wrapped
+form is denied with a request to split it. `git -C <path> ...` never matches;
+when it is standalone it passes unchanged.
+
+Commit and tag signing must stay on: `--no-gpg-sign`, `--no-sign`, a false
+`-c commit.gpgsign=`/`-c tag.gpgsign=` and `git config` writes or unsets of those
+keys are denied. These policy denials share one "Policy guard" reason.
+
 ## Startup and limits
 
 All three executables start directly with Nix Python `-IS`, without a Bash

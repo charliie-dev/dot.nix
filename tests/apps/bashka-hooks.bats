@@ -40,6 +40,10 @@ check() {
   check NonMatches
 }
 
+@test "sandbox-incompatible /tmp writes, fd streams and compound git network calls are denied" {
+  check Sandbox
+}
+
 @test "shared parser resource boundaries and cancellation are enforced" {
   check Resources
 }
