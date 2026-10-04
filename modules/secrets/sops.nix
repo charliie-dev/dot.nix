@@ -14,6 +14,41 @@ let
   authorizedKeys = "${sshDir}/authorized_keys";
   publicKey = "${sshDir}/id_ed25519.pub";
   publicKeyTarget = "${config.xdg.configHome}/sops-nix/secrets/ssh_ed25519_pub";
+  # Commit signing uses a dedicated key held by its own agent at a fixed socket, so the
+  # Claude Code sandbox can be granted signing without reaching the login agent or any
+  # private key file. Public keys live in the store, readable inside the sandbox.
+  isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
+  signingDir = "${config.xdg.stateHome}/ssh-signing-agent";
+  signingSocket = "${signingDir}/agent.sock";
+  signingPublicKey = pkgs.writeText "ssh_signing_ed25519.pub" ''
+    ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGAfO2WfhUg4O/duVOsrBKyuff9zQ868whgF/+UqTBZ3 mail@charliie.dev git-signing
+  '';
+  # Keep the retired login key so commits it signed still verify.
+  allowedSigners = pkgs.writeText "allowed_signers" ''
+    mail@charliie.dev ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGAfO2WfhUg4O/duVOsrBKyuff9zQ868whgF/+UqTBZ3
+    mail@charliie.dev ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGheUUiTRmXyksBogOM/P501ui/I+inefqrk8PMwA2La
+  '';
+  # git runs this instead of ssh-keygen, so only signing switches agents; ssh auth and
+  # pushes keep the login agent.
+  signingProgram = pkgs.writeShellScript "git-ssh-sign" ''
+    SSH_AUTH_SOCK=${lib.escapeShellArg signingSocket} exec ${pkgs.openssh}/bin/ssh-keygen "$@"
+  '';
+  signingAgent = pkgs.writeShellScript "ssh-signing-agent" ''
+    set -u
+    umask 077
+    mkdir -p ${lib.escapeShellArg signingDir}
+    rm -f ${lib.escapeShellArg signingSocket}
+    ${pkgs.openssh}/bin/ssh-agent -D -a ${lib.escapeShellArg signingSocket} &
+    agent=$!
+    trap 'kill "$agent" 2>/dev/null' EXIT INT TERM
+    until [ -S ${lib.escapeShellArg signingSocket} ]; do sleep 0.2; done
+    # sops-nix decrypts after login; keep trying until the key file appears.
+    until SSH_AUTH_SOCK=${lib.escapeShellArg signingSocket} ${pkgs.openssh}/bin/ssh-add -q \
+      ${lib.escapeShellArg config.sops.secrets.ssh_signing_ed25519.path}; do
+      sleep 10
+    done
+    wait "$agent"
+  '';
   authorizedKeysManager = pkgs.writeShellApplication {
     name = "manage-authorized-keys";
     runtimeInputs = [
@@ -503,14 +538,35 @@ lib.mkMerge [
       };
       host_configuration.path = "${sshDir}/host_configuration";
       allowed_signers.path = "${config.xdg.configHome}/git/allowed_signers";
+      ssh_signing_ed25519.mode = "0400";
     };
 
     programs = {
-      git = {
-        signing.key = config.sops.secrets.ssh_ed25519_pub.path;
-        settings.gpg.ssh.allowedSignersFile = config.sops.secrets.allowed_signers.path;
-      };
+      git =
+        if isDarwin then
+          {
+            signing.key = "${signingPublicKey}";
+            settings.gpg.ssh = {
+              program = "${signingProgram}";
+              allowedSignersFile = "${allowedSigners}";
+            };
+          }
+        else
+          {
+            signing.key = config.sops.secrets.ssh_ed25519_pub.path;
+            settings.gpg.ssh.allowedSignersFile = config.sops.secrets.allowed_signers.path;
+          };
       ssh.settings."*".IdentityFile = config.sops.secrets.ssh_ed25519.path;
+    };
+
+    launchd.agents.ssh-signing-agent = lib.mkIf isDarwin {
+      enable = true;
+      waitForNixStore = false;
+      config = {
+        ProgramArguments = [ "${signingAgent}" ];
+        RunAtLoad = true;
+        KeepAlive = true;
+      };
     };
   })
   (lib.mkIf enableSecrets {
