@@ -17,6 +17,7 @@ let
       })
       [
         "pre-tool-use"
+        "post-tool-use-failure"
         "agent-run"
         "register-hooks"
       ];

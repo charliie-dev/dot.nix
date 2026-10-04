@@ -28,6 +28,9 @@ in
       "@parserSite@" = builtins.toJSON "${parser}/${python.sitePackages}";
       "@entry@" = builtins.toJSON entry;
     };
+    "bashka/post-tool-use-failure".source =
+      script "bashka-post-tool-use-failure" ../../conf.d/bashka/post_tool_use_failure.py
+        { };
     "bashka/agent-run".source = script "bashka-agent-run" ../../conf.d/bashka/agent_run.py {
       "@binary@" =
         builtins.toJSON "${config.xdg.dataHome}/mise/installs/github-dmtr-kovalenko-bashka/latest/bashka";

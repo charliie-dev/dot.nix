@@ -44,6 +44,10 @@ check() {
   check Sandbox
 }
 
+@test "signing failures steer to the user instead of a bypass" {
+  check SigningFailure
+}
+
 @test "shared parser resource boundaries and cancellation are enforced" {
   check Resources
 }

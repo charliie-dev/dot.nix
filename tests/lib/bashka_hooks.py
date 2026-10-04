@@ -543,6 +543,51 @@ class Sandbox(Fixture):
         )
 
 
+class SigningFailure(Fixture):
+    def failure(self, value):
+        raw = value if isinstance(value, bytes) else json.dumps(value).encode()
+        return subprocess.run(
+            [BUNDLE / "post-tool-use-failure"],
+            input=raw,
+            capture_output=True,
+            cwd=self.root,
+            env=self.env,
+            timeout=8,
+            check=False,
+        )
+
+    def test_signing_errors_add_context(self):
+        for error in (
+            "Exit code 128\nError connecting to agent: Operation not permitted",
+            'error: No private key found for "/x/id_ed25519"?\nfatal: failed to write commit object',
+            "Couldn't sign message: agent refused operation",
+        ):
+            with self.subTest(error=error):
+                result = self.failure(
+                    {
+                        "hook_event_name": "PostToolUseFailure",
+                        "tool_name": "Bash",
+                        "error": error,
+                    }
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+                output = json.loads(result.stdout)["hookSpecificOutput"]
+                self.assertEqual(output["hookEventName"], "PostToolUseFailure")
+                self.assertIn("launchctl kickstart -k", output["additionalContext"])
+
+    def test_other_failures_stay_silent(self):
+        for value in (
+            {"tool_name": "Bash", "error": "Exit code 1\nfatal: not a git repository"},
+            {"tool_name": "Read", "error": "Error connecting to agent"},
+            {"tool_name": "Bash"},
+            b"not json",
+        ):
+            with self.subTest(value=value):
+                result = self.failure(value)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(result.stdout, b"")
+
+
 class Resources(Fixture):
     @staticmethod
     def classifier(budget=None, parser=None):
