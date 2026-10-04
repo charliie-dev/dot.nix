@@ -1,3 +1,23 @@
+let
+  # Git 2.54 config-based hooks, the entries `hk install --global --mise`
+  # would write to ~/.gitconfig if it were writable. Repos without hk.pkl are
+  # a silent no-op; `HK=0 git commit` skips hk for one command. hk also looks
+  # for any `hook.hk-*` entry to skip per-repo installs, so this is the single
+  # source of truth for hk hooks on this machine.
+  hkHook = event: extra: {
+    name = "hk-${event}";
+    value = {
+      command = "test \"\${HK:-1}\" = \"0\" || ~/.local/share/mise/shims/mise x hk -- hk run ${event} --from-hook${extra}";
+      inherit event;
+    };
+  };
+  hkHooks = builtins.listToAttrs [
+    (hkHook "pre-commit" " --staged")
+    (hkHook "commit-msg" "")
+    (hkHook "prepare-commit-msg" "")
+    (hkHook "pre-push" "")
+  ];
+in
 _: {
   git = {
     enable = true;
@@ -29,6 +49,7 @@ _: {
         };
       };
       gpg.ssh = { };
+      hook = hkHooks;
       gc = {
         auto = 256;
       };
