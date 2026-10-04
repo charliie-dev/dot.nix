@@ -23,5 +23,11 @@
   initContent = lib.mkOrder 1000 ''
     smartcache eval zoxide init zsh
     smartcache eval starship init zsh
+    # CTRL-T / CTRL-R / ALT-C widgets. fzf-tab (deferred) rebinds TAB later,
+    # so fzf's own `**` completion trigger is not reachable.
+    smartcache eval fzf --zsh
+    # Open the widgets in a tmux floating pane (tmux 3.7+). `--popup` is
+    # ignored outside tmux, so the same command works in a plain terminal.
+    __fzfcmd() { echo "fzf --popup=80%,60% -- "; }
   '';
 }

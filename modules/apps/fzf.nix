@@ -1,6 +1,8 @@
 {
   fzf = {
     enable = true;
+    # Key bindings are loaded through `smartcache eval fzf --zsh` in
+    # modules/apps/zsh/integrations.nix, not the module's direct hook.
     enableZshIntegration = false;
     # defaultCommand = ""
     defaultOptions = [
@@ -45,10 +47,9 @@
       "--sort"
       "--exact"
     ];
-    tmux = {
-      enableShellIntegration = true;
-      shellIntegrationOptions = [ "-d 60%" ];
-    };
+    # No `tmux.enableShellIntegration`: that path goes through the fzf-tmux
+    # script, which only knows split panes and popups. The widgets open a
+    # tmux floating pane via the `__fzfcmd` override in integrations.nix.
   };
 
 }

@@ -1,7 +1,8 @@
 {
   television = {
     enable = true;
-    enableZshIntegration = true;
+    # CTRL-T / CTRL-R belong to the fzf widgets (zsh/integrations.nix); run `tv` directly.
+    enableZshIntegration = false;
     settings = {
       default_channel = "nix-search-tv";
       keybindings = {
