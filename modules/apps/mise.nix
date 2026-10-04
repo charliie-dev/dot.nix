@@ -177,6 +177,16 @@
         env_file = ".env";
         experimental = true;
         fetch_remote_versions_timeout = "60s";
+        # Read the language's own version file instead of a duplicate pin in
+        # mise.toml: go.mod `toolchain goX.Y.Z` (the `go X.Y` floor is not a
+        # version request), .node-version/.nvmrc, .python-version and
+        # rust-toolchain.toml. Off by default in mise; opt in per tool.
+        idiomatic_version_file_enable_tools = [
+          "go"
+          "node"
+          "python"
+          "rust"
+        ];
         github = {
           credential_command = "gh auth token";
         };
