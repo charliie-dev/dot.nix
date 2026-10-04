@@ -80,10 +80,11 @@
         # General CLI tools
         nub = "latest"; # Node toolchain frontend; requires node
         usage = "latest";
-        # git hooks manager; the global hooks in git.nix run `mise x hk`, which
-        # resolves the short name, so declare it by short name (registry maps it
-        # to the signed packslip) or mise keeps a second install for the hooks.
-        hk = "latest";
+        # git hooks manager, from the signed packslip (ships the hk-configure and
+        # hk-debug agent skills). The global hooks in git.nix invoke it through
+        # this exact spec: to mise, `hk` and `packslip:github.com/jdx/hk` are
+        # two installs, so `mise x hk` would keep a second copy for the hooks.
+        "packslip:github.com/jdx/hk" = "latest";
         # ruby = "latest";
         # Interactive CLIs nothing invokes on PATH except a human: lazy, so a
         # fresh machine does not download them until first use. Non-registry

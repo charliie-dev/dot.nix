@@ -7,7 +7,10 @@ let
   hkHook = event: extra: {
     name = "hk-${event}";
     value = {
-      command = "test \"\${HK:-1}\" = \"0\" || ~/.local/share/mise/shims/mise x hk -- hk run ${event} --from-hook${extra}";
+      # Full backend spec, not the `hk` short name hk itself would write: the
+      # tool is declared as packslip in mise.nix and a short name is a separate
+      # install to mise.
+      command = "test \"\${HK:-1}\" = \"0\" || ~/.local/share/mise/shims/mise x packslip:github.com/jdx/hk -- hk run ${event} --from-hook${extra}";
       inherit event;
     };
   };
