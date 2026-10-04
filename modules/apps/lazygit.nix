@@ -10,6 +10,7 @@
         shortTimeFormat = "15:04";
         showRandomTip = false;
         nerdFontsVersion = "3";
+        filterMode = "fuzzy"; # one of: 'substring' | 'fuzzy'
       };
       git = {
         diffRenderers = [
