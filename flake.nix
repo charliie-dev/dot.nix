@@ -81,6 +81,7 @@
         let
           enableSecrets = hostCfg.enableSecrets or false;
           enableSshSecrets = hostCfg.enableSshSecrets or enableSecrets;
+          enableSigningAgent = hostCfg.enableSigningAgent or false;
           nvidiaGpu = hostCfg.nvidiaGpu or false;
           # General rule: doCheck=false is only worth setting on a package we
           # are ALREADY forced to rebuild locally (e.g. the determinate-nix
@@ -201,6 +202,7 @@
               src
               enableSecrets
               enableSshSecrets
+              enableSigningAgent
               nixgl
               nvidiaGpu
               ;

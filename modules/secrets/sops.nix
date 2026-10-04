@@ -5,6 +5,7 @@
   src,
   enableSecrets ? false,
   enableSshSecrets ? enableSecrets,
+  enableSigningAgent ? false,
   ...
 }:
 let
@@ -18,6 +19,7 @@ let
   # Claude Code sandbox can be granted signing without reaching the login agent or any
   # private key file. Public keys live in the store, readable inside the sandbox.
   isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
+  signingEnabled = enableSshSecrets && enableSigningAgent;
   signingDir = "${config.xdg.stateHome}/ssh-signing-agent";
   signingSocket = "${signingDir}/agent.sock";
   signingPublicKey = pkgs.writeText "ssh_signing_ed25519.pub" ''
@@ -537,13 +539,12 @@ lib.mkMerge [
         mode = "0644";
       };
       host_configuration.path = "${sshDir}/host_configuration";
-      allowed_signers.path = "${config.xdg.configHome}/git/allowed_signers";
-      ssh_signing_ed25519.mode = "0400";
-    };
+    }
+    // lib.optionalAttrs signingEnabled { ssh_signing_ed25519.mode = "0400"; };
 
     programs = {
       git =
-        if isDarwin then
+        if signingEnabled then
           {
             signing.key = "${signingPublicKey}";
             settings.gpg.ssh = {
@@ -551,15 +552,13 @@ lib.mkMerge [
               allowedSignersFile = "${allowedSigners}";
             };
           }
+        # Hosts without the signing agent sign with the login key and never verify.
         else
-          {
-            signing.key = config.sops.secrets.ssh_ed25519_pub.path;
-            settings.gpg.ssh.allowedSignersFile = config.sops.secrets.allowed_signers.path;
-          };
+          { signing.key = config.sops.secrets.ssh_ed25519_pub.path; };
       ssh.settings."*".IdentityFile = config.sops.secrets.ssh_ed25519.path;
     };
 
-    launchd.agents.ssh-signing-agent = lib.mkIf isDarwin {
+    launchd.agents.ssh-signing-agent = lib.mkIf (signingEnabled && isDarwin) {
       enable = true;
       waitForNixStore = false;
       config = {
@@ -568,6 +567,28 @@ lib.mkMerge [
         KeepAlive = true;
       };
     };
+
+    systemd.user.services.ssh-signing-agent = lib.mkIf (signingEnabled && !isDarwin) {
+      Unit = {
+        Description = "Dedicated git signing ssh-agent";
+        After = [ "sops-nix.service" ];
+      };
+      Service = {
+        ExecStart = "${signingAgent}";
+        Restart = "always";
+        RestartSec = 5;
+      };
+      Install.WantedBy = [ "default.target" ];
+    };
+
+    # Without lingering the user manager, and with it the agent, stops at logout.
+    home.activation.sshSigningAgentLinger = lib.mkIf (signingEnabled && !isDarwin) (
+      lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        if [ "$(loginctl show-user "$USER" --property=Linger --value 2>/dev/null)" != yes ]; then
+          warnEcho "ssh-signing-agent: run 'sudo loginctl enable-linger $USER' so signing survives logout"
+        fi
+      ''
+    );
   })
   (lib.mkIf enableSecrets {
     sops.secrets.doppler_token = {

@@ -1,6 +1,8 @@
 # hosts.nix — All host definitions in one place
 # enableSecrets: application secrets (Doppler token and process-scoped wrappers)
 # enableSshSecrets: SOPS SSH baseline; defaults to enableSecrets when unspecified
+# enableSigningAgent: sign git commits with the shared dedicated key held by its own
+#   ssh-agent (launchd on macOS, systemd user service on Linux); needs enableSshSecrets
 # sharedConfig: point to another host name to reuse its homeManagerConfiguration
 # nvidiaGpu: enable the nixGL/NVIDIA variant of the generic Linux platform
 {
@@ -13,6 +15,7 @@
     ];
     homeDirectory = "/Users/charles";
     enableSecrets = true;
+    enableSigningAgent = true;
   };
   # home-manager switch uses hostname with .local suffix on macOS
   "charles@24041-LABNB01.local" = {
@@ -28,12 +31,14 @@
     ];
     homeDirectory = "/home/charles";
     enableSecrets = true;
+    enableSigningAgent = true;
   };
   "charles@pluto" = {
     system = "aarch64-linux";
     roles = [ "dev-core" ];
     homeDirectory = "/home/charles";
     enableSecrets = true;
+    enableSigningAgent = true;
     silent = true;
   };
   "charles@tmp-gpu" = {
@@ -83,6 +88,7 @@
     sharedConfig = "charles@RDSrv01";
     system = "x86_64-linux";
     enableSecrets = false;
+    enableSigningAgent = true;
   };
   "charles@prod-deploy" = {
     sharedConfig = "charles@RDSrv01";
