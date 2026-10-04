@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   lib,
   ...
@@ -195,6 +196,16 @@
             "pip"
             "pip3"
           ];
+        };
+
+        # packslip tools ship agent skills (usage, aube). Link them into the
+        # ~/.agents/skills hub that ~/.config/{claude,grok}/skills already
+        # symlink into, after every install and `mise use`. skills.dir is
+        # documented as project-relative, but an absolute path is honoured
+        # as-is (verified on 2026.10.0 from both project and non-project dirs).
+        skills = {
+          dir = "${config.home.homeDirectory}/.agents/skills";
+          auto_sync = true;
         };
 
         cargo = {
