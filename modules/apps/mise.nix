@@ -187,6 +187,10 @@
           "python"
           "rust"
         ];
+        # Never read go.mod's `go` floor as a version request (the default from
+        # mise 2026.11). A go.mod without `toolchain` falls back to the global go
+        # instead of warning, which covers repos we do not edit, such as dcf.
+        idiomatic_version_file_ignore_minimum_versions = true;
         github = {
           credential_command = "gh auth token";
         };
