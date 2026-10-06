@@ -179,7 +179,11 @@
       esac
     '';
 
+    # Inside herdr, TERM_PROGRAM=herdr makes grok treat the terminal as unknown and
+    # disable image previews, though herdr passes Kitty graphics through. Masquerade
+    # as Ghostty only for grok; HERDR_* stays intact so herdr integration still works.
     grok = ''
+      [[ "''${TERM_PROGRAM:-}" == herdr ]] && local -x TERM_PROGRAM=ghostty
       command grok-azure "$@"
     '';
 
