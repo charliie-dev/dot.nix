@@ -187,7 +187,10 @@
       command grok-azure "$@"
     '';
 
+    # Claude Code reads herdr's libghostty terminal name as no Kitty graphics, so
+    # force images on inside herdr (needed by the cc-image-view plugin).
     claude = ''
+      [[ "''${HERDR_ENV:-}" == 1 ]] && local -x CLAUDE_CODE_FORCE_TERMINAL_IMAGES=1
       ${lib.optionalString enableSecrets ''
         if _cct_enabled "''${CLAUDE_CODE_USE_BEDROCK:-}"; then
           command claude-bedrock "$@"
