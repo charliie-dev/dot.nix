@@ -78,6 +78,7 @@
         "go:github.com/go-delve/delve/cmd/dlv" = "latest";
 
         # General CLI tools
+        bats = "latest";
         nub = "latest"; # Node toolchain frontend; requires node
         usage = "latest";
         # git hooks manager, from the signed packslip (ships the hk-configure and
