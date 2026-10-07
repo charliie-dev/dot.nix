@@ -4,6 +4,8 @@ task.output = "keep-order"
 
 # ------------------------------------------------------------------------------
 [tools]
+# tests/**/*.bats 的執行器;CI 使用固定版本。
+bats = "1.14.0"
 # hk.pkl 的 pre-commit secret 掃描;其他 linter 來自全域 mise 設定。
 betterleaks = "1.9.0"
 
