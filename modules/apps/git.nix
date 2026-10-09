@@ -10,7 +10,7 @@ let
       # Full backend spec, not the `hk` short name hk itself would write: the
       # tool is declared as packslip in mise.nix and a short name is a separate
       # install to mise.
-      command = "test \"\${HK:-1}\" = \"0\" || ~/.local/share/mise/shims/mise x packslip:github.com/jdx/hk -- hk run ${event} --from-hook${extra}";
+      command = "test \"\${HK:-1}\" = \"0\" || ~/.local/share/mise/bin/mise x packslip:github.com/jdx/hk -- hk run ${event} --from-hook${extra}";
       inherit event;
     };
   };
