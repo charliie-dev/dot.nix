@@ -119,6 +119,91 @@ class VerifyContracts(unittest.TestCase):
                 ValueError, "response-model-mismatch", self.verify, events, profile
             )
 
+    def test_haiku55_requires_concrete_identity_for_claude(self):
+        profile = "global.anthropic.claude-haiku-5-5"
+        self.assertEqual(VERIFY["CLAUDE_MODELS"]["haiku"], profile)
+        for reported in (
+            profile,
+            "anthropic.claude-haiku-5-5",
+            "claude-haiku-5-5",
+            "claude-haiku-5-5[1m]",
+        ):
+            events = copy.deepcopy(self.events)
+            events[0]["message"]["model"] = reported
+            events[2]["message"]["model"] = reported
+            events[-1]["modelUsage"] = {profile: {"contextWindow": 1000000}}
+            self.assertTrue(self.verify(events, profile)["response_model_verified"])
+        for reported in ("haiku", "bedrock-haiku-5.5"):
+            events = copy.deepcopy(self.events)
+            events[0]["message"]["model"] = reported
+            self.assertRaisesRegex(
+                ValueError, "response-model-mismatch", self.verify, events, profile
+            )
+
+    def test_legacy_haiku_is_diagnostic_only_for_upgraded_callers(self):
+        profile = "global.anthropic.claude-haiku-5-5"
+        legacy = "global.anthropic.claude-haiku-4-5-20251001-v1:0"
+        for reported in (
+            legacy,
+            legacy.removeprefix("global."),
+            legacy.removeprefix("global.anthropic."),
+        ):
+            self.assertEqual(VERIFY["safe_model_label"](reported), reported)
+            for tool, alias in (("Read", None), ("read_file", "bedrock-haiku-5.5")):
+                events = (
+                    copy.deepcopy(self.events)
+                    if alias is None
+                    else self.grok_events(profile, reported)
+                )
+                events[2]["message"]["model"] = reported
+                events[0]["message"]["model"] = profile
+                raw = b"\n".join(json.dumps(event).encode() for event in events)
+                with self.assertRaises(VERIFY["VerificationError"]) as raised:
+                    VERIFY["inspect_stream"](
+                        raw, self.fixture, NONCE, tool, profile, client_alias=alias
+                    )
+                report = VERIFY["failure_report"](raised.exception)
+                self.assertEqual(report["reason"], "response-model-mismatch")
+                self.assertEqual(
+                    report["diagnostics"]["model_identity"],
+                    {
+                        "expected": profile,
+                        "reported": reported,
+                        "reported_type": "string",
+                    },
+                )
+
+    def test_grok_haiku_catalog_and_model_id_evidence_remain_distinct(self):
+        alias = "bedrock-haiku-5.5"
+        profile = "global.anthropic.claude-haiku-5-5"
+        policy = runpy.run_path(str(SOURCE.parent / "grok_policy.py"))
+        self.assertEqual(VERIFY["GROK_MODELS"], set(policy["MODELS"]))
+        self.assertEqual(
+            VERIFY["selected_cases"]("grok", alias, policy), [("grok", alias)]
+        )
+        for reported in (
+            alias,
+            alias + "[1m]",
+            profile,
+            "anthropic.claude-haiku-5-5",
+            "claude-haiku-5-5",
+        ):
+            events = self.grok_events(reported, reported)
+            events[-1]["modelUsage"] = {reported: {"contextWindow": 1000000}}
+            raw = b"\n".join(json.dumps(event).encode() for event in events)
+            result = VERIFY["inspect_stream"](
+                raw, self.fixture, NONCE, "read_file", profile, client_alias=alias
+            )
+            catalog = reported.startswith(alias)
+            self.assertTrue(result["client_model_label_verified"])
+            self.assertEqual(result["response_model_verified"], not catalog)
+            self.assertFalse(result["wire_model_id_verified"])
+            self.assertEqual(
+                result["model_identity_source"],
+                "catalog-key" if catalog else "model-id",
+            )
+            self.assertEqual(result["reported_context_windows"], [1000000])
+
     def test_legacy_grok_sonnet_remains_verifiable(self):
         profile = "global.anthropic.claude-sonnet-5"
         self.assertEqual(VERIFY["safe_model_label"](profile), profile)

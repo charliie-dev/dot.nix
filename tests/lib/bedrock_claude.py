@@ -804,6 +804,44 @@ class EnvironmentAndArguments(Fixture):
                 [flag, "global.anthropic.claude-sonnet-5"],
             )
 
+    def test_haiku55_alias_and_pin_replace_legacy_arguments(self):
+        pin = "global.anthropic.claude-haiku-5-5"
+        self.assertEqual(L.MODEL_PINS["HAIKU"], pin)
+        for model in ("haiku", pin):
+            for args in (["--model", model], ["--model=" + model]):
+                prepared = self.prepare(args)
+                self.assertEqual(prepared.report["model"], model)
+                self.assertEqual(prepared.report["fallbackModel"], ["sonnet"])
+                self.assertEqual(
+                    prepared.environment["ANTHROPIC_DEFAULT_HAIKU_MODEL"], pin
+                )
+            self.reject("arguments", L.validate_arguments, ["--fallback-model", model])
+        for flag in ("--model", "--fallback-model"):
+            self.reject(
+                "arguments",
+                L.validate_arguments,
+                [flag, "global.anthropic.claude-haiku-4-5-20251001-v1:0"],
+            )
+
+    def test_legacy_haiku_pin_cannot_override_upgraded_routing(self):
+        key = "ANTHROPIC_DEFAULT_HAIKU_MODEL"
+        legacy = "global.anthropic.claude-haiku-4-5-20251001-v1:0"
+        self.overlay["env"][key] = legacy
+        self.save_overlay()
+        self.reject("overlay", L.validate_overlay, self.runtime)
+        self.overlay["env"][key] = L.MODEL_PINS["HAIKU"]
+        self.save_overlay()
+        path = self.setting({"env": {key: legacy}})
+        original = path.read_bytes()
+        with mock.patch.dict(os.environ, {key: legacy}):
+            self.assertEqual(self.prepare().environment[key], L.MODEL_PINS["HAIKU"])
+        self.assertEqual(path.read_bytes(), original)
+        self.setting(
+            {"env": {key: legacy}},
+            self.layout.managed_dir / "managed-settings.json",
+        )
+        self.reject("routing-conflict", self.prepare)
+
     def test_invalid_empty_or_duplicate_models_stop(self):
         for args in (
             ["--model"],

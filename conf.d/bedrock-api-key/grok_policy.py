@@ -29,6 +29,11 @@ MODELS = {
         "messages",
         "/anthropic/v1",
     ),
+    "bedrock-haiku-5.5": (
+        "global.anthropic.claude-haiku-5-5",
+        "messages",
+        "/anthropic/v1",
+    ),
 }
 GLOBAL_MODEL_DEFAULTS = (
     "temperature",

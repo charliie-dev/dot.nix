@@ -25,7 +25,7 @@ MODEL_PINS = {
     "FABLE": "global.anthropic.claude-fable-5-1[1m]",
     "OPUS": "global.anthropic.claude-opus-5-5[1m]",
     "SONNET": "global.anthropic.claude-sonnet-5-5",
-    "HAIKU": "global.anthropic.claude-haiku-4-5-20251001-v1:0",
+    "HAIKU": "global.anthropic.claude-haiku-5-5",
 }
 FIXED_ENV = {
     "CLAUDE_CODE_USE_BEDROCK": "1",

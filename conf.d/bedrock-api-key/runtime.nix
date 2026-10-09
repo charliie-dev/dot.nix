@@ -43,11 +43,11 @@ let
         ANTHROPIC_DEFAULT_FABLE_MODEL = "global.anthropic.claude-fable-5-1[1m]";
         ANTHROPIC_DEFAULT_OPUS_MODEL = "global.anthropic.claude-opus-5-5[1m]";
         ANTHROPIC_DEFAULT_SONNET_MODEL = "global.anthropic.claude-sonnet-5-5";
-        ANTHROPIC_DEFAULT_HAIKU_MODEL = "global.anthropic.claude-haiku-4-5-20251001-v1:0";
+        ANTHROPIC_DEFAULT_HAIKU_MODEL = "global.anthropic.claude-haiku-5-5";
         ANTHROPIC_DEFAULT_FABLE_MODEL_NAME = "Bedrock Claude Fable 5.1";
         ANTHROPIC_DEFAULT_OPUS_MODEL_NAME = "Bedrock Claude Opus 5.5";
         ANTHROPIC_DEFAULT_SONNET_MODEL_NAME = "Bedrock Claude Sonnet 5.5";
-        ANTHROPIC_DEFAULT_HAIKU_MODEL_NAME = "Bedrock Claude Haiku 4.5";
+        ANTHROPIC_DEFAULT_HAIKU_MODEL_NAME = "Bedrock Claude Haiku 5.5";
         ANTHROPIC_BASE_URL = "";
         ANTHROPIC_BEDROCK_BASE_URL = "";
         ANTHROPIC_FOUNDRY_BASE_URL = "";

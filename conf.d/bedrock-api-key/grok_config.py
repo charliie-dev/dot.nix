@@ -39,6 +39,24 @@ def legacy_policy(runtime: dict[str, Any]) -> dict[str, Any]:
     return policy
 
 
+def add_missing_models(document: Any, policy: dict[str, Any]) -> None:
+    models = document.get("model")
+    if not isinstance(models, dict):
+        raise ConfigError("bedrock-models-missing")
+    alias = "bedrock-haiku-5.5"
+    if alias not in models:
+        model_id, backend, suffix = policy["MODELS"][alias]
+        models[alias] = {
+            "model": model_id,
+            "api_backend": backend,
+            "base_url": policy["RUNTIME_URL"] + suffix,
+            "auth_provider": policy["PROVIDER"],
+            "extra_headers": {"anthropic-version": "2023-06-01"},
+            "context_window": 1000000,
+            "max_completion_tokens": 8192,
+        }
+
+
 def baseline(runtime: dict[str, Any]) -> tuple[dict[str, Any], bytes, dict[str, Any]]:
     policy = runpy.run_path(runtime["grok_policy"])
     path = Path(runtime["grok_home"]) / "config.toml"
@@ -48,8 +66,10 @@ def baseline(runtime: dict[str, Any]) -> tuple[dict[str, Any], bytes, dict[str, 
     valid_policies = (runtime["shell_policy"], legacy_policy(runtime))
     if document.get("shell_environment_policy") not in valid_policies:
         raise ConfigError("unexpected-shell-policy")
+    candidate = copy.deepcopy(document)
+    add_missing_models(candidate, policy)
     policy["validate_models"](
-        document, ("bedrock", policy["PROVIDER"], policy["DISABLED_PROVIDER"])
+        candidate, ("bedrock", policy["PROVIDER"], policy["DISABLED_PROVIDER"])
     )
     return document, raw, policy
 
@@ -73,8 +93,11 @@ def updated_document(
     if "auth_provider" not in document:
         document["auth_provider"] = tomlkit.table()
     document["auth_provider"][provider] = provider_table(command)
+    if not disable:
+        add_missing_models(document, policy)
     for alias in policy["MODELS"]:
-        document["model"][alias]["auth_provider"] = provider
+        if alias in document["model"]:
+            document["model"][alias]["auth_provider"] = provider
     if not disable:
         document["model"]["bedrock-grok"]["reasoning_summary"] = "none"
     document["shell_environment_policy"] = (
@@ -176,7 +199,9 @@ def migrate(
         "before_sha256": fingerprint(raw),
         "after_sha256": fingerprint(new),
         "previous_providers": {
-            alias: before["model"][alias]["auth_provider"] for alias in policy["MODELS"]
+            alias: before["model"][alias]["auth_provider"]
+            for alias in policy["MODELS"]
+            if alias in before["model"]
         },
         "previous_shell_policy": before["shell_environment_policy"],
         "restart_required": True,
@@ -198,6 +223,7 @@ def stage(runtime: dict[str, Any], root: Path) -> dict[str, Any]:
     home.mkdir(mode=0o700)
     document = tomlkit.document()
     models = tomlkit.table()
+    add_missing_models(before, policy)
     for alias in policy["MODELS"]:
         models[alias] = copy.deepcopy(before["model"][alias])
         models[alias]["auth_provider"] = policy["PROVIDER"]
@@ -251,7 +277,11 @@ def main(arguments: list[str]) -> dict[str, Any]:
             "providers": {
                 alias: document["model"][alias]["auth_provider"]
                 for alias in policy["MODELS"]
+                if alias in document["model"]
             },
+            "models_to_add": [
+                alias for alias in policy["MODELS"] if alias not in document["model"]
+            ],
         }
     if action == "stage" and len(rest) == 1:
         return stage(runtime, Path(rest[0]).absolute())

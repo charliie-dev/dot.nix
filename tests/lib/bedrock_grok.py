@@ -198,6 +198,8 @@ class GrokContracts(unittest.TestCase):
         for args in (
             ["-m", "bedrock-grok"],
             ["--model=bedrock-sonnet-5"],
+            ["--model", "bedrock-haiku-5.5"],
+            ["--model=bedrock-haiku-5.5"],
             ["-mbedrock-grok"],
         ):
             self.assertEqual(GROK["model_arguments"](list(args), allowed), args)
@@ -208,6 +210,8 @@ class GrokContracts(unittest.TestCase):
         invalid = (
             ["-m"],
             ["-m", "azure"],
+            ["--model", "global.anthropic.claude-haiku-5-5"],
+            ["--model", "global.anthropic.claude-haiku-4-5-20251001-v1:0"],
             ["--config=x"],
             ["-m", "bedrock-grok", "-m", "bedrock-grok"],
         )
@@ -308,6 +312,143 @@ class GrokContracts(unittest.TestCase):
             self.assertRaises(
                 ValueError, POLICY["validate_models"], document, ("bedrock",)
             )
+
+    def test_legacy_catalog_stages_and_publishes_only_missing_haiku(self):
+        alias = "bedrock-haiku-5.5"
+        self.document["model"].pop(alias)
+        self.document["model"]["unrelated"] = {"model": "synthetic-other"}
+        self.document["models"] = {"default_reasoning_effort": "low"}
+        self.save(self.document)
+        with self.path.open("a") as stream:
+            stream.write("\n# synthetic preserved comment\n")
+        original = self.path.read_bytes()
+        review = CONFIG["main"]([str(self.runtime_path), "check"])
+        self.assertEqual(review["models_to_add"], [alias])
+        self.assertEqual(set(review["providers"]), set(POLICY["MODELS"]) - {alias})
+        self.assertRaises(
+            ValueError, POLICY["validate_models"], self.document, ("bedrock",)
+        )
+        stage_root = self.root / "legacy-stage"
+        stage_root.mkdir(mode=0o700)
+        CONFIG["stage"](self.runtime, stage_root)
+        self.assertEqual(self.path.read_bytes(), original)
+        staged, _ = POLICY["read_config"](stage_root / "grok/config.toml")
+        expected = {
+            "model": "global.anthropic.claude-haiku-5-5",
+            "api_backend": "messages",
+            "base_url": "https://bedrock-runtime.ap-northeast-1.amazonaws.com/anthropic/v1",
+            "auth_provider": "bedrock-doppler",
+            "extra_headers": {"anthropic-version": "2023-06-01"},
+            "context_window": 1000000,
+            "max_completion_tokens": 8192,
+        }
+        self.assertEqual(staged["model"][alias], expected)
+        self.assertEqual(staged["models"], self.document["models"])
+        self.assertEqual(set(staged["model"]), set(POLICY["MODELS"]))
+        manifest = json.loads((stage_root / "manifest.json").read_text())
+        self.assertEqual(manifest["models"], list(POLICY["MODELS"]))
+        self.assertRaisesRegex(
+            ValueError,
+            "changed-since-review",
+            CONFIG["migrate"],
+            self.runtime,
+            "0" * 64,
+            False,
+        )
+        result = CONFIG["migrate"](self.runtime, review["sha256"], False)
+        self.assertNotIn(alias, result["previous_providers"])
+        published, raw = POLICY["read_config"](self.path)
+        self.assertEqual(published["model"][alias], expected)
+        expected_document = copy.deepcopy(self.document)
+        expected_document["model"][alias] = expected
+        for name in POLICY["MODELS"]:
+            expected_document["model"][name]["auth_provider"] = "bedrock-doppler"
+        expected_document["model"]["bedrock-grok"]["reasoning_summary"] = "none"
+        expected_document["shell_environment_policy"] = SHELL_POLICY
+        expected_document["auth_provider"] = {
+            "bedrock-doppler": {
+                "command": str(self.home / "bin/bedrock-api-key"),
+                "args": [],
+                "token_ttl_secs": 300,
+                "timeout_secs": 30,
+            }
+        }
+        self.assertEqual(published, expected_document)
+        self.assertIn(b"# synthetic preserved comment", raw)
+        with mock.patch.object(os, "execvpe") as execute:
+            GROK["launch"](self.runtime, ["--model", alias])
+        self.assertEqual(execute.call_args.args[1], ["grok", "--model", alias])
+        self.assertEqual(
+            CONFIG["main"]([str(self.runtime_path), "check"])["models_to_add"], []
+        )
+        CONFIG["migrate"](self.runtime, CONFIG["fingerprint"](raw), False)
+        self.assertEqual(self.path.read_bytes(), raw)
+
+    def test_missing_haiku_is_migration_only_not_runtime_compatible(self):
+        active = CONFIG["updated_document"](
+            self.runtime, self.path.read_bytes(), POLICY, disable=False
+        )
+        del active["model"]["bedrock-haiku-5.5"]
+        self.save(active)
+        CONFIG["baseline"](self.runtime)
+        with mock.patch.object(os, "execvpe") as execute:
+            self.assertRaisesRegex(
+                ValueError,
+                "grok-configuration-preflight-failed",
+                GROK["launch"],
+                self.runtime,
+                [],
+            )
+        execute.assert_not_called()
+
+    def test_migration_does_not_repair_conflicting_or_missing_legacy_models(self):
+        for field, value in (
+            ("model", "global.anthropic.claude-haiku-4-5-20251001-v1:0"),
+            ("base_url", "https://invalid.example"),
+            ("api_backend", "responses"),
+            ("auth_provider", "other"),
+            ("api_key", FAKE_KEY),
+            ("env_key", "OTHER_KEY"),
+            ("extra_headers", {"Authorization": FAKE_KEY}),
+            ("model_provider", "other"),
+            ("env_http_headers", {"Authorization": "OTHER_KEY"}),
+            ("query_params", {"api-key": FAKE_KEY}),
+        ):
+            document = copy.deepcopy(self.document)
+            document["model"]["bedrock-haiku-5.5"][field] = value
+            self.save(document)
+            raw = self.path.read_bytes()
+            self.assertRaises(ValueError, CONFIG["baseline"], self.runtime)
+            self.assertRaises(
+                ValueError,
+                CONFIG["migrate"],
+                self.runtime,
+                CONFIG["fingerprint"](raw),
+                False,
+            )
+            self.assertEqual(self.path.read_bytes(), raw)
+        for alias in POLICY["MODELS"]:
+            if alias == "bedrock-haiku-5.5":
+                continue
+            document = copy.deepcopy(self.document)
+            document["model"].pop(alias)
+            self.save(document)
+            self.assertRaises(ValueError, CONFIG["baseline"], self.runtime)
+
+    def test_disable_legacy_catalog_does_not_add_haiku(self):
+        self.document["model"].pop("bedrock-haiku-5.5")
+        self.save(self.document)
+        CONFIG["migrate"](
+            self.runtime, CONFIG["fingerprint"](self.path.read_bytes()), True
+        )
+        disabled, _ = POLICY["read_config"](self.path)
+        self.assertNotIn("bedrock-haiku-5.5", disabled["model"])
+        self.assertTrue(
+            all(
+                model["auth_provider"] == "bedrock-disabled"
+                for model in disabled["model"].values()
+            )
+        )
 
     def test_staging_preserves_nonsecret_inference_defaults(self):
         defaults = {

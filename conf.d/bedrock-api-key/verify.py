@@ -17,7 +17,7 @@ CLAUDE_MODELS = {
     "fable[1m]": "global.anthropic.claude-fable-5-1",
     "opus[1m]": "global.anthropic.claude-opus-5-5",
     "sonnet": "global.anthropic.claude-sonnet-5-5",
-    "haiku": "global.anthropic.claude-haiku-4-5-20251001-v1:0",
+    "haiku": "global.anthropic.claude-haiku-5-5",
 }
 MANUAL_GATES = (
     "native_discovery_and_counting",
@@ -35,6 +35,7 @@ GROK_MODELS = {
     "bedrock-fable-5.1",
     "bedrock-opus-5.5",
     "bedrock-sonnet-5",
+    "bedrock-haiku-5.5",
 }
 KNOWN_MODEL_LABELS = (
     GROK_MODELS
@@ -46,6 +47,7 @@ KNOWN_MODEL_LABELS = (
             *CLAUDE_MODELS.values(),
             "global.xai.grok-4.6",
             "global.anthropic.claude-sonnet-5",
+            "global.anthropic.claude-haiku-4-5-20251001-v1:0",
         }
         for prefix in ("", "global.", "global.anthropic.", "global.xai.")
     }

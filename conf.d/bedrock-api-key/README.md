@@ -67,6 +67,12 @@ stage=$(mktemp -d "${TMPDIR:-/tmp}/bedrock-stage.XXXXXX")
 ```
 
 `stage` 只建立白名單模型、嚴格 shell policy 與指向 build output 的 provider。
+`check`、`stage` 與 `publish` 接受尚未包含 `bedrock-haiku-5.5` 的舊四模型設定；
+`check.models_to_add` 列出待新增項目。`stage`／`publish` 只在該 alias 缺席時新增，
+使用 Global Haiku 5.5、Tokyo Messages endpoint、`bedrock-doppler`、1M context 及
+8192 output tokens；不指定新的 effort。既有 alias 的自訂欄位保留，routing／認證衝突
+仍會停止。受控 launcher 與驗收器要求完整五模型設定；先完成 staging／publish 再切換。
+`disable` 只停用已有的 aliases，不替舊設定新增 Haiku。
 `stage` 與 `publish` 會把 `model.bedrock-grok.reasoning_summary` 設為 `"none"`，
 讓 Grok 省略 Bedrock 拒絕的 `reasoning.summary` 請求欄位。受控 Grok launcher 與
 驗收器在啟動前要求這個值；缺少或不同值會停止。舊設定仍可供檢視、staging 與遷移。
@@ -83,6 +89,9 @@ Bootstrap 前後仍比對設定內容雜湊與解析後的執行檔路徑；同�
 共用 Sonnet pin 為 `global.anthropic.claude-sonnet-5-5`；官方要求 Claude Code
 2.1.284 以上才能使用 Sonnet 5.5，此為相容性資訊，launcher 不強制版本下限。
 Grok 的 `bedrock-sonnet-5` 維持 Sonnet 5，IAM 模板同時保留兩個 Sonnet 版本。
+Claude Haiku pin 與 Grok `bedrock-haiku-5.5` 共用 `global.anthropic.claude-haiku-5-5`；
+Claude 顯示名稱為 `Bedrock Claude Haiku 5.5`。官方要求 Claude Code 2.1.293 以上，
+版本下限仍僅作相容性資訊。Opus 預設、Sonnet fallback 與所有既有 effort 選值不變。
 `enableSecrets` 控制程式部署；Linux 的 Claude 執行仍會被既有平台檢查拒絕，須另做相容性審查。
 它支援 standalone CLI 與既有普通 linked worktree；建立新 worktree、remote／host-managed
 session、SDK stream-input 等會改變有效來源的入口會停止，須另做相容性審查。
@@ -137,7 +146,7 @@ doppler --config-dir "$HOME/.doppler" configure flags disable analytics
 ## 3. 使用者真實驗收
 
 先檢查並關閉測試不需要的自訂 plugins／hooks，保持模型工具權限為唯讀。
-基礎 driver 對 Grok 四個模型、Claude 四個模型各送一個提示，模型可能再進行多次呼叫；
+基礎 driver 對 Grok 五個模型、Claude 四個模型各送一個提示，模型可能再進行多次呼叫；
 主流程上限為每個提示四 turns，按正常模型費率計費。執行 `--run` 代表確認這些測試。
 Claude 測試使用 `--strict-mcp-config` 搭配 `--mcp-config '{"mcpServers":{}}'`，
 指定符合原生 schema 的空設定，並保留 `Read` 工具限定及 MCP 工具拒絕規則。
@@ -233,7 +242,7 @@ expected_hash=$(printf '%s' "$review" | jq -r .sha256)
 home-manager switch --flake "$HM#charles@24041-LABNB01"
 ```
 
-Publisher 更新四個 provider 引用、新 provider table、有序 shell policy，並將
+Publisher 更新五個 provider 引用（缺少時只新增 Haiku alias）、新 provider table、有序 shell policy，並將
 `model.bedrock-grok.reasoning_summary` 設為 `"none"`；保留其他內容與
 mode／owner／ACL／xattrs。`disable` 保留當時的 reasoning summary 設定。
 Hash 不符或 metadata 不能保留時停止。
@@ -250,9 +259,11 @@ claude
 claude-bedrock --model 'fable[1m]'
 claude-bedrock --model 'opus[1m]'
 claude-bedrock --model sonnet
+claude-bedrock --model haiku
+grok-bedrock --model bedrock-haiku-5.5
 ```
 
-原 `grok` 仍经 Azure launcher，可選四個 Bedrock aliases。
+原 `grok` 仍经 Azure launcher，可選五個 Bedrock aliases。
 `grok-bedrock` 的 Azure fork／其他 provider 輔助功能仍有各自的認證需求。
 
 ## 輪替與回復
@@ -271,7 +282,7 @@ B 有問題且 A 仍有效時，使用者從正確的單 key history 取得 A，
 排他寫入窗口是操作前提；前後比對沒有提供 API 未支援的 compare-and-swap。
 未知結果、無法確認的並行編輯或 history 問題都會停止。
 
-本機回復到舊 generation 前，先停用四個 Bedrock aliases，還原對應的舊 policy 清單：
+本機回復到舊 generation 前，先停用所有已配置的 Bedrock aliases，還原對應的舊 policy 清單：
 
 ```sh
 review=$("$grok_config" check)
@@ -410,3 +421,56 @@ discovery／counting、fallback、1M budget 及背景流程，依上方使用者
 
 [release-284]: https://downloads.claude.ai/claude-code-releases/2.1.284/manifest.json
 [model-config]: https://code.claude.com/docs/en/model-config
+
+## Haiku 5.5 公開來源更新（2026-10-08）
+
+依 [AWS 官方 model card][haiku-55]，foundation ID 為
+`anthropic.claude-haiku-5-5`，Global profile 為 `global.anthropic.claude-haiku-5-5`，
+支援 Tokyo 入口與原生 1M context，最大輸出 128K。此配置採使用者選定的 Global route；
+Grok 新增 alias 的輸出上限維持本次核准的 8192，不提高到服務上限。
+AWS 記載 adaptive thinking 預設 medium，支援 low／medium／high／xhigh／max；
+本次不改既有 effort preferences，也不另設新 alias 的 effort。
+Runtime CountTokens 不支援此模型；驗收須將正常能力限制與認證／IAM 錯誤分開，
+不可把 counting 不支援當作通過或放寬模型識別核對。
+
+[Claude model config][model-config] 要求 Haiku 5.5 使用 2.1.293 以上。
+本次協調流程已確認 Claude Code 2.1.293、Grok 1.0.46；使用者批准 Marketplace offer
+後已完成開通，Tokyo 查詢確認模型 AVAILABLE；後續 IAM 與實測結果分別記錄於下方。
+Haiku 4.5 ID 仍可輸出為白名單診斷標籤，但不符合升級後 Haiku caller 的 response identity。
+
+公開來源的合成測試通過：Grok helper／migration 25 項、Claude launcher 95 項、
+verifier 39 項，共 159 項且無 skips；Python Ruff lint／format、Nix format 與 Bats
+ShellCheck 通過。協調端另執行 `mise run ci:bedrock-api-key`，25 項必要 Bats 全部通過且無 skips。
+Nix candidate build 成功，四個修改後的 Python 元件與 generated Haiku overlay 均核對一致。
+候選 manifest：`/nix/store/krr71l95wcq3v1pl4ijgkw4n52fyii6d-bedrock-build-manifest.json`。
+
+IAM 已部署為 `UPDATE_COMPLETE`：Claude policy / boundary 為 `v2`，其他 policy 維持
+`v1`，完整 document 核對與四份 Access Analyzer validation 通過。
+77 組、221 筆資源層級 IAM simulation 通過；詳細紀錄位於 AWS 專案 `infra/README.md`。
+
+候選 preflight 回報 `status=ok`、Haiku 5.5 pin 正確、沒有 credential helpers 或 persisted bearer。
+隔離 staging 成功；以維護中的 verifier 各啟動一次新程序，Claude `haiku` 與 Grok
+`bedrock-haiku-5.5` 都完成 Read 工具往返並回報 `base-smoke-passed`。
+兩者的 `response_model_verified=true`、`model_identity_source=model-id`，回報 context 為 1000000。
+`wire_model_id_verified=false`；實際 1M 容量、背景／插件及 warm-cache 等完整整合 gates
+仍未因此被驗證，verifier 的 `deployment_ready` 維持 false。
+
+使用者已親自執行 publish / Home Manager switch，啟用 generation 70：
+`/nix/store/pyc465jrg947ah94njpfz7rrf9hx4jjv-home-manager-generation`。
+Active manifest 與上述測試候選完全相同；provider helper symlink、安裝中的
+`claude-bedrock` / `grok-bedrock` 執行檔也都指向測試過的 build。
+正式 Grok `bedrock-haiku-5.5` 已核對 Tokyo Messages、`bedrock-doppler`、1M context、
+8192 output tokens、anthropic-version header；config mode 為 0600，沒有 inline credentials。
+Grok 預設維持 `azure-astra`。Claude overlay 與候選相同，Haiku pin 為 5.5，
+預設 `opus[1m]`、fallback `sonnet` 不變；切換後 preflight 回報 `status=ok`。
+既有 CLI session 需重新啟動才能載入新設定。
+
+切換前 generation 69 保留作回復參考：
+`/nix/store/iq71lw3p60mp50skddd76zcr8dh2zsrz-home-manager-generation`。
+先前完整 activation candidate 為
+`/nix/store/z0m967426kv6hq6qdw3p82raly35rs60-home-manager-generation`；
+除 Bedrock 元件外，已核對的 zsh/profile/font marker 差異只有 Nix store path hash，
+本機 Usercommand 內容一致，`nix store diff-closures` 沒有版本或大小差異輸出。
+Activation 包含 `sops-nix-sync` 與 `dockerCredentials`，此類正式切換仍由使用者親自執行。
+
+[haiku-55]: https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-haiku-5-5.html

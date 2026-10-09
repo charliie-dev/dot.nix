@@ -242,7 +242,8 @@ assert env["AWS_SHARED_CREDENTIALS_FILE"] == manifest["empty_aws_credentials"]
 assert env["CLAUDE_CODE_SUBPROCESS_ENV_SCRUB"] == "1"
 assert env["ANTHROPIC_DEFAULT_OPUS_MODEL"] == "global.anthropic.claude-opus-5-5[1m]"
 assert env["ANTHROPIC_DEFAULT_FABLE_MODEL"] == "global.anthropic.claude-fable-5-1[1m]"
-assert env["ANTHROPIC_DEFAULT_HAIKU_MODEL"] == "global.anthropic.claude-haiku-4-5-20251001-v1:0"
+assert env["ANTHROPIC_DEFAULT_HAIKU_MODEL"] == "global.anthropic.claude-haiku-5-5"
+assert env["ANTHROPIC_DEFAULT_HAIKU_MODEL_NAME"] == "Bedrock Claude Haiku 5.5"
 assert overlay["model"] == "opus[1m]" and overlay["fallbackModel"] == ["sonnet"]
 spec = importlib.util.spec_from_file_location("bedrock_claude_store", manifest["claude_script"])
 module = importlib.util.module_from_spec(spec)
