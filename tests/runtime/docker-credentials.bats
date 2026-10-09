@@ -53,6 +53,68 @@ config_hash() {
   shasum -a 256 "$DOCKER_CONFIG" | awk '{print $1}'
 }
 
+run_darwin_bootstrap() {
+  run "$PROGRAM" \
+    --home "$HOME_DIR" \
+    --xdg-config "$XDG_CONFIG" \
+    --xdg-data "$XDG_DATA" \
+    --docker-config "$DOCKER_CONFIG" \
+    --lock "$LOCK" \
+    --gnupg-home "$GNUPG_HOME" \
+    --password-store "$PASSWORD_STORE" \
+    --store osxkeychain
+}
+
+@test "Darwin preserves the working gcloud GAR helper and unrelated Docker settings" {
+  [ "$(uname -s)" = Darwin ] || skip "Darwin helper policy"
+  mkdir -m 700 "$(dirname "$DOCKER_CONFIG")"
+  printf '%s\n' '{"credsStore":"osxkeychain","credHelpers":{"asia-east1-docker.pkg.dev":"gcloud","registry.invalid":"other"},"currentContext":"colima","auths":{"registry.invalid":{}}}' > "$DOCKER_CONFIG"
+  chmod 600 "$DOCKER_CONFIG"
+  run_darwin_bootstrap
+  if [ "$status" -ne 0 ]; then
+    echo "$output" >&2
+    return 1
+  fi
+  jq -e '
+    .credsStore == "osxkeychain"
+    and .credHelpers["asia-east1-docker.pkg.dev"] == "gcloud"
+    and .credHelpers["registry.invalid"] == "other"
+    and .currentContext == "colima"
+    and .auths == {"registry.invalid":{}}
+  ' "$DOCKER_CONFIG" >/dev/null
+  before="$(config_hash)"
+  run_darwin_bootstrap
+  [ "$status" -eq 0 ]
+  [ "$(config_hash)" = "$before" ]
+  [ ! -e "$GNUPG_HOME" ]
+  [ ! -e "$PASSWORD_STORE" ]
+}
+
+@test "Darwin initializes the declared gcloud GAR helper" {
+  [ "$(uname -s)" = Darwin ] || skip "Darwin helper policy"
+  run_darwin_bootstrap
+  [ "$status" -eq 0 ]
+  jq -e '.credsStore == "osxkeychain" and .credHelpers["asia-east1-docker.pkg.dev"] == "gcloud"' \
+    "$DOCKER_CONFIG" >/dev/null
+  [ "$(stat -f '%Lp' "$DOCKER_CONFIG")" = 600 ]
+  [ ! -e "$GNUPG_HOME" ]
+  [ ! -e "$PASSWORD_STORE" ]
+}
+
+@test "Darwin rejects a conflicting GAR helper without replacing Docker config" {
+  [ "$(uname -s)" = Darwin ] || skip "Darwin helper policy"
+  mkdir -m 700 "$(dirname "$DOCKER_CONFIG")"
+  printf '%s\n' '{"credHelpers":{"asia-east1-docker.pkg.dev":"gcr"}}' > "$DOCKER_CONFIG"
+  chmod 600 "$DOCKER_CONFIG"
+  before="$(config_hash)"
+  run_darwin_bootstrap
+  [ "$status" -ne 0 ]
+  [[ "$output" == *"conflicting GAR credential helper"* ]]
+  [ "$(config_hash)" = "$before" ]
+  [ ! -e "$GNUPG_HOME" ]
+  [ ! -e "$PASSWORD_STORE" ]
+}
+
 assert_exact_key() {
   public="$(GNUPGHOME="$GNUPG_HOME" gpg --batch --with-colons --fixed-list-mode --with-fingerprint --list-keys)"
   secret="$(GNUPGHOME="$GNUPG_HOME" gpg --batch --with-colons --fixed-list-mode --with-fingerprint --list-secret-keys)"
@@ -72,7 +134,11 @@ assert_exact_key() {
   [ "$(stat -f '%Lp' "$PASSWORD_STORE")" = 700 ]
   [ "$(stat -f '%Lp' "$PASSWORD_STORE/.gpg-id")" = 600 ]
   [ ! -e "$BOOTSTRAP_MARKER" ]
-  jq -e '.credsStore == "pass" and .credHelpers["asia-east1-docker.pkg.dev"] == "gcr"' \
+  helper=gcr
+  if [ "$(uname -s)" = Darwin ]; then
+    helper=gcloud
+  fi
+  jq -e --arg helper "$helper" '.credsStore == "pass" and .credHelpers["asia-east1-docker.pkg.dev"] == $helper' \
     "$DOCKER_CONFIG" >/dev/null
   assert_exact_key
 }

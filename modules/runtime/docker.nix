@@ -12,7 +12,9 @@ let
   passwordStoreDir = "${config.xdg.dataHome}/password-store";
   gpgHome = "${config.xdg.dataHome}/gnupg";
   credentialsStore = if isLinux then "pass" else "osxkeychain";
-  garRegistries = [ "asia-east1-docker.pkg.dev" ];
+  garCredentialHelpers = {
+    "asia-east1-docker.pkg.dev" = if isLinux then "gcr" else "gcloud";
+  };
   # The docker CLI itself is not from nixpkgs: Linux hosts use the apt docker,
   # macOS gets it from mise (aqua:docker/cli) so it can track colima's dockerd.
   dockerPackages = [
@@ -45,7 +47,7 @@ let
         UID = "Home Manager Docker Credentials <docker-credentials@localhost>"
         BOOTSTRAP_MARKER_NAME = ".home-manager-docker-bootstrap-in-progress"
         BOOTSTRAP_MARKER_CONTENT = b"bootstrap-in-progress\n"
-        GAR_REGISTRIES = ${builtins.toJSON garRegistries}
+        GAR_CREDENTIAL_HELPERS = ${builtins.toJSON garCredentialHelpers}
 
         def fail(message):
             raise SystemExit("docker credentials: " + message)
@@ -173,8 +175,8 @@ let
                 fail("inline Docker auth/token credentials are not allowed")
             if store not in (None, "", args.store):
                 fail("Docker config has a conflicting credsStore")
-            for registry in GAR_REGISTRIES:
-                if helpers is not None and helpers.get(registry, "gcr") != "gcr":
+            for registry, helper in GAR_CREDENTIAL_HELPERS.items():
+                if helpers is not None and helpers.get(registry, helper) != helper:
                     fail("Docker config has a conflicting GAR credential helper")
             return document, content, source_identity
 
@@ -456,8 +458,7 @@ let
         def replace_config(path, document, expected_identity, expected_content):
             document["credsStore"] = args.store
             helpers = document.get("credHelpers") or {}
-            for registry in GAR_REGISTRIES:
-                helpers[registry] = "gcr"
+            helpers.update(GAR_CREDENTIAL_HELPERS)
             document["credHelpers"] = helpers
             rendered = (json.dumps(document, indent=2, sort_keys=True) + "\n").encode()
             fd, temporary = tempfile.mkstemp(prefix=".config.json.", dir=os.path.dirname(path))
