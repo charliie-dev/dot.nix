@@ -48,20 +48,19 @@ assert_matrix() {
   name="$1"
   app="$2"
   ssh="$3"
-  if ! jq -e --arg name "$name" --argjson app "$app" --argjson ssh "$ssh" '
+  sign="$4"
+  if ! jq -e --arg name "$name" --argjson app "$app" --argjson ssh "$ssh" --argjson sign "$sign" '
     .hosts[$name] as $h
     | ($h.secrets | sort) ==
-        (if $app and $ssh then
-           ["allowed_signers", "doppler_token", "host_configuration", "ssh_ed25519", "ssh_ed25519_pub", "typesafe_api_key"]
-         elif $ssh then
-           ["allowed_signers", "host_configuration", "ssh_ed25519", "ssh_ed25519_pub"]
-         elif $app then ["doppler_token", "typesafe_api_key"] else [] end)
+        ((if $app then ["doppler_token", "typesafe_api_key"] else [] end)
+         + (if $ssh then ["host_configuration", "ssh_ed25519", "ssh_ed25519_pub"] else [] end)
+         + (if $sign then ["ssh_signing_ed25519"] else [] end) | sort)
     and $h.hasDopplerPackage == $app
     and $h.hasDopplerWrapper == $app
     and $h.hostInclude == $ssh
     and $h.identityFile == $ssh
     and ($h.signingKey != null) == $ssh
-    and ($h.allowedSigners != null) == $ssh
+    and ($h.allowedSigners != null) == $sign
     and $h.zshHostPreview == $ssh
     and $h.authorizedEnabled == $ssh
     and $h.sopsSyncActive == ($app or $ssh)
@@ -76,16 +75,17 @@ assert_matrix() {
   for host in \
     'charles@24041-LABNB01' 'charles@24041-LABNB01.local' \
     'charles@callisto' 'charles@pluto'; do
-    assert_matrix "$host" true true
+    assert_matrix "$host" true true true
   done
 }
 
-@test "RDSrv01 and all four shared aliases have SSH baseline without Doppler" {
+@test "RDSrv01 and all shared aliases have SSH baseline without Doppler" {
   for host in \
-    'charles@RDSrv01' 'charles@ra-lab' \
-    'charles@dcf-dev' 'charles@prod-deploy' 'charles@ra06-claude'; do
-    assert_matrix "$host" false true
+    'charles@RDSrv01' 'charles@rdsrv02' 'charles@ra-lab' \
+    'charles@prod-deploy' 'charles@ra06-claude'; do
+    assert_matrix "$host" false true false
   done
+  assert_matrix 'charles@dcf-dev' false true true
 }
 
 @test "synthetic unspecified policy evaluates to both groups disabled" {
