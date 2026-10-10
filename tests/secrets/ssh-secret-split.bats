@@ -75,14 +75,14 @@ assert_matrix() {
 @test "application-enabled fleet hosts retain both secret groups" {
   for host in \
     'charles@24041-LABNB01' 'charles@24041-LABNB01.local' \
-    'charles@callisto' 'charles@pluto' 'charles@tmp-gpu'; do
+    'charles@callisto' 'charles@pluto'; do
     assert_matrix "$host" true true
   done
 }
 
-@test "RDSrv01 and all six shared aliases have SSH baseline without Doppler" {
+@test "RDSrv01 and all four shared aliases have SSH baseline without Doppler" {
   for host in \
-    'charles@RDSrv01' 'charles@ra-lab' 'charles@nate-test' 'charles@testvm' \
+    'charles@RDSrv01' 'charles@ra-lab' \
     'charles@dcf-dev' 'charles@prod-deploy' 'charles@ra06-claude'; do
     assert_matrix "$host" false true
   done

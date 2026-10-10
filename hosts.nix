@@ -41,18 +41,18 @@
     enableSigningAgent = true;
     silent = true;
   };
-  "charles@tmp-gpu" = {
-    system = "x86_64-linux";
-    roles = [
-      "dev-core"
-      "dev-extra"
-      "top"
-    ];
-    homeDirectory = "/home/charles";
-    nvidiaGpu = true;
-    enableSecrets = true;
-    silent = true;
-  };
+  # "charles@tmp-gpu" = {
+  #   system = "x86_64-linux";
+  #   roles = [
+  #     "dev-core"
+  #     "dev-extra"
+  #     "top"
+  #   ];
+  #   homeDirectory = "/home/charles";
+  #   nvidiaGpu = true;
+  #   enableSecrets = true;
+  #   silent = true;
+  # };
 
   # Canonical VPS config (built once)
   "charles@RDSrv01" = {
@@ -69,21 +69,6 @@
     system = "x86_64-linux";
     enableSecrets = false;
   };
-  "charles@ra-lab" = {
-    sharedConfig = "charles@RDSrv01";
-    system = "x86_64-linux";
-    enableSecrets = false;
-  };
-  "charles@nate-test" = {
-    sharedConfig = "charles@RDSrv01";
-    system = "x86_64-linux";
-    enableSecrets = false;
-  };
-  "charles@testvm" = {
-    sharedConfig = "charles@RDSrv01";
-    system = "x86_64-linux";
-    enableSecrets = false;
-  };
   "charles@dcf-dev" = {
     sharedConfig = "charles@RDSrv01";
     system = "x86_64-linux";
@@ -91,6 +76,11 @@
     enableSigningAgent = true;
   };
   "charles@prod-deploy" = {
+    sharedConfig = "charles@RDSrv01";
+    system = "x86_64-linux";
+    enableSecrets = false;
+  };
+  "charles@ra-lab" = {
     sharedConfig = "charles@RDSrv01";
     system = "x86_64-linux";
     enableSecrets = false;
