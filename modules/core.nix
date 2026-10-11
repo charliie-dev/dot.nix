@@ -102,7 +102,6 @@
       COPILOT_HOME = "${config.xdg.configHome}/copilot";
       GROK_HOME = "${config.xdg.configHome}/grok";
       MCP_REMOTE_CONFIG_DIR = "${config.xdg.dataHome}/mcp-auth";
-      ASIDE_HOME = "${config.xdg.dataHome}/aside";
       PI_CODING_AGENT_DIR = "${config.xdg.configHome}/pi";
       PI_CODING_AGENT_SESSION_DIR = "${config.xdg.dataHome}/pi/sessions";
       # Vertex AI 上的 Claude。Claude Code 從自己的 settings.json env 取得這兩個

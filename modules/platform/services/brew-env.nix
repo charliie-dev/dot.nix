@@ -1,6 +1,6 @@
 # Darwin brew-env — 登入時把 code-agent 的 *_HOME 與 grok 隱私釘子設為 launchd
 # 全域環境變數(gui domain),讓「非經 shell 啟動」的程式也解析到 XDG 路徑:
-#   - GUI app:ChatGPT.app 內建的 codex(讀 CODEX_HOME)、Aside.app 的 daemon(讀 ASIDE_HOME)
+#   - GUI app:ChatGPT.app 內建的 codex(讀 CODEX_HOME)
 #   - Dock/Finder/launchd 啟動的任何 brew cask / CLI
 # shell 啟動的 CLI 已由 home.sessionVariables 覆蓋;此 agent 補上 GUI 那一段。
 #
@@ -32,7 +32,6 @@ let
     /bin/launchctl setenv COPILOT_HOME "${env.COPILOT_HOME}"
     /bin/launchctl setenv GROK_HOME "${env.GROK_HOME}"
     /bin/launchctl setenv MCP_REMOTE_CONFIG_DIR "${env.MCP_REMOTE_CONFIG_DIR}"
-    /bin/launchctl setenv ASIDE_HOME "${env.ASIDE_HOME}"
     # brew 版 doppler CLI,作用面見檔案開頭的例外說明。不用 shell 端的值是因為
     # 那個目錄的 / scope 帶 login token,設進 gui domain 等於把整個專案的憑證
     # 發給每個 GUI 啟動的行程(還會進 crash report、subprocess env dump)。
