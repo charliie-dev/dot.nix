@@ -38,3 +38,11 @@ build_agent_script() {
   # [ -O ] 是 bash 的 test 運算子;換成 dash 會靜默永不 setenv
   head -n1 "$script" | grep -q 'bash'
 }
+
+@test "the built agent script publishes the XDG tool paths to launchd" {
+  script="$(build_agent_script)"
+  grep -Fq "setenv BUN_INSTALL \"$HOME/.local/share/bun\"" "$script"
+  grep -Fq "setenv BUN_INSTALL_CACHE_DIR \"$HOME/.cache/bun-install\"" "$script"
+  grep -Fq "setenv NPM_CONFIG_USERCONFIG \"$HOME/.config/npm/npmrc\"" "$script"
+  grep -Fq "setenv TF_CLI_CONFIG_FILE \"$HOME/.config/terraform/terraformrc\"" "$script"
+}
