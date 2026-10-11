@@ -287,8 +287,14 @@ class PublicArtifacts(Fixture):
 
     def test_public_overlay_pins_and_display_names(self):
         env = L.validate_overlay(self.runtime)
-        self.assertTrue(env["ANTHROPIC_DEFAULT_FABLE_MODEL"].endswith("[1m]"))
-        self.assertTrue(env["ANTHROPIC_DEFAULT_OPUS_MODEL"].endswith("[1m]"))
+        # Claude Code 2.1.287+ gives Fable and Opus 4.7+ native 1M on Bedrock.
+        self.assertEqual(
+            env["ANTHROPIC_DEFAULT_FABLE_MODEL"], "global.anthropic.claude-fable-5-1"
+        )
+        self.assertEqual(
+            env["ANTHROPIC_DEFAULT_OPUS_MODEL"], "global.anthropic.claude-opus-5-5"
+        )
+        self.assertFalse(any(pin.endswith("[1m]") for pin in L.MODEL_PINS.values()))
         self.assertEqual(env["CLAUDE_CODE_SUBPROCESS_ENV_SCRUB"], "1")
         self.assertNotIn(L.KEY_NAME, env)
 

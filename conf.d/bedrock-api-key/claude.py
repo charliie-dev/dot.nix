@@ -22,8 +22,8 @@ BOOTSTRAP_TIMEOUT = 20.0
 STORE_ROOT = Path("/nix/store")
 SCRIPT_PATH = Path(__file__).resolve()
 MODEL_PINS = {
-    "FABLE": "global.anthropic.claude-fable-5-1[1m]",
-    "OPUS": "global.anthropic.claude-opus-5-5[1m]",
+    "FABLE": "global.anthropic.claude-fable-5-1",
+    "OPUS": "global.anthropic.claude-opus-5-5",
     "SONNET": "global.anthropic.claude-sonnet-5-5",
     "HAIKU": "global.anthropic.claude-haiku-5-5",
 }

@@ -40,8 +40,8 @@ let
         AWS_SECRET_ACCESS_KEY = "";
         AWS_SESSION_TOKEN = "";
         AWS_SECURITY_TOKEN = "";
-        ANTHROPIC_DEFAULT_FABLE_MODEL = "global.anthropic.claude-fable-5-1[1m]";
-        ANTHROPIC_DEFAULT_OPUS_MODEL = "global.anthropic.claude-opus-5-5[1m]";
+        ANTHROPIC_DEFAULT_FABLE_MODEL = "global.anthropic.claude-fable-5-1";
+        ANTHROPIC_DEFAULT_OPUS_MODEL = "global.anthropic.claude-opus-5-5";
         ANTHROPIC_DEFAULT_SONNET_MODEL = "global.anthropic.claude-sonnet-5-5";
         ANTHROPIC_DEFAULT_HAIKU_MODEL = "global.anthropic.claude-haiku-5-5";
         ANTHROPIC_DEFAULT_FABLE_MODEL_NAME = "Bedrock Claude Fable 5.1";
