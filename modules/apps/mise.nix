@@ -44,6 +44,7 @@
 
         # Formatters
         "aqua:apple/pkl" = "latest"; # Pkl CLI: format, eval and analyze (hk.pkl)
+        "go:github.com/hashicorp/hcl/v2/cmd/hclfmt" = "latest"; # generic HCL (.tflint.hcl, *.tftest.hcl)
         "go:golang.org/x/tools/cmd/goimports" = "latest";
         "go:mvdan.cc/gofumpt" = "latest";
         "npm:fixjson" = "latest";
