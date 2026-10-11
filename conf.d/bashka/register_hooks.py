@@ -38,8 +38,11 @@ def merge(original, action):
     hooks = result.get("hooks", {})
     if not isinstance(hooks, dict):
         raise Conflict("hooks must be an object")
-    expected = {"type": "command", "command": shlex.quote(HANDLER), "timeout": 10}
-    matches = own_hooks(hooks, expected)
+    # onFailure "block" (Claude Code >= 2.1.295) turns a crash, start failure or host
+    # timeout into a deny instead of failing open. Grok ignores the key and fails open.
+    legacy = {"type": "command", "command": shlex.quote(HANDLER), "timeout": 10}
+    expected = {**legacy, "onFailure": "block"}
+    matches = own_hooks(hooks, (expected, legacy))
     if len(matches) > 1:
         raise Conflict("duplicate Bashka hooks")
     if action == "install" and not matches:
@@ -47,6 +50,9 @@ def merge(original, action):
             {"matcher": "Bash", "hooks": [expected]}
         )
         result["hooks"] = hooks
+    if action == "install" and matches:
+        group_index, hook_index = matches[0]
+        hooks["PreToolUse"][group_index]["hooks"][hook_index] = dict(expected)
     if action == "remove" and matches:
         group_index, hook_index = matches[0]
         groups = hooks["PreToolUse"]
@@ -60,17 +66,18 @@ def merge(original, action):
     return result
 
 
-def own_hooks(hooks, expected):
+def own_hooks(hooks, accepted):
     matches = []
     for event, groups in hooks.items():
         if not isinstance(groups, list):
             raise Conflict("hook event groups must be arrays")
         for index, group in enumerate(groups):
-            check_group(event, index, group, expected, matches)
+            check_group(event, index, group, accepted, matches)
     return matches
 
 
-def check_group(event, index, group, expected, matches):
+def check_group(event, index, group, accepted, matches):
+    expected = accepted[0]
     if not isinstance(group, dict) or not isinstance(group.get("hooks"), list):
         raise Conflict("invalid hook group")
     for hook_index, hook in enumerate(group["hooks"]):
@@ -81,7 +88,11 @@ def check_group(event, index, group, expected, matches):
             raise Conflict("invalid hook command")
         if command != expected["command"] and HANDLER not in command:
             continue
-        if hook != expected or event != "PreToolUse" or group.get("matcher") != "Bash":
+        if (
+            hook not in accepted
+            or event != "PreToolUse"
+            or group.get("matcher") != "Bash"
+        ):
             raise Conflict("conflicting Bashka registration; reconcile it manually")
         matches.append((index, hook_index))
 

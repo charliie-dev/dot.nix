@@ -92,13 +92,19 @@ Installer arguments follow two literal `--` arguments, yielding native
 Budgets are shared across nested parses: 1 MiB JSON, 1 MiB cumulative UTF-8 source,
 50,000 AST nodes, depth 32, eight nested parses, two seconds of parser/AST work,
 and three seconds total including stdin. Registration sets a ten-second host
-timeout. Tree-sitter 0.25.2 needs a callable source and a two-argument
+timeout and `"onFailure": "block"` (Claude Code 2.1.295 or later), so in Claude a
+handler that cannot start, crashes with an exit code other than 0 or 2, prints
+unparseable JSON, or reaches the host timeout blocks the Bash call instead of
+letting it through. Grok ignores `onFailure` and stays fail-open; it has no
+equivalent handler field. `install` upgrades an existing registration that lacks
+`onFailure` in place; `remove` accepts either form. Tree-sitter 0.25.2 needs a callable source and a two-argument
 `progress_callback(offset, has_error)`; parsing bytes ignores progress callbacks.
 Original UTF-8 slices, not `node.text`, supply node content.
 
-Host startup failures, crashes, external timeouts, extreme scheduling pauses, or
-other hooks rewriting input afterward can bypass this guard. These platforms can
-fail open; this integration does not claim platform-level fail-closed behavior.
+In Grok, and in Claude before 2.1.295, host startup failures, crashes and external
+timeouts still fail open. On every platform, extreme scheduling pauses or other
+hooks rewriting input afterward can bypass this guard; this integration does not
+claim platform-level fail-closed behavior beyond Claude's `onFailure`.
 
 ## User-run deployment
 

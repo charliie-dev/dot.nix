@@ -1066,6 +1066,7 @@ class Registration(Fixture):
                         "type": "command",
                         "command": shlex.quote(REGISTER.HANDLER),
                         "timeout": 10,
+                        "onFailure": "block",
                     }
                 ],
             },
@@ -1111,6 +1112,31 @@ class Registration(Fixture):
             self.assertEqual(REGISTER.merge(installed, "install"), installed)
             self.assertEqual(REGISTER.merge(installed, "remove"), self.original)
 
+    def test_upgrades_legacy_registration_in_place(self):
+        legacy = {
+            "type": "command",
+            "command": shlex.quote(REGISTER.HANDLER),
+            "timeout": 10,
+        }
+        other = {"type": "command", "command": "unrelated"}
+        original = json.loads(json.dumps(self.original))
+        original["hooks"]["PreToolUse"].append(
+            {"matcher": "Bash", "hooks": [other, legacy]}
+        )
+        self.settings.write_text(json.dumps(original))
+        self.assertTrue(self.update("install"))
+        current = json.loads(self.settings.read_bytes())
+        self.assertEqual(len(current["hooks"]["PreToolUse"]), 2)
+        self.assertEqual(
+            current["hooks"]["PreToolUse"][1]["hooks"],
+            [other, {**legacy, "onFailure": "block"}],
+        )
+        current["hooks"]["PreToolUse"][1]["hooks"][1] = legacy
+        self.assertEqual(current, original)
+        self.assertFalse(self.update("install"))
+        removed = REGISTER.merge(original, "remove")
+        self.assertEqual(removed["hooks"]["PreToolUse"][1]["hooks"], [other])
+
     def test_missing_file_and_mixed_group(self):
         self.settings.unlink()
         self.assertTrue(self.update("install"))
@@ -1142,6 +1168,16 @@ class RegistrationSafety(Registration):
         installed["hooks"]["PreToolUse"][-1]["hooks"][0]["timeout"] = 1
         with self.assertRaises(REGISTER.Conflict):
             REGISTER.merge(installed, "remove")
+        installed = REGISTER.merge(self.original, "install")
+        installed["hooks"]["PreToolUse"][-1]["hooks"][0]["onFailure"] = "continue"
+        for action in ["install", "remove"]:
+            with self.assertRaises(REGISTER.Conflict):
+                REGISTER.merge(installed, action)
+        legacy = REGISTER.merge(self.original, "install")
+        del legacy["hooks"]["PreToolUse"][-1]["hooks"][0]["onFailure"]
+        legacy["hooks"]["PreToolUse"].append(legacy["hooks"]["PreToolUse"][-1])
+        with self.assertRaises(REGISTER.Conflict):
+            REGISTER.merge(legacy, "install")
 
     def test_symlink_hardlink_fifo_and_owner(self):
         original = self.settings.read_bytes()
