@@ -46,3 +46,10 @@ build_agent_script() {
   grep -Fq "setenv NPM_CONFIG_USERCONFIG \"$HOME/.config/npm/npmrc\"" "$script"
   grep -Fq "setenv TF_CLI_CONFIG_FILE \"$HOME/.config/terraform/terraformrc\"" "$script"
 }
+
+@test "collie is restarted after the env is published, tolerating its absence" {
+  script="$(build_agent_script)"
+  # kickstart 必須在所有 setenv 之後,否則 collie 仍會拿到舊環境
+  [ "$(grep -n 'launchctl' "$script" | tail -n1 | grep -c 'kickstart -k')" = 1 ]
+  grep -Fq 'kickstart -k "gui/$(/usr/bin/id -u)/herdr.collie" 2>/dev/null || true' "$script"
+}
