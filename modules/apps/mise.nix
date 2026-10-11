@@ -43,6 +43,7 @@
         "pipx:zuban" = "latest";
 
         # Formatters
+        "aqua:apple/pkl" = "latest"; # Pkl CLI: format, eval and analyze (hk.pkl)
         "go:golang.org/x/tools/cmd/goimports" = "latest";
         "go:mvdan.cc/gofumpt" = "latest";
         "npm:fixjson" = "latest";
