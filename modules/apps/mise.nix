@@ -81,6 +81,7 @@
         bats = "latest";
         nub = "latest"; # Node toolchain frontend; requires node
         usage = "latest";
+        pitchfork = "latest"; # dev daemon manager; ships the pitchfork agent skill
         # git hooks manager, from the signed packslip (ships the hk-configure and
         # hk-debug agent skills). The global hooks in git.nix invoke it through
         # this exact spec: to mise, `hk` and `packslip:github.com/jdx/hk` are
