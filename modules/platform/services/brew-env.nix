@@ -67,6 +67,7 @@ let
     /bin/launchctl setenv GROK_STORAGE_MODE "${env.GROK_STORAGE_MODE}"
     /bin/launchctl setenv GROK_DISABLE_AUTOUPDATER "${env.GROK_DISABLE_AUTOUPDATER}"
     /bin/launchctl setenv COPILOT_AUTO_UPDATE "${env.COPILOT_AUTO_UPDATE}"
+    /bin/launchctl setenv HOMEBREW_NO_ANALYTICS "${env.HOMEBREW_NO_ANALYTICS}"
     # herdr.collie 同樣 RunAtLoad,登入時常比這裡早起而拿不到上面的值,setenv 完重啟它。
     # 沒裝 collie 時 kickstart 會失敗,忽略即可。
     /bin/launchctl kickstart -k "gui/$(/usr/bin/id -u)/herdr.collie" 2>/dev/null || true
