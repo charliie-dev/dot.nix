@@ -94,6 +94,7 @@
       HMD_CLI_CONFIG_DIR = "${config.xdg.configHome}/hackmd";
       SOPS_AGE_KEY_FILE = "${config.xdg.configHome}/age/keys.txt";
       HOMEBREW_NO_ANALYTICS = "1";
+      HOMEBREW_NO_ENV_HINTS = "1";
 
       # Code agents and their privacy/update policy. macOS GUI processes get
       # the required subset from the brew-env launchd adapter as well.
