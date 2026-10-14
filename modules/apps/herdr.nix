@@ -23,6 +23,7 @@
 
       ui = {
         accent = "#cba6f7";
+        confirm_close = false;
         show_agent_labels_on_pane_borders = true;
         pane_borders = true;
         pane_outer_borders = true;
