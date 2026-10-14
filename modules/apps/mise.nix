@@ -27,6 +27,7 @@
         "aqua:artempyanykh/marksman" = "latest";
         "aqua:astral-sh/ruff" = "latest";
         "aqua:hashicorp/terraform-ls" = "latest";
+        "aqua:mrjosh/helm-ls" = "latest";
         "aqua:terraform-linters/tflint" = "latest";
         "cargo:shuck-cli" = "latest"; # shell LSP and linter; replaces bash-language-server
         "github:kristoff-it/superhtml" = "latest"; # HTML LSP and formatter
