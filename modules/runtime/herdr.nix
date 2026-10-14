@@ -9,7 +9,7 @@ let
     agent: sha256:
     builtins.readFile (
       builtins.fetchurl {
-        url = "https://raw.githubusercontent.com/herdrdev/herdr/v0.9.3/src/detect/manifests/${agent}.toml";
+        url = "https://raw.githubusercontent.com/herdrdev/herdr/v0.9.4/src/detect/manifests/${agent}.toml";
         inherit sha256;
       }
     );
@@ -25,39 +25,14 @@ let
         ''updated_at = "${metadata.updated_at}"''
       ]
       [
-        ''version = "2026.09.30.1"''
-        ''updated_at = "2026-09-30T00:00:00Z"''
+        ''version = "2026.10.14.1"''
+        ''updated_at = "2026-10-14T00:00:00Z"''
       ]
       base
     + rules;
   claudeUpstream = upstreamManifest "claude" "sha256-A40Koj/uP5s5yzycoRfQ+VsLOlhzzw84KEzLrCeclmQ=";
-  grokUpstream = upstreamManifest "grok" "sha256-QpjdLqfRJPO6XXK2Sbu0+27cUz1+blRtUjqCFPoxRW0=";
-  grokSummaryPattern =
-    builtins.head
-      (builtins.head (
-        builtins.filter (rule: rule.id == "background_status_working")
-          (builtins.fromTOML grokUpstream).rules
-      )).line_regex;
-  # Keep the upstream count/type checks, but allow only the final composer after a summary.
-  grokLiveSummaryPattern =
-    builtins.replaceStrings
-      [ "$" ]
-      [
-        ''$(?:\n[^╭╰]*╭─+[^\n]*╮\n(?:[ \t]*│[^\n]*\n)+[ \t]*╰─+[^\n]*╯)?[^╭╰]*\z''
-      ]
-      grokSummaryPattern;
-  grokBase =
-    builtins.replaceStrings
-      [
-        ''line_regex = ['[⋅:⸬⁙.·]\s+[1-9][0-9]*\s+│']''
-        "line_regex = ['${grokSummaryPattern}']"
-      ]
-      [
-        # Grok 1.0.30 also uses a diamond for its background-task count.
-        ''line_regex = ['[◆⋅:⸬⁙.·]\s+[1-9][0-9]*\s+│']''
-        "regex = ['(?m)${grokLiveSummaryPattern}']"
-      ]
-      grokUpstream;
+  # Upstream background chip/summary rules were dropped in v0.9.4; follow it.
+  grokUpstream = upstreamManifest "grok" "sha256-jbeo3kzXgvziZgCFnXjbcWc5n+tMdvMDEEvBu4OrYCs=";
 in
 {
   xdg.configFile."herdr/agent-detection/claude.toml" = {
@@ -82,7 +57,7 @@ in
   };
 
   xdg.configFile."herdr/agent-detection/grok.toml" = {
-    text = withLocalRules grokBase ''
+    text = withLocalRules grokUpstream ''
 
       [[rules]]
       id = "plan_approval_blocked"

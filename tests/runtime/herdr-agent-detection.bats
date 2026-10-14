@@ -117,10 +117,10 @@ SCREEN
   assert_grok_state working
 }
 
-@test "grok background task indicators remain working" {
+@test "grok background task indicators at an idle footer are idle" {
   for indicator in '◆ 1 │ 20K / 100K' '◎ 1 command still running · send a message to interrupt'; do
     printf '%s\n' "$indicator" 'Shift+Tab:mode │ Ctrl+.:shortcuts' > "$screen"
-    assert_grok_state working
+    assert_grok_state idle
   done
 }
 
@@ -132,101 +132,16 @@ grok_idle_prompt() {
     'Shift+Tab:mode │ Ctrl+.:shortcuts'
 }
 
-@test "grok upstream background summaries cover task types and mixed counts" {
+@test "grok background summaries at an idle prompt are idle" {
   for marker in '○' '◎' '◉'; do
     for summary in \
-      '1 command' '2 commands' '1 monitor' '2 monitors' \
-      '1 loop' '2 loops' '1 subagent' '2 subagents' \
+      '1 command' '2 monitors' '1 loop' '2 subagents' \
       '1 command · 2 monitors · 3 loops · 4 subagents'; do
       printf '%s\n' "$marker $summary still running · send a message to interrupt" > "$screen"
       grok_idle_prompt >> "$screen"
-      assert_grok_state working
-      jq -e '.matched_rule.id == "background_status_working"' <<<"$output"
+      assert_grok_state idle
     done
   done
-}
-
-@test "grok background summaries require positive counts" {
-  for summary in '0 commands' '-1 command' '01 command' '1 command · 0 monitors'; do
-    printf '%s\n' "◎ $summary still running" > "$screen"
-    grok_idle_prompt >> "$screen"
-    assert_grok_state idle
-  done
-}
-
-@test "grok prose containing a background summary remains idle" {
-  for line in \
-    'The status was ◎ 1 command still running' \
-    '◎ 1 command still running before it completed.' \
-    '◎ 1 command still running · send a message to interrupt was the old status.'; do
-    printf '%s\n' "$line" > "$screen"
-    grok_idle_prompt >> "$screen"
-    assert_grok_state idle
-  done
-}
-
-@test "grok background summary can precede a composer with blank rows and wrapped hints" {
-  printf '%s\n' \
-    '  ◎ 1 command still running' '' \
-    '  ╭──────────────────────────────────╮' \
-    '  │ ❯                                │' \
-    '  ╰───── Test model · always-approve ─╯' '' \
-    '  Shift+Tab:mode │' '  Ctrl+.:shortcuts' > "$screen"
-  assert_grok_state working
-  jq -e '.matched_rule.id == "background_status_working"' <<<"$output"
-}
-
-@test "grok background summary above a multiline composer remains working" {
-  {
-    printf '%s\n' '◎ 1 command still running' '╭──────────────────────────────────╮'
-    for _ in {1..7}; do
-      printf '%s\n' '│ ❯ multiline draft                │'
-    done
-    printf '%s\n' '╰───── Test model · always-approve ─╯' 'Shift+Tab:mode │ Ctrl+.:shortcuts'
-  } > "$screen"
-  assert_grok_state working
-  jq -e '.matched_rule.id == "background_status_working"' <<<"$output"
-}
-
-@test "grok historical background summary does not keep a newer prompt working" {
-  {
-    printf '%s\n' '◎ 1 command still running'
-    grok_idle_prompt
-    printf '%s\n' 'The command completed.'
-    grok_idle_prompt
-  } > "$screen"
-  assert_grok_state idle
-}
-
-@test "grok current background summary still works after a historical summary" {
-  {
-    printf '%s\n' '◎ 1 command still running'
-    grok_idle_prompt
-    printf '%s\n' '◎ 2 monitors still running'
-    grok_idle_prompt
-  } > "$screen"
-  assert_grok_state working
-  jq -e '.matched_rule.id == "background_status_working"' <<<"$output"
-}
-
-@test "grok historical positive count cannot validate a current zero count" {
-  {
-    printf '%s\n' '◎ 1 command still running'
-    grok_idle_prompt
-    printf '%s\n' '◎ 0 commands still running'
-    grok_idle_prompt
-  } > "$screen"
-  assert_grok_state idle
-}
-
-@test "grok quoted background summaries inside the composer remain idle" {
-  printf '%s\n' \
-    '╭──────────────────────────────────╮' \
-    '│ ❯ Explain this summary:          │' \
-    '│   ◎ 1 command still running      │' \
-    '╰───── Test model · always-approve ─╯' \
-    'Shift+Tab:mode │ Ctrl+.:shortcuts' > "$screen"
-  assert_grok_state idle
 }
 
 @test "grok approval and question controls outrank background summaries" {
@@ -259,22 +174,11 @@ grok_idle_prompt() {
   done
 }
 
-@test "grok upstream animated background chips remain working" {
-  for spinner in '⋅' ':' '⸬' '⁙' '.' '·'; do
-    printf '%s\n' "  test-workspace  $spinner 1 │ 20K / 100K" > "$screen"
-    grok_idle_prompt >> "$screen"
-    assert_grok_state working
-    jq -e '.visible_working and .matched_rule.id == "background_work_chip_working"' <<<"$output"
-  done
-}
-
-@test "grok background chips require a positive count" {
+@test "grok background chips at an idle prompt are idle" {
   for marker in '◆' '⋅' ':' '⸬' '⁙' '.' '·'; do
-    for count in 0 -1 01; do
-      printf '%s\n' "  test-workspace  $marker $count │ 20K / 100K" > "$screen"
-      grok_idle_prompt >> "$screen"
-      assert_grok_state idle
-    done
+    printf '%s\n' "  test-workspace  $marker 1 │ 20K / 100K" > "$screen"
+    grok_idle_prompt >> "$screen"
+    assert_grok_state idle
   done
 }
 
@@ -454,7 +358,7 @@ SCREEN
     waiting_screen
   } > "$screen"
   assert_grok_state working
-  jq -e '.visible_working and .matched_rule.id == "background_work_chip_working"' <<<"$output"
+  jq -e '.visible_working and .matched_rule.id == "background_dock_working"' <<<"$output"
 }
 
 @test "grok idle dock and historical waiting footer remain idle" {
