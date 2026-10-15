@@ -30,4 +30,13 @@
     "docker/cli-plugins/docker-buildx".source =
       config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.local/share/mise/installs/aqua-docker-buildx/latest/docker-cli-plugin-docker-buildx";
   };
+
+  # mise installs these packages into every python it installs (its
+  # python.default_packages_file setting defaults to this path), so a new
+  # `python = "latest"` build carries them too. Under `mise run` the mise python
+  # leads PATH, and the dcf local-env tasks parse compose.yml with PyYAML; the
+  # range matches local-env's scripts/requirements-duckdb-preflight.txt.
+  home.file.".default-python-packages".text = ''
+    PyYAML>=6.0,<7
+  '';
 }
