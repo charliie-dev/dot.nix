@@ -107,6 +107,15 @@ _: {
         condition = "hasconfig:remote.*.url:git@github.com:nics-tw/**";
         path = "~/.config/git/config-work";
       }
+      # Some work checkouts keep an HTTPS origin (sandboxed pushes); match that form too.
+      {
+        condition = "hasconfig:remote.*.url:https://github.com/nics-dp/**";
+        path = "~/.config/git/config-work";
+      }
+      {
+        condition = "hasconfig:remote.*.url:https://github.com/nics-tw/**";
+        path = "~/.config/git/config-work";
+      }
     ];
     # Git extension for versioning large files
     lfs = {
