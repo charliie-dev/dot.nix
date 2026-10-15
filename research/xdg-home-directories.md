@@ -224,7 +224,7 @@ return join(baseDir, AGENTS_DIR, SKILLS_SUBDIR);
 
 這是 global 安裝的 canonical payload 位置，該函式沒有 XDG 覆寫。
 
-目前 repository 也明確依賴它：`.mise/tasks/skills/install:8–9,12–20`
+目前 repository 也明確依賴它：`.mise/tasks/skills/install:19–20,23–32`
 使用 `skills add ... --global`，並將 Pi 的 skill 連結到
 `"$HOME/.agents/skills/$skill"`。
 本機 Claude／Grok 的部分 skills 同樣以 symlink 指向此處。

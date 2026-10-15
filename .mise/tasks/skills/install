@@ -3,7 +3,18 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
-skills=(compose-lint container-security dockerfile-builder)
+
+# Every directory under skills/ that holds a SKILL.md is an installable skill.
+skills=()
+for manifest in "$repo_root"/skills/*/SKILL.md; do
+    [[ -f "$manifest" ]] || continue
+    skill_dir="${manifest%/SKILL.md}"
+    skills+=("${skill_dir##*/}")
+done
+if ((${#skills[@]} == 0)); then
+    printf 'No skills found in %s/skills\n' "$repo_root" >&2
+    exit 1
+fi
 
 npx --yes skills add "$repo_root/skills" --global --yes \
     --skill "${skills[@]}" --agent claude-code grok pi
