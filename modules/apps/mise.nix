@@ -247,7 +247,9 @@
         };
 
         python = {
-          uv_venv_auto = true;
+          # Not the legacy `true`: mise drops it in 2027.7.0, and only that value
+          # exports the toolset python as UV_PYTHON over uv's requires-python pick.
+          uv_venv_auto = "create|source";
         };
 
         # config files with these prefixes will be trusted by default
