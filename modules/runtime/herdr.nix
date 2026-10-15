@@ -9,7 +9,7 @@ let
     agent: sha256:
     builtins.readFile (
       builtins.fetchurl {
-        url = "https://raw.githubusercontent.com/herdrdev/herdr/v0.9.4/src/detect/manifests/${agent}.toml";
+        url = "https://raw.githubusercontent.com/herdrdev/herdr/v0.9.5/src/detect/manifests/${agent}.toml";
         inherit sha256;
       }
     );
@@ -25,12 +25,12 @@ let
         ''updated_at = "${metadata.updated_at}"''
       ]
       [
-        ''version = "2026.10.14.1"''
-        ''updated_at = "2026-10-14T00:00:00Z"''
+        ''version = "2026.10.15.1"''
+        ''updated_at = "2026-10-15T00:00:00Z"''
       ]
       base
     + rules;
-  claudeUpstream = upstreamManifest "claude" "sha256-A40Koj/uP5s5yzycoRfQ+VsLOlhzzw84KEzLrCeclmQ=";
+  claudeUpstream = upstreamManifest "claude" "sha256-6LgWpw7cG1+RR5rMmXfx8TKlWwyThFaCYR6RvfiqGSA=";
   # Upstream background chip/summary rules were dropped in v0.9.4; follow it.
   grokUpstream = upstreamManifest "grok" "sha256-jbeo3kzXgvziZgCFnXjbcWc5n+tMdvMDEEvBu4OrYCs=";
 in
