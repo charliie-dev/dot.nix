@@ -83,8 +83,11 @@
         # General CLI tools
         bats = "latest";
         nub = "latest"; # Node toolchain frontend; requires node
-        usage = "latest";
-        pitchfork = "latest"; # dev daemon manager; ships the pitchfork agent skill
+        # Packslip tools use the full spec, not the registry short name: the short
+        # name follows the registry's backend order and would fall back to aqua
+        # without an error if the registry ever dropped the packslip entry.
+        "packslip:github.com/jdx/usage" = "latest";
+        "packslip:github.com/jdx/pitchfork" = "latest"; # dev daemon manager; ships the pitchfork agent skill
         # git hooks manager, from the signed packslip (ships the hk-configure and
         # hk-debug agent skills). The global hooks in git.nix invoke it through
         # this exact spec: to mise, `hk` and `packslip:github.com/jdx/hk` are
@@ -225,9 +228,9 @@
           ];
         };
 
-        # packslip tools ship agent skills (usage, aube). Link them into the
-        # ~/.agents/skills hub that ~/.config/{claude,grok}/skills already
-        # symlink into, after every install and `mise use`. skills.dir is
+        # packslip tools ship agent skills (aube, hk, pitchfork, usage). Link
+        # them into the ~/.agents/skills hub that ~/.config/{claude,grok}/skills
+        # already symlink into, after every install and `mise use`. skills.dir is
         # documented as project-relative, but an absolute path is honoured
         # as-is (verified on 2026.10.0 from both project and non-project dirs).
         skills = {
