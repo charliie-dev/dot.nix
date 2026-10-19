@@ -32,10 +32,7 @@
         "cargo:shuck-cli" = "latest"; # shell LSP and linter; replaces bash-language-server
         "github:kristoff-it/superhtml" = "latest"; # HTML LSP and formatter
         "github:neocmakelsp/neocmakelsp" = "latest";
-        "github:tombi-toml/tombi" = {
-          version = "latest";
-          exe = "tombi";
-        }; # musl-only Linux releases
+        "github:tombi-toml/tombi" = "latest"; # musl-only Linux releases
         "go:golang.org/x/tools/gopls" = "latest";
         "npm:@actions/languageserver" = "latest";
         "npm:dockerfile-language-server-nodejs" = "latest";
@@ -62,7 +59,7 @@
         "aqua:rhysd/actionlint" = "latest";
         "github:immanuwell/dockerfile-roast" = {
           version = "latest";
-          exe = "droast";
+          bin = "droast";
         }; # Dockerfile linter
         "go:github.com/golangci/golangci-lint/v2/cmd/golangci-lint" = "latest";
         "npm:markdownlint-cli2" = "latest";
