@@ -34,7 +34,10 @@
         # Replaced by the "Determinate Nix upgrade" custom command below.
         # nix-env / nix-channel (also part of this step) are no-ops in a
         # flake + home-manager setup.
-        disable = [ "nix" ];
+        disable = [
+          "nix"
+          "github_cli_skills"
+        ];
 
         # Run these steps before all others
         # first = ["chezmoi"]
