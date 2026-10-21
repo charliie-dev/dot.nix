@@ -1,11 +1,13 @@
 #!/usr/bin/env -S python3 -I
-# gws-mcp-auth: Google Workspace 遠端 MCP server 的一次性登入與 Claude Code headersHelper。
+# gws-mcp-auth: Google Workspace 遠端 MCP server 的一次性登入、Claude Code headersHelper 與 Grok token 檔。
 # login 帶 access_type=offline 取得各 server 的 refresh token，存進 macOS Keychain；
-# header 由 Claude Code 在連線與遇到 401/403 時呼叫，用 refresh token 換新的 access token。
+# header 由 Claude Code 在連線與遇到 401/403 時呼叫，用 refresh token 換新的 access token；
+# token-files 由 launchd 定期執行，把 access token 寫成 Grok bearer_token_file 讀的檔案。
 from __future__ import annotations
 
 import argparse
 import base64
+import contextlib
 import errno
 import getpass
 import hashlib
@@ -18,6 +20,7 @@ import select
 import socket
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 import urllib.error
@@ -38,6 +41,11 @@ LOGIN_TIMEOUT = 300
 # Claude Code 10 秒後就放棄 headersHelper，整個換發流程（含 DNS 與 Keychain）限制在 8 秒內。
 HEADER_DEADLINE = 8.0
 HEADER_REQUEST_TIMEOUT = 3.0
+# Grok 的 bearer_token_file 每個請求都重讀這裡的檔案；只放效期 1 小時的 access token。
+TOKEN_DIR = "~/.local/state/gws-mcp-auth"
+# token-files 在背景執行，沒有 Claude Code 的 10 秒限制，但也不能無限等待。
+TOKEN_FILES_DEADLINE = 60.0
+TOKEN_FILES_REQUEST_TIMEOUT = 10.0
 
 SERVERS = {
     "gws-gmail": "https://gmailmcp.googleapis.com/mcp/v1",
@@ -443,9 +451,9 @@ def cmd_login(args: argparse.Namespace) -> None:
         login_one(name, scopes, client_id, client_secret)
 
 
-def access_token_header(url: str) -> dict[str, str]:
+def mint_access_token(url: str, client: tuple[str, str], timeout: float) -> str:
     name = server_name(url)
-    client_id, client_secret = load_client(prompt=False)
+    client_id, client_secret = client
     refresh_token = keychain_get(url)
     if not refresh_token:
         raise SystemExit(f"{name} 尚未登入：執行 gws-mcp-auth login {name}")
@@ -456,7 +464,7 @@ def access_token_header(url: str) -> dict[str, str]:
         "client_secret": client_secret,
     }
     try:
-        token = request_token(fields, url, HEADER_REQUEST_TIMEOUT)
+        token = request_token(fields, url, timeout)
     except TokenError as err:
         if err.error == "invalid_grant":
             raise SystemExit(
@@ -466,7 +474,12 @@ def access_token_header(url: str) -> dict[str, str]:
     access_token = token.get("access_token")
     if not isinstance(access_token, str) or not access_token:
         raise SystemExit(f"{name}：token 回應裡沒有 access_token")
-    return {"Authorization": f"Bearer {access_token}"}
+    return access_token
+
+
+def access_token_header(url: str) -> dict[str, str]:
+    token = mint_access_token(url, load_client(prompt=False), HEADER_REQUEST_TIMEOUT)
+    return {"Authorization": f"Bearer {token}"}
 
 
 def cmd_header(args: argparse.Namespace) -> None:
@@ -503,6 +516,75 @@ def cmd_header(args: argparse.Namespace) -> None:
     print(json.dumps(headers[0]))
 
 
+def token_path(directory: str, name: str) -> str:
+    return os.path.join(directory, f"{name}.token")
+
+
+def write_token_file(directory: str, name: str, token: str) -> None:
+    # Grok 隨時會讀這個檔：先寫同目錄的暫存檔再 rename，不會讀到寫一半的 token。
+    # mkstemp 建立的檔案權限是 0600。
+    fd, tmp = tempfile.mkstemp(dir=directory, prefix=f".{name}.", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w") as f:
+            f.write(f"{token}\n")
+        os.replace(tmp, token_path(directory, name))
+    except BaseException:
+        with contextlib.suppress(FileNotFoundError):
+            os.unlink(tmp)
+        raise
+
+
+def remove_token_file(directory: str, name: str) -> None:
+    with contextlib.suppress(FileNotFoundError):
+        os.remove(token_path(directory, name))
+
+
+def cmd_token_files(args: argparse.Namespace) -> None:
+    directory = os.path.expanduser(args.dir)
+    try:
+        os.makedirs(directory, mode=0o700, exist_ok=True)
+    except OSError as err:
+        raise SystemExit(f"無法建立 {directory}：{err}") from None
+    written: list[str] = []
+    errors: list[str] = []
+
+    def work() -> None:
+        try:
+            client = load_client(prompt=False)
+        except SystemExit as err:
+            errors.append(str(err))
+            return
+        for name, url in SERVERS.items():
+            try:
+                if keychain_has(url):
+                    token = mint_access_token(url, client, TOKEN_FILES_REQUEST_TIMEOUT)
+                    write_token_file(directory, name, token)
+                    written.append(name)
+                else:
+                    # forget 過的 server 連舊檔一起移除，Grok 會回報缺檔，不會繼續用舊 token。
+                    remove_token_file(directory, name)
+            except SystemExit as err:
+                # 換發失敗時保留舊檔，舊 token 可能還沒過期。
+                errors.append(str(err))
+            except OSError as err:
+                errors.append(f"{name}：更新 token 檔失敗：{err}")
+
+    # 與 header 相同：DNS 與 Keychain 解鎖對話框沒有逾時，超過期限就結束。
+    worker = threading.Thread(target=work, daemon=True)
+    worker.start()
+    worker.join(TOKEN_FILES_DEADLINE)
+    if worker.is_alive():
+        stop_security()
+        errors.append(
+            f"{TOKEN_FILES_DEADLINE:.0f} 秒內沒有更新完 token 檔"
+            "（網路逾時，或 login keychain 正在等待解鎖）"
+        )
+    if written:
+        print(f"已更新 {len(written)} 個 token 檔：{directory}")
+    if errors:
+        raise SystemExit("\n".join(errors))
+
+
 def cmd_status(_: argparse.Namespace) -> None:
     for label, account in (
         ("client ID", CLIENT_ID_ACCOUNT),
@@ -514,12 +596,14 @@ def cmd_status(_: argparse.Namespace) -> None:
 
 
 def cmd_forget(args: argparse.Namespace) -> None:
+    directory = os.path.expanduser(TOKEN_DIR)
     for name in resolve_servers(args.servers):
         print(
             f"{name}：{'已刪除' if keychain_delete(SERVERS[name]) else '沒有存放的 token'}"
         )
+        remove_token_file(directory, name)
     print(
-        "只刪除本機 Keychain 的副本。要在 Google 端撤銷，到 "
+        "只刪除本機的副本（Keychain 與 token 檔）。要在 Google 端撤銷，到 "
         "https://myaccount.google.com/connections 移除這個 app；"
         "這會讓同一個 project 底下所有 client 的 token 一起失效。"
     )
@@ -528,7 +612,8 @@ def cmd_forget(args: argparse.Namespace) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(
         prog="gws-mcp-auth",
-        description="Google Workspace MCP 一次性登入，以及給 Claude Code 用的 headersHelper。",
+        description="Google Workspace MCP 一次性登入、給 Claude Code 用的 headersHelper，"
+        "以及給 Grok 用的 token 檔。",
         epilog=EPILOG,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -570,6 +655,16 @@ def main() -> None:
         "url", nargs="?", help="server URL；省略時讀 CLAUDE_CODE_MCP_SERVER_URL"
     )
     header.set_defaults(func=cmd_header)
+
+    token_files = sub.add_parser(
+        "token-files",
+        help="把已登入 server 的 access token 寫成檔案，給 Grok 的 bearer_token_file 用"
+        "（由 launchd 定期執行）",
+    )
+    token_files.add_argument(
+        "--dir", default=TOKEN_DIR, help=f"輸出目錄（預設 {TOKEN_DIR}）"
+    )
+    token_files.set_defaults(func=cmd_token_files)
 
     status = sub.add_parser("status", help="列出哪些 server 已經登入（不顯示 token）")
     status.set_defaults(func=cmd_status)
