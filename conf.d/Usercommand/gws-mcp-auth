@@ -1,0 +1,589 @@
+#!/usr/bin/env -S python3 -I
+# gws-mcp-auth: Google Workspace 遠端 MCP server 的一次性登入與 Claude Code headersHelper。
+# login 帶 access_type=offline 取得各 server 的 refresh token，存進 macOS Keychain；
+# header 由 Claude Code 在連線與遇到 401/403 時呼叫，用 refresh token 換新的 access token。
+from __future__ import annotations
+
+import argparse
+import base64
+import errno
+import getpass
+import hashlib
+import http.client
+import http.server
+import json
+import os
+import secrets
+import select
+import socket
+import subprocess
+import sys
+import threading
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
+import webbrowser
+
+AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
+TOKEN_URL = "https://oauth2.googleapis.com/token"
+CALLBACK_PORT = 8765
+REDIRECT_URI = f"http://localhost:{CALLBACK_PORT}/callback"
+# 用絕對路徑，PATH 前面有同名程式時 secret 也不會交給它。
+SECURITY = "/usr/bin/security"
+KEYCHAIN_SERVICE = "gws-mcp-auth"
+CLIENT_ID_ACCOUNT = "client-id"
+CLIENT_SECRET_ACCOUNT = "client-secret"
+LOGIN_TIMEOUT = 300
+# Claude Code 10 秒後就放棄 headersHelper，整個換發流程（含 DNS 與 Keychain）限制在 8 秒內。
+HEADER_DEADLINE = 8.0
+HEADER_REQUEST_TIMEOUT = 3.0
+
+SERVERS = {
+    "gws-gmail": "https://gmailmcp.googleapis.com/mcp/v1",
+    "gws-drive": "https://drivemcp.googleapis.com/mcp/v1",
+    "gws-calendar": "https://calendarmcp.googleapis.com/mcp/v1",
+    "gws-docs": "https://docsmcp.googleapis.com/mcp/v1",
+    "gws-sheets": "https://sheetsmcp.googleapis.com/mcp/v1",
+    "gws-slides": "https://slidesmcp.googleapis.com/mcp/v1",
+    "gws-people": "https://people.googleapis.com/mcp/v1",
+    "gws-chat": "https://chatmcp.googleapis.com/mcp/v1",
+    "gws-search": "https://workspacemcp.googleapis.com/mcp/v1",
+}
+
+# 預設排除這三個等於整個信箱、雲端硬碟或日曆完整權限的 scope，但仍會申請其他寫入 scope
+# （例如 gmail.send、calendar.events、chat.messages）。--readonly 只申請唯讀 scope，
+# --full 連這三個也申請。
+BROAD_SCOPES = {
+    "https://mail.google.com/",
+    "https://www.googleapis.com/auth/drive",
+    "https://www.googleapis.com/auth/calendar",
+}
+# gmail.readonly 已涵蓋 gmail.metadata；token 同時帶 gmail.metadata 時，Gmail 會拒絕
+# 帶 q 的搜尋與 format=full/raw 的讀取。
+EXCLUDED_SCOPES = {"https://www.googleapis.com/auth/gmail.metadata"}
+# 名稱不以 .readonly 結尾、但本身只能讀取的 scope。
+READ_ONLY_SCOPES = {
+    "https://www.googleapis.com/auth/calendar.freebusy",
+    "https://www.googleapis.com/auth/calendar.events.freebusy",
+    "https://www.googleapis.com/auth/userinfo.profile",
+}
+# Google 回這兩種錯誤時，可能是不接受 RFC 8707 的 resource 參數，拿掉後重試一次。
+RESOURCE_RETRY_ERRORS = {"invalid_request", "invalid_target"}
+
+EPILOG = """\
+前提：
+  - OAuth client 類型是 Web application，勾選「Use this client for an AI-powered agent」，
+    並登記 redirect URI http://localhost:8765/callback。
+  - consent screen 用 Internal。External 且還在 Testing 狀態時，refresh token 7 天就會過期。
+  - Google 對同一個帳號在同一個 client 能有效的 refresh token 數量有上限，超過時最舊的會失效，
+    Claude Code 自己的 OAuth 登入也算在內。所以已登入的 server 預設略過，重新登入要加 --force。
+"""
+
+
+# 執行中的 security 子程序；header 超過期限時一併結束，不留下孤兒程序。
+_running: set[subprocess.Popen[str]] = set()
+_running_lock = threading.Lock()
+_stopping = threading.Event()
+
+
+class TokenError(Exception):
+    def __init__(self, error: str, description: str = "") -> None:
+        super().__init__(f"{error}: {description}" if description else error)
+        self.error = error
+
+
+class CallbackServer(http.server.ThreadingHTTPServer):
+    # 每個連線各用一個執行緒，瀏覽器預先開啟的閒置連線不會擋住真正的 callback。
+    daemon_threads = True
+    block_on_close = False
+
+
+class IPv6CallbackServer(CallbackServer):
+    address_family = socket.AF_INET6
+
+
+def run_security(args: list[str], stdin: str | None = None) -> tuple[int, str, str]:
+    with _running_lock:
+        if _stopping.is_set():
+            raise SystemExit("已停止存取 Keychain")
+        proc = subprocess.Popen(
+            [SECURITY, *args],
+            stdin=subprocess.DEVNULL if stdin is None else subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        _running.add(proc)
+    try:
+        out, err = proc.communicate(stdin)
+    finally:
+        with _running_lock:
+            _running.discard(proc)
+    return proc.returncode, out, err
+
+
+def stop_security() -> None:
+    with _running_lock:
+        _stopping.set()
+        for proc in _running:
+            proc.kill()
+
+
+def keychain_get(account: str) -> str | None:
+    rc, out, err = run_security(
+        ["find-generic-password", "-s", KEYCHAIN_SERVICE, "-a", account, "-w"]
+    )
+    if rc == 44:  # errSecItemNotFound
+        return None
+    if rc == 36:  # errSecInteractionNotAllowed
+        raise SystemExit("login keychain 已鎖定或目前無法互動：先解鎖再試")
+    if rc != 0:
+        raise SystemExit(f"讀取 Keychain 失敗（{account}）：{err.strip()}")
+    return out.rstrip("\n")
+
+
+def keychain_has(account: str) -> bool:
+    rc, _, _ = run_security(
+        ["find-generic-password", "-s", KEYCHAIN_SERVICE, "-a", account]
+    )
+    return rc == 0
+
+
+def keychain_set(account: str, secret: str) -> None:
+    # 透過 stdin 交給 `security -i`，secret 不會出現在 process 的參數列。
+    if any(c in secret for c in '"\\\n'):
+        raise SystemExit(f"內容含有無法寫入 Keychain 的字元（{account}）")
+    command = f'add-generic-password -U -s "{KEYCHAIN_SERVICE}" -a "{account}" -w "{secret}"\n'
+    rc, _, err = run_security(["-i"], stdin=command)
+    if rc != 0 or keychain_get(account) != secret:
+        detail = err.strip().replace(secret, "***") or f"exit {rc}"
+        raise SystemExit(f"寫入 Keychain 失敗（{account}）：{detail}")
+
+
+def keychain_delete(account: str) -> bool:
+    rc, _, _ = run_security(
+        ["delete-generic-password", "-s", KEYCHAIN_SERVICE, "-a", account]
+    )
+    return rc == 0
+
+
+def load_client(prompt: bool, reset: bool = False) -> tuple[str, str]:
+    # client ID 不是秘密，但不寫死在腳本裡，避免公開 repo 揭露 GCP project number。
+    env_client_id = os.environ.get("GWS_MCP_CLIENT_ID", "").strip()
+    stored_client_id = None if reset else keychain_get(CLIENT_ID_ACCOUNT)
+    client_id = env_client_id or stored_client_id
+    if prompt and env_client_id and env_client_id != stored_client_id:
+        # header 由 Claude Code 執行，不一定有這個環境變數，登入時一併存進 Keychain。
+        keychain_set(CLIENT_ID_ACCOUNT, env_client_id)
+    client_secret = None if reset else keychain_get(CLIENT_SECRET_ACCOUNT)
+    if prompt and not client_id:
+        client_id = input("貼上 OAuth client ID：").strip()
+        if client_id:
+            keychain_set(CLIENT_ID_ACCOUNT, client_id)
+    if prompt and not client_secret:
+        client_secret = getpass.getpass(
+            "貼上 OAuth client secret（畫面不會顯示）："
+        ).strip()
+        if client_secret:
+            keychain_set(CLIENT_SECRET_ACCOUNT, client_secret)
+    if not client_id or not client_secret:
+        raise SystemExit("缺少 client ID 或 client secret：先執行 gws-mcp-auth login")
+    return client_id, client_secret
+
+
+def server_name(url: str) -> str:
+    return next((name for name, u in SERVERS.items() if u == url), url)
+
+
+def resolve_servers(names: list[str]) -> list[str]:
+    lowered = [name.lower() for name in names]
+    if not lowered or lowered == ["all"]:
+        return list(SERVERS)
+    if "all" in lowered:
+        raise SystemExit("all 代表全部 server，不能和其他名稱一起用")
+    resolved: list[str] = []
+    for name in lowered:
+        full = name if name.startswith("gws-") else f"gws-{name}"
+        if full not in SERVERS:
+            raise SystemExit(
+                f"不認得的 server：{name}（可用：all、{'、'.join(SERVERS)}）"
+            )
+        if full not in resolved:
+            resolved.append(full)
+    return resolved
+
+
+def post_token(fields: dict[str, str], timeout: float) -> dict:
+    request = urllib.request.Request(
+        TOKEN_URL, data=urllib.parse.urlencode(fields).encode(), method="POST"
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            body = json.load(response)
+    except urllib.error.HTTPError as err:
+        try:
+            error_body = json.load(err)
+        except (OSError, ValueError, http.client.HTTPException):
+            error_body = None
+        if not isinstance(error_body, dict):
+            error_body = {}
+        raise TokenError(
+            str(error_body.get("error") or f"http_{err.code}"),
+            str(error_body.get("error_description") or ""),
+        ) from None
+    except (OSError, ValueError, http.client.HTTPException) as err:
+        # 連線失敗、讀取逾時、連線中斷、回應不是 JSON。
+        raise TokenError("network", f"{type(err).__name__}: {err}") from None
+    if not isinstance(body, dict):
+        raise TokenError("bad_response", "回應不是 JSON 物件")
+    return body
+
+
+def request_token(fields: dict[str, str], resource: str, timeout: float) -> dict:
+    try:
+        return post_token({**fields, "resource": resource}, timeout)
+    except TokenError as err:
+        if err.error not in RESOURCE_RETRY_ERRORS:
+            raise
+        first_error = err
+    try:
+        return post_token(fields, timeout)
+    except TokenError:
+        # 重試也失敗時回報第一次的錯誤；授權碼只能用一次，第二次的錯誤通常不是真正原因。
+        raise first_error from None
+
+
+def advertised_scopes(url: str) -> list[str]:
+    parts = urllib.parse.urlsplit(url)
+    metadata_url = f"{parts.scheme}://{parts.netloc}/.well-known/oauth-protected-resource{parts.path}"
+    try:
+        with urllib.request.urlopen(metadata_url, timeout=15) as response:
+            body = json.load(response)
+    except (OSError, ValueError, http.client.HTTPException) as err:
+        raise SystemExit(f"讀不到 {metadata_url}：{err}") from None
+    scopes = body.get("scopes_supported") if isinstance(body, dict) else None
+    if not isinstance(scopes, list) or not all(isinstance(s, str) for s in scopes):
+        raise SystemExit(f"{metadata_url} 沒有可用的 scopes_supported")
+    return scopes
+
+
+def select_scopes(name: str, advertised: list[str], mode: str) -> list[str]:
+    candidates = [s for s in advertised if s not in EXCLUDED_SCOPES]
+    if mode == "readonly":
+        scopes = [
+            s for s in candidates if s.endswith(".readonly") or s in READ_ONLY_SCOPES
+        ]
+    elif mode == "full":
+        scopes = candidates
+    else:
+        scopes = [s for s in candidates if s not in BROAD_SCOPES]
+    if not scopes:
+        raise SystemExit(f"{name}：篩選後沒有可申請的 scope（模式 {mode}）")
+    return scopes
+
+
+def make_handler(
+    state: str, result: dict[str, str]
+) -> type[http.server.BaseHTTPRequestHandler]:
+    class Handler(http.server.BaseHTTPRequestHandler):
+        # 不送資料的連線最多佔用一個執行緒 10 秒。
+        timeout = 10
+
+        def do_GET(self) -> None:
+            parts = urllib.parse.urlsplit(self.path)
+            if parts.path != "/callback":
+                self.send_error(404)
+                return
+            query = dict(urllib.parse.parse_qsl(parts.query))
+            # state 不符的請求（舊分頁重新整理、其他網頁送來的請求）只回 400，繼續等待。
+            if not secrets.compare_digest(
+                query.get("state", "").encode(), state.encode()
+            ):
+                self.reply(400, "state 不符，已忽略這個請求。")
+            elif "error" in query:
+                result["error"] = query["error"]
+                self.reply(400, f"登入失敗：{query['error']}")
+            elif query.get("code"):
+                result["code"] = query["code"]
+                self.reply(200, "登入完成，可以關閉這個分頁。")
+            else:
+                self.reply(400, "缺少授權碼，已忽略這個請求。")
+
+        def reply(self, status: int, message: str) -> None:
+            body = message.encode()
+            self.send_response(status)
+            self.send_header("Content-Type", "text/plain; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, format: str, *args: object) -> None:
+            pass
+
+    return Handler
+
+
+def open_callback_servers(
+    handler: type[http.server.BaseHTTPRequestHandler],
+) -> list[http.server.HTTPServer]:
+    try:
+        servers: list[http.server.HTTPServer] = [
+            CallbackServer(("127.0.0.1", CALLBACK_PORT), handler)
+        ]
+    except OSError as err:
+        if err.errno == errno.EADDRINUSE:
+            raise SystemExit(f"port {CALLBACK_PORT} 被占用，先關掉占用的程式") from None
+        raise SystemExit(f"無法監聽 127.0.0.1:{CALLBACK_PORT}：{err}") from None
+    # macOS 把 localhost 先解析成 ::1，也一起監聽，只試第一個位址的程式才連得上。
+    try:
+        servers.append(IPv6CallbackServer(("::1", CALLBACK_PORT), handler))
+    except OSError as err:
+        if err.errno == errno.EADDRINUSE:
+            for server in servers:
+                server.server_close()
+            raise SystemExit(
+                f"[::1]:{CALLBACK_PORT} 被占用，先關掉占用的程式"
+            ) from None
+        # 沒有 IPv6 loopback 的環境只監聽 IPv4。
+    for server in servers:
+        server.timeout = 1
+    return servers
+
+
+def wait_for_code(servers: list[http.server.HTTPServer], result: dict[str, str]) -> str:
+    deadline = time.monotonic() + LOGIN_TIMEOUT
+    while not result and time.monotonic() < deadline:
+        ready, _, _ = select.select(servers, [], [], 1.0)
+        for server in ready:
+            server.handle_request()
+    if result.get("code"):
+        return result["code"]
+    raise SystemExit(
+        f"登入失敗：{result.get('error') or f'{LOGIN_TIMEOUT} 秒內沒有完成'}"
+    )
+
+
+def login_one(name: str, scopes: list[str], client_id: str, client_secret: str) -> None:
+    url = SERVERS[name]
+    verifier = secrets.token_urlsafe(64)
+    challenge = (
+        base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest())
+        .rstrip(b"=")
+        .decode()
+    )
+    state = secrets.token_urlsafe(24)
+    auth_url = (
+        AUTH_URL
+        + "?"
+        + urllib.parse.urlencode(
+            {
+                "client_id": client_id,
+                "redirect_uri": REDIRECT_URI,
+                "response_type": "code",
+                "scope": " ".join(scopes),
+                "state": state,
+                "code_challenge": challenge,
+                "code_challenge_method": "S256",
+                "access_type": "offline",
+                "prompt": "consent",
+                "resource": url,
+            }
+        )
+    )
+    result: dict[str, str] = {}
+    servers = open_callback_servers(make_handler(state, result))
+    try:
+        print(
+            f"→ {name}：在瀏覽器完成登入（沒有自動開啟就手動開這個網址）\n  {auth_url}"
+        )
+        webbrowser.open(auth_url)
+        code = wait_for_code(servers, result)
+    finally:
+        for server in servers:
+            server.server_close()
+    fields = {
+        "grant_type": "authorization_code",
+        "code": code,
+        "code_verifier": verifier,
+        "client_id": client_id,
+        "client_secret": client_secret,
+        "redirect_uri": REDIRECT_URI,
+    }
+    try:
+        token = request_token(fields, url, timeout=30)
+    except TokenError as err:
+        raise SystemExit(f"{name}：用授權碼換 token 失敗：{err}") from None
+    refresh_token = token.get("refresh_token")
+    if not isinstance(refresh_token, str) or not refresh_token:
+        raise SystemExit(f"{name}：Google 沒有回傳 refresh token")
+    keychain_set(url, refresh_token)
+    granted = len(str(token.get("scope", "")).split())
+    print(f"✓ {name}：refresh token 已存入 Keychain（授權 {granted} 個 scope）")
+
+
+def cmd_login(args: argparse.Namespace) -> None:
+    names = resolve_servers(args.servers)
+    if args.reset_client:
+        # refresh token 綁 client ID 不綁 secret：只換 secret 不必重新登入，換 client ID 才要 --force。
+        load_client(prompt=True, reset=True)
+    # 不撤銷舊 token：Google 的撤銷會讓同一個 project 底下所有 client 的 token 一起失效。
+    # 改成略過已登入的 server，避免重複發 token 而碰到數量上限。
+    if not args.force:
+        for name in [n for n in names if keychain_has(SERVERS[n])]:
+            print(f"– {name}：已登入，略過（要重新登入請加 --force）")
+            names.remove(name)
+    if not names:
+        return
+    mode = "full" if args.full else "readonly" if args.readonly else "default"
+    # 先讀完所有 server 的 metadata，網路有問題時不必先輸入 client secret。
+    plan = [(n, select_scopes(n, advertised_scopes(SERVERS[n]), mode)) for n in names]
+    client_id, client_secret = load_client(prompt=True)
+    for name, scopes in plan:
+        login_one(name, scopes, client_id, client_secret)
+
+
+def access_token_header(url: str) -> dict[str, str]:
+    name = server_name(url)
+    client_id, client_secret = load_client(prompt=False)
+    refresh_token = keychain_get(url)
+    if not refresh_token:
+        raise SystemExit(f"{name} 尚未登入：執行 gws-mcp-auth login {name}")
+    fields = {
+        "grant_type": "refresh_token",
+        "refresh_token": refresh_token,
+        "client_id": client_id,
+        "client_secret": client_secret,
+    }
+    try:
+        token = request_token(fields, url, HEADER_REQUEST_TIMEOUT)
+    except TokenError as err:
+        if err.error == "invalid_grant":
+            raise SystemExit(
+                f"{name} 的 refresh token 已失效：執行 gws-mcp-auth login --force {name}"
+            ) from None
+        raise SystemExit(f"{name}：換發 access token 失敗：{err}") from None
+    access_token = token.get("access_token")
+    if not isinstance(access_token, str) or not access_token:
+        raise SystemExit(f"{name}：token 回應裡沒有 access_token")
+    return {"Authorization": f"Bearer {access_token}"}
+
+
+def cmd_header(args: argparse.Namespace) -> None:
+    url = (args.url or os.environ.get("CLAUDE_CODE_MCP_SERVER_URL", "")).rstrip("/")
+    if not url:
+        raise SystemExit(
+            "沒有 server URL：由 Claude Code 呼叫時會帶 CLAUDE_CODE_MCP_SERVER_URL"
+        )
+    if url not in SERVERS.values():
+        raise SystemExit(f"不支援的 server URL：{url}")
+    headers: list[dict[str, str]] = []
+    errors: list[SystemExit] = []
+
+    def work() -> None:
+        try:
+            headers.append(access_token_header(url))
+        except SystemExit as err:
+            errors.append(err)
+
+    # DNS 解析與 Keychain 解鎖對話框都沒有逾時，放進背景執行緒，超過期限就直接結束。
+    worker = threading.Thread(target=work, daemon=True)
+    worker.start()
+    worker.join(HEADER_DEADLINE)
+    if worker.is_alive():
+        stop_security()
+        raise SystemExit(
+            f"{server_name(url)}：{HEADER_DEADLINE:.0f} 秒內沒有換到 access token"
+            "（網路逾時，或 login keychain 正在等待解鎖）"
+        )
+    if errors:
+        raise errors[0]
+    if not headers:
+        raise SystemExit(f"{server_name(url)}：換發 access token 時發生未預期的錯誤")
+    print(json.dumps(headers[0]))
+
+
+def cmd_status(_: argparse.Namespace) -> None:
+    for label, account in (
+        ("client ID", CLIENT_ID_ACCOUNT),
+        ("client secret", CLIENT_SECRET_ACCOUNT),
+    ):
+        print(f"{label:14} {'✓' if keychain_has(account) else '✗ 未設定'}")
+    for name, url in SERVERS.items():
+        print(f"{name:14} {'✓' if keychain_has(url) else '✗ 未登入'}")
+
+
+def cmd_forget(args: argparse.Namespace) -> None:
+    for name in resolve_servers(args.servers):
+        print(
+            f"{name}：{'已刪除' if keychain_delete(SERVERS[name]) else '沒有存放的 token'}"
+        )
+    print(
+        "只刪除本機 Keychain 的副本。要在 Google 端撤銷，到 "
+        "https://myaccount.google.com/connections 移除這個 app；"
+        "這會讓同一個 project 底下所有 client 的 token 一起失效。"
+    )
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        prog="gws-mcp-auth",
+        description="Google Workspace MCP 一次性登入，以及給 Claude Code 用的 headersHelper。",
+        epilog=EPILOG,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    login = sub.add_parser(
+        "login",
+        help="登入並把 refresh token 存進 Keychain（預設全部 9 個 server）",
+        epilog=EPILOG,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    login.add_argument(
+        "servers",
+        nargs="*",
+        help="server 名稱，例如 gmail 或 gws-gmail；省略或 all 代表全部",
+    )
+    scope_mode = login.add_mutually_exclusive_group()
+    scope_mode.add_argument("--readonly", action="store_true", help="只申請唯讀 scope")
+    scope_mode.add_argument(
+        "--full", action="store_true", help="連同完整信箱、雲端硬碟、日曆權限一起申請"
+    )
+    login.add_argument(
+        "--force",
+        action="store_true",
+        help="已登入的 server 也重新登入（換 client ID 或 scope 模式時需要）",
+    )
+    login.add_argument(
+        "--reset-client",
+        action="store_true",
+        help="重新輸入 client ID 與 client secret（只換 secret 不必重新登入；"
+        "換 client ID 要再加 --force）",
+    )
+    login.set_defaults(func=cmd_login)
+
+    header = sub.add_parser(
+        "header", help="headersHelper 模式：輸出 Authorization header JSON"
+    )
+    header.add_argument(
+        "url", nargs="?", help="server URL；省略時讀 CLAUDE_CODE_MCP_SERVER_URL"
+    )
+    header.set_defaults(func=cmd_header)
+
+    status = sub.add_parser("status", help="列出哪些 server 已經登入（不顯示 token）")
+    status.set_defaults(func=cmd_status)
+
+    forget = sub.add_parser("forget", help="刪除 Keychain 裡的 refresh token")
+    forget.add_argument("servers", nargs="+", help="server 名稱，或 all")
+    forget.set_defaults(func=cmd_forget)
+
+    args = parser.parse_args()
+    args.func(args)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.exit(130)
