@@ -124,6 +124,10 @@
       GROK_DISABLE_AUTOUPDATER = "1";
       COPILOT_AUTO_UPDATE = "0";
       DO_NOT_TRACK = "1";
+      # Claude Code 2.1.306's GrowthBook flag tengu_wiggly_dove puts the git remote
+      # into an API header. DO_NOT_TRACK already turns GrowthBook off; this also
+      # blocks the CLAUDE_CODE_GB_DISK_CACHE_WHEN_TELEMETRY_OFF disk-cache path.
+      DISABLE_GROWTHBOOK = "1";
       # claude wrapper 保留 DO_NOT_TRACK；cf 的專屬變數也明確停用遙測。
       CF_SEND_TELEMETRY = "false";
 
