@@ -130,6 +130,10 @@
       DISABLE_GROWTHBOOK = "1";
       # claude wrapper 保留 DO_NOT_TRACK；cf 的專屬變數也明確停用遙測。
       CF_SEND_TELEMETRY = "false";
+      # claude plugin marketplace update 每次都重新 shallow clone GitHub marketplace；
+      # devdotfast/whiteboard 約 68 MiB，連 GitHub 只有數百 KB/s 時要 3–5 分鐘，
+      # 預設 120s 會逾時。
+      CLAUDE_CODE_PLUGIN_GIT_TIMEOUT_MS = "900000";
 
       # Cloud CLIs.
       AWS_SHARED_CREDENTIALS_FILE = "${config.xdg.configHome}/aws/credentials";
