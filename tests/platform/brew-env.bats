@@ -45,8 +45,6 @@ build_agent_script() {
   grep -Fq "setenv BUN_INSTALL_CACHE_DIR \"$HOME/.cache/bun-install\"" "$script"
   grep -Fq "setenv NPM_CONFIG_USERCONFIG \"$HOME/.config/npm/npmrc\"" "$script"
   grep -Fq "setenv TF_CLI_CONFIG_FILE \"$HOME/.config/terraform/terraformrc\"" "$script"
-  grep -Fq "setenv ASIDE_HOME \"$HOME/.local/share/aside\"" "$script"
-  grep -Fq "setenv ASIDE_CLI_INSTALL_DIR \"$HOME/.local/share/aside/cli\"" "$script"
 }
 
 @test "collie is restarted after the env is published, tolerating its absence" {

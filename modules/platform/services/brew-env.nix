@@ -33,11 +33,6 @@ let
     /bin/launchctl setenv COPILOT_HOME "${env.COPILOT_HOME}"
     /bin/launchctl setenv GROK_HOME "${env.GROK_HOME}"
     /bin/launchctl setenv MCP_REMOTE_CONFIG_DIR "${env.MCP_REMOTE_CONFIG_DIR}"
-    # aside-daemon 由 Aside.app 直接叫起(cask 沒有替它註冊 launchd agent),只能從
-    # gui domain 拿到 ASIDE_HOME;GUI app 叫起的 `aside mcp` 也要找到 shell 端登入的
-    # 同一份 auth.json。
-    /bin/launchctl setenv ASIDE_HOME "${env.ASIDE_HOME}"
-    /bin/launchctl setenv ASIDE_CLI_INSTALL_DIR "${env.ASIDE_CLI_INSTALL_DIR}"
     # 不經 zsh 的行程(launchd agent 如 herdr.collie、GUI app 叫起的 bash -c)讀不到
     # hm-session-vars,會落回 ~/.bun、~/.npm、~/.terraform.d。
     /bin/launchctl setenv BUN_INSTALL "${env.BUN_INSTALL}"
