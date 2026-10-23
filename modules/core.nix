@@ -105,11 +105,6 @@
       MCP_REMOTE_CONFIG_DIR = "${config.xdg.dataHome}/mcp-auth";
       PI_CODING_AGENT_DIR = "${config.xdg.configHome}/pi";
       PI_CODING_AGENT_SESSION_DIR = "${config.xdg.dataHome}/pi/sessions";
-      # Aside。ASIDE_HOME 由 aside-daemon 讀(預設 ~/.aside),accounts.json、u/<n>、
-      # password-manager、logs 都在底下;CLI 不讀它,安裝目錄與 auth.json 另由
-      # ASIDE_CLI_INSTALL_DIR 決定,放回同一棵樹維持預設佈局。
-      ASIDE_HOME = "${config.xdg.dataHome}/aside";
-      ASIDE_CLI_INSTALL_DIR = "${config.xdg.dataHome}/aside/cli";
       # Vertex AI 上的 Claude。Claude Code 從自己的 settings.json env 取得這兩個
       # 值,但那份 env 不會 export 到 shell,pi 的 @twogiants/pi-anthropic-vertex
       # extension 在載入時讀不到專案 ID 就整個自我停用,anthropic-vertex provider
