@@ -178,7 +178,6 @@
       settings = {
         # https://mise.jdx.dev/configuration/settings.html
 
-        always_keep_download = false;
         always_keep_install = false;
         auto_install = true; # install missing tools on execution
         color_theme = "catppuccin";
