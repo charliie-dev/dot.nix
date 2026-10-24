@@ -205,8 +205,9 @@
         libc = "gnu"; # avoid mise's musl host misdetection
         minimum_release_age = "0s"; # duration string; integer 0 is invalid
         # No global env_file: a project loads its dotenv through its own
-        # `[env] _.file`, and each such file needs its own content-bound
-        # `mise trust`, which an edit to the file revokes.
+        # `[env] _.file`. Outside trusted_config_paths each such file needs its
+        # own content-bound `mise trust`, which an edit to the file revokes;
+        # under trusted_config_paths (below) mise skips that check.
         paranoid = [ "env_files" ];
         use_versions_host = false; # bypass the flaky mise-versions CDN
         task = {
