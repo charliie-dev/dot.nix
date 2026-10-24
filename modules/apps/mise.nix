@@ -181,7 +181,6 @@
         always_keep_install = false;
         auto_install = true; # install missing tools on execution
         color_theme = "catppuccin";
-        env_file = ".env";
         experimental = true;
         fetch_remote_versions_timeout = "60s";
         # Read the language's own version file instead of a duplicate pin in
@@ -205,7 +204,10 @@
         jobs = 8;
         libc = "gnu"; # avoid mise's musl host misdetection
         minimum_release_age = "0s"; # duration string; integer 0 is invalid
-        paranoid = false;
+        # No global env_file: a project loads its dotenv through its own
+        # `[env] _.file`, and each such file needs its own content-bound
+        # `mise trust`, which an edit to the file revokes.
+        paranoid = [ "env_files" ];
         use_versions_host = false; # bypass the flaky mise-versions CDN
         task = {
           output = "keep-order";
