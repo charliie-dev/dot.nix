@@ -37,6 +37,7 @@
         "$aws"
         "$azure"
         "$terraform"
+        "\${custom.tf_prod}"
         "$mise"
         "$cmd_duration"
         # "$all"
@@ -235,6 +236,16 @@
           '';
           format = "[ · ](bg:surface0)[$output]($style)";
           style = "fg:subtext0 bg:surface0";
+          ignore_timeout = true;
+        };
+
+        # A production root shares the path colours of every other directory, so flag it in red.
+        tf_prod = {
+          description = "Flag a production Terraform root";
+          when = ''case "$PWD" in */envs/prod|*/envs/prod/*) true ;; *) false ;; esac'';
+          symbol = "PROD";
+          style = "bold fg:red bg:surface0";
+          format = "[ · ](bg:surface0)[$symbol]($style)";
           ignore_timeout = true;
         };
       };
