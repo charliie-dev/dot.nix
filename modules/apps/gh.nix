@@ -20,6 +20,8 @@
       git_protocol = "ssh";
       editor = "nvim";
       telemetry = "disabled";
+      # Already the default from gh 2.103; spelled out so logins keep the long-lived token.
+      expiring_credentials = "disabled";
     };
   };
 }
