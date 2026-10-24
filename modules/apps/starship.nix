@@ -36,6 +36,7 @@
         "$gcloud"
         "$aws"
         "$azure"
+        "$terraform"
         "$mise"
         "$cmd_duration"
         # "$all"
@@ -309,6 +310,16 @@
         subscription_aliases = {
           "Azure_nics" = "NICS";
         };
+      };
+
+      terraform = {
+        disabled = false;
+        symbol = " ";
+        style = "fg:lavender bg:surface0";
+        # Every root keeps one directory per environment on the `default` workspace, so the
+        # directory already names the environment and $workspace would always read "default".
+        # $version stays out too: mise pins it per repo, and it costs a `terraform version` per prompt.
+        format = "[ · ](bg:surface0)[$symbol]($style)";
       };
 
       mise = {
