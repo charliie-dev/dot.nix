@@ -6,5 +6,6 @@
     ./services/colima.nix
     ./services/gws-mcp-auth.nix
     ./services/sfm-warp-watch.nix
+    ./services/line-mcp-tunnel.nix
   ];
 }
