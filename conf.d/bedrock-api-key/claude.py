@@ -451,7 +451,7 @@ def validate_overlay(runtime: dict[str, Any]) -> dict[str, str]:
     overlay = document(raw if raw is not None else b"", "overlay")
     if (
         set(overlay) != {"env", "model", "fallbackModel"}
-        or overlay["model"] != "opus[1m]"
+        or overlay["model"] != "opus"
         or overlay["fallbackModel"] != ["sonnet"]
     ):
         fail("overlay", "overlay")
@@ -584,7 +584,7 @@ def validate_settings(
         fail("model-conflict", source.label)
     if source.managed and any(
         key in doc and doc[key] != value
-        for key, value in {"model": "opus[1m]", "fallbackModel": ["sonnet"]}.items()
+        for key, value in {"model": "opus", "fallbackModel": ["sonnet"]}.items()
     ):
         fail("model-conflict", source.label)
     for key, value in settings_env(doc, source.label).items():
@@ -707,10 +707,20 @@ def resolve_client(runtime: dict[str, Any], env: dict[str, str]) -> Path:
 
 
 def validate_arguments(arguments: list[str]) -> tuple[str, list[str]]:
-    model = "opus[1m]"
+    model = "opus"
     fallback = ["sonnet"]
     seen: set[str] = set()
-    allowed = {"fable[1m]", "opus[1m]", "sonnet", "haiku", *MODEL_PINS.values()}
+    # Fable and Opus run with 1M context on Bedrock by default; the legacy [1m]
+    # forms stay accepted and resolve to the same pins.
+    allowed = {
+        "fable",
+        "opus",
+        "fable[1m]",
+        "opus[1m]",
+        "sonnet",
+        "haiku",
+        *MODEL_PINS.values(),
+    }
     index = 0
     while index < len(arguments):
         argument = arguments[index]

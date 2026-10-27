@@ -129,7 +129,7 @@ class Fixture(unittest.TestCase):
         self.runtime_path = self.store / "runtime.json"
         write_json(self.runtime_path, self.runtime)
         self.overlay: dict[str, Any] = {
-            "model": "opus[1m]",
+            "model": "opus",
             "fallbackModel": ["sonnet"],
             "env": L.fixed_environment(self.runtime)
             | dict.fromkeys(L.NEUTRALIZABLE, "")
@@ -625,7 +625,7 @@ class Settings(Fixture):
         path = self.layout.managed_dir / "managed-settings.json"
         self.setting({"model": "sonnet"}, path)
         self.reject("model-conflict", self.prepare)
-        self.setting({"model": "opus[1m]", "fallbackModel": ["sonnet"]}, path)
+        self.setting({"model": "opus", "fallbackModel": ["sonnet"]}, path)
         self.assertEqual(self.prepare().report["status"], "ok")
 
     def test_model_mapping_and_allowlist_are_not_silently_ignored(self):
@@ -779,7 +779,7 @@ class EnvironmentAndArguments(Fixture):
             self.reject("arguments", L.validate_arguments, args)
         self.assertEqual(
             L.validate_arguments(["--", "--client-data-url=" + CANARY]),
-            ("opus[1m]", ["sonnet"]),
+            ("opus", ["sonnet"]),
         )
 
     def test_settings_flags_equal_and_split_forms_stop(self):
@@ -788,11 +788,12 @@ class EnvironmentAndArguments(Fixture):
             self.reject("arguments", L.validate_arguments, [flag + "=" + CANARY])
 
     def test_models_and_fallback_keep_1m(self):
-        self.assertEqual(L.validate_arguments([]), ("opus[1m]", ["sonnet"]))
-        self.assertEqual(
-            L.validate_arguments(["--model", "fable[1m]", "--fallback-model=sonnet"]),
-            ("fable[1m]", ["sonnet"]),
-        )
+        self.assertEqual(L.validate_arguments([]), ("opus", ["sonnet"]))
+        for model in ("fable", "fable[1m]", "opus[1m]"):
+            self.assertEqual(
+                L.validate_arguments(["--model", model, "--fallback-model=sonnet"]),
+                (model, ["sonnet"]),
+            )
         self.assertEqual(L.validate_arguments(["--model=haiku"]), ("haiku", ["sonnet"]))
 
     def test_sonnet55_alias_and_pin_replace_legacy_arguments(self):
@@ -867,7 +868,7 @@ class EnvironmentAndArguments(Fixture):
             "--",
             "--settings=prompt-data",
         ]
-        self.assertEqual(L.validate_arguments(args), ("opus[1m]", ["sonnet"]))
+        self.assertEqual(L.validate_arguments(args), ("opus", ["sonnet"]))
         result = self.run_driver(args)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(
@@ -888,7 +889,7 @@ class EnvironmentAndArguments(Fixture):
 class BootstrapAndLaunch(Fixture):
     def test_fixed_emitter_pipe_and_final_exec(self):
         result = self.run_driver(
-            ["--model=fable[1m]", "-p", "quoted 'prompt'\nwith newline"]
+            ["--model=fable", "-p", "quoted 'prompt'\nwith newline"]
         )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stderr, b"")

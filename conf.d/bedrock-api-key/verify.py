@@ -14,8 +14,8 @@ from pathlib import Path
 from typing import Any
 
 CLAUDE_MODELS = {
-    "fable[1m]": "global.anthropic.claude-fable-5-1",
-    "opus[1m]": "global.anthropic.claude-opus-5-5",
+    "fable": "global.anthropic.claude-fable-5-1",
+    "opus": "global.anthropic.claude-opus-5-5",
     "sonnet": "global.anthropic.claude-sonnet-5-5",
     "haiku": "global.anthropic.claude-haiku-5-5",
 }

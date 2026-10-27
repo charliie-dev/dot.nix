@@ -244,7 +244,7 @@ assert env["ANTHROPIC_DEFAULT_OPUS_MODEL"] == "global.anthropic.claude-opus-5-5"
 assert env["ANTHROPIC_DEFAULT_FABLE_MODEL"] == "global.anthropic.claude-fable-5-1"
 assert env["ANTHROPIC_DEFAULT_HAIKU_MODEL"] == "global.anthropic.claude-haiku-5-5"
 assert env["ANTHROPIC_DEFAULT_HAIKU_MODEL_NAME"] == "Bedrock Claude Haiku 5.5"
-assert overlay["model"] == "opus[1m]" and overlay["fallbackModel"] == ["sonnet"]
+assert overlay["model"] == "opus" and overlay["fallbackModel"] == ["sonnet"]
 spec = importlib.util.spec_from_file_location("bedrock_claude_store", manifest["claude_script"])
 module = importlib.util.module_from_spec(spec)
 sys.modules[spec.name] = module

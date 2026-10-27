@@ -256,8 +256,8 @@ Hash 不符或 metadata 不能保留時停止。
 grok-bedrock
 cct bedrock
 claude
-claude-bedrock --model 'fable[1m]'
-claude-bedrock --model 'opus[1m]'
+claude-bedrock --model fable
+claude-bedrock --model opus
 claude-bedrock --model sonnet
 claude-bedrock --model haiku
 grok-bedrock --model bedrock-haiku-5.5

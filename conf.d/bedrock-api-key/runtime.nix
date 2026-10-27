@@ -21,7 +21,7 @@ let
   emptyCredentials = pkgs.writeText "bedrock-empty-aws-credentials" "";
   claudeOverlay = pkgs.writeText "claude-bedrock-settings.json" (
     builtins.toJSON {
-      model = "opus[1m]";
+      model = "opus";
       fallbackModel = [ "sonnet" ];
       env = {
         CLAUDE_CODE_USE_BEDROCK = "1";
