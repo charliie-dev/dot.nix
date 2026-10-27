@@ -70,6 +70,17 @@ in
         { line_regex = ['^\s*╰─.*· plan approval\b.*─╯\s*$'] },
       ]
 
+      # Grok 1.0.64+ asks for folder trust before the first prompt box exists,
+      # while the OSC title already reads idle. A later prompt box means the
+      # dialog is history.
+      [[rules]]
+      id = "folder_trust_blocked"
+      state = "blocked"
+      priority = 1195
+      region = "whole_recent"
+      visible_blocker = true
+      regex = ['(?m)^[ \t]*Do you trust the contents of this directory\?[ \t]*\n(?:[^\n╭╰]*\n){0,12}?[ \t]*(?:y[ \t]+)?Yes, proceed(?:[ \t]+y)?[ \t]*\n[ \t]*(?:n[ \t]+)?No, (?:quit|cancel)(?:[ \t]+n)?[ \t]*(?:\n[^╭╰]*)?\z']
+
       [[rules]]
       id = "background_dock_working"
       state = "working"

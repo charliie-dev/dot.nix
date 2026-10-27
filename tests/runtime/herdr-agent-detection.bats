@@ -319,6 +319,54 @@ grok_background_dock() {
   done
 }
 
+folder_trust_screen() {
+  cat <<SCREEN
+
+  /U/t/W/proj
+
+                                                ⠀⠀⠀⣠⣾⠿⠛⠛⠛⠛⢀⡴⠁⠀
+                                                ⠐⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+
+
+                                 Do you trust the contents of this directory?
+                                          /Users/test/Work/proj
+
+                           Grok Build may run or modify contents in this directory,
+                                            posing security risks.
+
+                                        Yes, proceed                 y
+                                        No, ${1:-quit}                     n
+
+
+                                                                                          Grok Build  1.0.70
+SCREEN
+}
+
+@test "grok folder trust prompt is blocked" {
+  for choice in quit cancel; do
+    folder_trust_screen "$choice" > "$screen"
+    assert_grok_state blocked
+    jq -e '.visible_blocker and .matched_rule.id == "folder_trust_blocked"' <<<"$output"
+  done
+}
+
+@test "grok folder trust prompt above a prompt box is history" {
+  {
+    folder_trust_screen
+    grok_idle_prompt
+  } > "$screen"
+  assert_grok_state idle
+  jq -e '.visible_blocker | not' <<<"$output"
+}
+
+@test "grok mentioning the folder trust question in prose stays idle" {
+  {
+    printf '%s\n' 'Grok asks "Do you trust the contents of this directory?" with Yes, proceed and No, quit.'
+    grok_idle_prompt
+  } > "$screen"
+  assert_grok_state idle
+}
+
 waiting_screen() {
   cat <<'SCREEN'
     ◎ waiting · send a message to interrupt
