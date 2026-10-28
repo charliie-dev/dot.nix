@@ -1,7 +1,7 @@
 ---
 name: handoff
-description: "Hand the current conversation off to another agent session: write a handoff document, then optionally deliver it to an agent in a neighboring Herdr pane (existing session or a newly started Claude Code / Grok Build agent). Use when the user asks to hand off, pass, or transfer the current work, including mid-sentence mentions like \"/handoff to the right herdr pane\"."
-argument-hint: "Where the work goes and what the next session focuses on, e.g. \"to right herdr pane with a new cc session\""
+description: "Hand the current conversation off to another agent session: write a handoff document, then optionally deliver it to an agent in a neighboring Rex pane (Herdr as fallback), either an existing session or a newly started Claude Code / Grok Build agent. Use when the user asks to hand off, pass, or transfer the current work, including mid-sentence mentions like \"/handoff to the right pane\"."
+argument-hint: "Where the work goes and what the next session focuses on, e.g. \"to right pane with a new cc session\""
 ---
 
 # Handoff
@@ -31,20 +31,14 @@ Read the destination from the user's request:
 | Request | Delivery |
 |---|---|
 | No destination, or "just write it" | Stop after step 1 and report the file path. |
-| A Herdr pane that already runs an agent ("right pane", "the cc session on the right") | Prompt that agent (step 3a). |
+| A pane that already runs an agent ("right pane", "the cc session on the right") | Prompt that agent (step 3a). |
 | A new session ("new cc session", "another grok session") | Start an agent in a pane, then prompt it (step 3b). |
 
 When the target pane is ambiguous, or more than one agent matches, ask the user instead of guessing.
 
-## 3. Deliver through Herdr
+## 3. Deliver
 
-Only when a Herdr destination was requested. First confirm this agent runs inside Herdr:
-
-```bash
-test "${HERDR_ENV:-}" = 1
-```
-
-If it fails, report the handoff file path and tell the user you are not inside Herdr. If `herdr --skill` output is not already in context, run it and follow it; the installed binary is the authority for command syntax. Parse IDs from JSON responses; never derive them from examples.
+Only when a pane destination was requested. Deliver through Rex when `REX_SESSION` is set and `rex whoami --json` succeeds. Otherwise, inside Herdr, follow [references/herdr.md](references/herdr.md). With neither, report the handoff file path and tell the user no multiplexer is available.
 
 The prompt to send is short and points at the file:
 
@@ -52,36 +46,43 @@ The prompt to send is short and points at the file:
 Read <absolute handoff path> and continue the work it describes. The user already approved only what the document lists as approved. Reply to the user in <the user's language>.
 ```
 
+`scripts/rex-prompt.lua` in this skill's directory delivers it: the script resolves the pane, refuses an agent that is `working` or `blocked`, types the prompt, and watches the agent's program status until the agent starts. Run it with `rex do` and read the JSON it prints:
+
+| Argument | Meaning |
+|---|---|
+| `direction=left\|right\|up\|down` | The pane sharing that edge with this one. |
+| `block=<id>` | A pane named by the user, found with `rex block ls -s "$REX_SESSION" --json`. |
+| `text=<prompt>` | The prompt above. |
+| `launch=<command>` | Start an agent in a shell pane first: `claude` for Claude Code ("cc"), `grok` for Grok Build. Default to the same kind as this agent. |
+
 ### 3a. Existing agent in a neighboring pane
 
 ```bash
-herdr pane layout --pane "$HERDR_PANE_ID"
-herdr agent list
-```
-
-Pick the agent in the requested direction relative to the caller pane. If its state is `blocked` or `working`, tell the user and do not prompt it. Otherwise:
-
-```bash
-herdr agent prompt <agent-name-or-pane-id> "<prompt>" --wait --timeout 120000
+rex do "<skill dir>/scripts/rex-prompt.lua" -s "$REX_SESSION" -b "$REX_BLOCK" --json \
+  direction=right text="<prompt>"
 ```
 
 ### 3b. New agent
 
-Use the requested kind: `claude` for Claude Code ("cc"), `grok` for Grok Build. Default to the same kind as this agent.
-
-If the requested pane already exists and is an idle shell at its prompt, use it. Otherwise create a sibling pane without stealing focus, splitting toward the requested direction (default: right for a wide pane, down for a tall one):
+If the requested pane already exists and is an idle shell at its prompt, pass it with `direction=` or `block=`. Otherwise create a sibling pane without stealing focus, splitting toward the requested direction (default: right for a wide pane, down for a tall one), and use `.block_ids[0]` from its JSON:
 
 ```bash
-herdr pane split --current --direction right --cwd "$PWD" --no-focus
+rex split -s "$REX_SESSION" -b "$REX_BLOCK" --split=right -c "$PWD" --focus=false --label <name> --json
+rex do "<skill dir>/scripts/rex-prompt.lua" -s "$REX_SESSION" -b "$REX_BLOCK" --json \
+  block=<new-block-id> launch=<claude|grok> text="<prompt>"
 ```
 
-Start the agent with a short descriptive name, then prompt it:
-
-```bash
-herdr agent start <name> --kind <claude|grok> --pane <new-pane-id>
-herdr agent prompt <name> "<prompt>" --wait --timeout 120000
-```
+The agent starts by being typed into the pane's shell (`launch=`), which runs the shell functions that wrap `claude` and `grok` with their credentials. The bare binary that `rex split -- grok` runs skips them and fails to authenticate.
 
 ## 4. Report
 
-Tell the user the handoff file path, where it was delivered (pane ID and agent name), and whether the receiving agent started working. A timeout or stall does not prove the prompt was lost: read the pane with `herdr agent read` before re-sending anything.
+Tell the user the handoff file path, where it was delivered (pane ID, label and agent app), and whether the receiving agent started working:
+
+- `ok: true` with `state: working`: started and still running. `done` or `idle`: it already finished its first turn.
+- `ok: false`: `reason` says why. Nothing was sent when the pane was missing, ambiguous, held no agent, or the agent was busy.
+
+On `blocked`, `error`, or a stall, read the pane before re-sending anything; an unconfirmed start does not prove the prompt was lost:
+
+```bash
+rex capture -s "$REX_SESSION" -b <block> --trim --unwrap | tail -n 40
+```
