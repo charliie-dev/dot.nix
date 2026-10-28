@@ -35,6 +35,7 @@ let
       "glow.nix"
       "hunk.nix"
       "patina.nix"
+      "rex.nix"
       "ssh.nix"
       "terraform.nix"
       "tombi.nix"
@@ -76,6 +77,7 @@ in
     ./glow.nix
     ./hunk.nix
     ./patina.nix
+    ./rex.nix
     ./ssh.nix
     ./terraform.nix
     ./tombi.nix
