@@ -46,6 +46,9 @@
     shell.enableZshIntegration = true;
     sessionPath = [
       "/nix/var/nix/profiles/default/bin"
+      # nix-daemon.sh only adds the user profile from /etc/zshrc, so
+      # non-interactive shells (rex popups, `zsh -l -c`) would miss it.
+      "${config.home.profileDirectory}/bin"
       "${config.home.homeDirectory}/.local/bin"
       "${config.xdg.dataHome}/cargo/bin"
       "${config.xdg.dataHome}/go/bin"
