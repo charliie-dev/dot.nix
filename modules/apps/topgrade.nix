@@ -37,6 +37,11 @@
         disable = [
           "nix"
           "github_cli_skills"
+          # The built-in vim step runs `Lazy! sync`, which moves every plugin to
+          # its latest commit and rewrites lazy-lock.json; the nvim repo's CI
+          # cron owns that lockfile. Replaced by the "Neovim plugins" custom
+          # command below. No vimrc or mason here, so nothing else is lost.
+          "vim"
         ];
 
         # Run these steps before all others
@@ -158,6 +163,11 @@
         # No --handoff: the running server keeps the old version until its next
         # restart instead of live-swapping mid-run.
         "herdr" = "herdr update";
+        # Check plugins out at the commits pinned in ~/.config/nvim/lazy-lock.json,
+        # never at upstream HEAD. Runs after the git step has pulled the lockfile
+        # (custom_commands is in misc.last). `clean` drops plugins removed from
+        # the spec, as the disabled `Lazy! sync` did.
+        "Neovim plugins" = "nvim --headless '+Lazy! restore' '+Lazy! clean' +qa";
         # "Python Environment" = "~/dev/.env/bin/pip install -i https://pypi.python.org/simple -U --upgrade-strategy eager jupyter"
         # "Custom command using interactive shell (unix)" = "-i vim_upgrade"
       };
