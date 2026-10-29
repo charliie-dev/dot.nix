@@ -33,8 +33,8 @@ rex.bind("cmd+s>z", "pane.zoom")
 rex.mode("resize", { exclusive = true })
 rex.bind("cmd+s>m", "client.mode.enter", { name = "resize" })
 for _, k in ipairs({ { "h", "left" }, { "j", "down" }, { "k", "up" }, { "l", "right" } }) do
-  rex.bind("resize/" .. k[1], "pane.resize", { direction = k[2] })
-  rex.bind("resize/shift+" .. k[1], "pane.resize", { direction = k[2], amount = 15 })
+	rex.bind("resize/" .. k[1], "pane.resize", { direction = k[2] })
+	rex.bind("resize/shift+" .. k[1], "pane.resize", { direction = k[2], amount = 15 })
 end
 rex.bind("resize/e", "pane.balance")
 rex.bind("resize/enter", "client.mode.exit")
@@ -49,7 +49,7 @@ rex.bind("cmd+s>.", "client.tab.move.forward")
 
 -- tab navigation
 for i = 1, 9 do
-  rex.bind("cmd+s>" .. i, "client.tab.goto", { index = i })
+	rex.bind("cmd+s>" .. i, "client.tab.goto", { index = i })
 end
 
 -- session:對應 herdr 的 spaces 與 sidebar
@@ -68,28 +68,28 @@ rex.bind("cmd+s>shift+n", "client.find.previous")
 -- 在目前 tab 上開 80% 浮動層,cwd 跟著 focused pane,程式結束就關閉。
 -- 用 process 的 cwd 而非 pwd:zsh 沒回報 OSC 7 時 pwd 是空的。
 rex.action({
-  name = "popup",
-  title = "Open Popup",
-  description = "Open a floating terminal over the current tab; without a command it runs a shell.",
-  args = { command = "array?" },
-  run = function(ctx, args)
-    local cwd
-    if ctx.block_id ~= nil then
-      local p = rex.block.call(terminal, "process", { block_id = ctx.block_id })
-      cwd = p and p.foreground and p.foreground.cwd
-    end
-    local _, err = rex.session.new_layer({
-      bounds = { 0.1, 0.1, 0.8, 0.8 },
-      focus = true,
-      layout = rex.layout.block({
-        flavor = terminal .. ".shell",
-        options = { command = args.command, cwd = cwd },
-      }),
-    })
-    if err ~= nil then
-      error(err, 0)
-    end
-  end,
+	name = "popup",
+	title = "Open Popup",
+	description = "Open a floating terminal over the current tab; without a command it runs a shell.",
+	args = { command = "array?" },
+	run = function(ctx, args)
+		local cwd
+		if ctx.block_id ~= nil then
+			local p = rex.block.call(terminal, "process", { block_id = ctx.block_id })
+			cwd = p and p.foreground and p.foreground.cwd
+		end
+		local _, err = rex.session.new_layer({
+			bounds = { 0.1, 0.1, 0.8, 0.8 },
+			focus = true,
+			layout = rex.layout.block({
+				flavor = terminal .. ".shell",
+				options = { command = args.command, cwd = cwd },
+			}),
+		})
+		if err ~= nil then
+			error(err, 0)
+		end
+	end,
 })
 
 rex.bind("cmd+s>`", "popup")
