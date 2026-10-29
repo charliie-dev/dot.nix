@@ -66,15 +66,41 @@ rex.bind("cmd+s>shift+n", "client.find.previous")
 
 -- popup:對應 herdr 的 popup 與 ghostty 的 quick terminal。
 -- 在目前 tab 上開 80% 浮動層,cwd 跟著 focused pane,程式結束就關閉。
+-- 焦點已在浮動層裡時改為關閉該層,所以同一組鍵可開可關(cmd+s>q 也行)。
 -- 用 process 的 cwd 而非 pwd:zsh 沒回報 OSC 7 時 pwd 是空的。
+
+-- block 所在的浮動層 id;在 tiled layout 裡或找不到時回傳 nil。
+local function floating_layer_of(block_id)
+	local view = rex.session.view({})
+	for _, w in ipairs(view and view.windows or {}) do
+		for _, layer in ipairs(w.layers or {}) do
+			if layer.kind ~= "tiled" then
+				for _, b in ipairs(layer.blocks or {}) do
+					if b.block_id == block_id then
+						return layer.layer_id
+					end
+				end
+			end
+		end
+	end
+end
+
 rex.action({
 	name = "popup",
-	title = "Open Popup",
-	description = "Open a floating terminal over the current tab; without a command it runs a shell.",
+	title = "Toggle Popup",
+	description = "Open a floating terminal over the current tab, or close the one that has focus; without a command it runs a shell.",
 	args = { command = "array?" },
 	run = function(ctx, args)
 		local cwd
 		if ctx.block_id ~= nil then
+			local layer = floating_layer_of(ctx.block_id)
+			if layer ~= nil then
+				local _, err = rex.session.close_layer({ layer_id = layer })
+				if err ~= nil then
+					error(err, 0)
+				end
+				return
+			end
 			local p = rex.block.call(terminal, "process", { block_id = ctx.block_id })
 			cwd = p and p.foreground and p.foreground.cwd
 		end
