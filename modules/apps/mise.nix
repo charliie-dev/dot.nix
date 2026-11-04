@@ -270,6 +270,10 @@
           missing_tools = "if_other_versions_installed";
           show_env = false;
         };
+
+        self_update = {
+          auto = true;
+        };
       };
     };
   };
