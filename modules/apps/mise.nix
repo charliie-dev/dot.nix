@@ -29,7 +29,10 @@
         "aqua:hashicorp/terraform-ls" = "latest";
         "aqua:mrjosh/helm-ls" = "latest";
         "aqua:terraform-linters/tflint" = "latest";
-        "cargo:shuck-cli" = "latest"; # shell LSP and linter; replaces bash-language-server
+        # shell LSP and linter; replaces bash-language-server. GitHub Release
+        # assets, not cargo: crates.io can publish a version before its Release
+        # ships, and the cargo fallback fails on hosts without a Rust toolchain.
+        "github:ewhauser/shuck" = "latest";
         "github:kristoff-it/superhtml" = "latest"; # HTML LSP and formatter
         "github:neocmakelsp/neocmakelsp" = "latest";
         "github:tombi-toml/tombi" = "latest"; # musl-only Linux releases
