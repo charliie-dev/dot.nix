@@ -156,6 +156,15 @@
               # buildInput and the crashpad-handler mesonFlag must go — the flag
               # embeds ${sentry-native}, which alone would force the build.
               determinateNix = nixComponents.nix-cli.overrideAttrs (prevAttrs: {
+                # Newer libc++ marks std::optional::value() [[nodiscard]], and
+                # nix-src builds with -Werror=unused-result, so the deliberate
+                # empty-optional access in `nix crash` fails to compile.
+                # Upstream fix: https://github.com/DeterminateSystems/nix-src/pull/822
+                # --replace-fail breaks loudly once upstream fixes it; drop then.
+                postPatch = (prevAttrs.postPatch or "") + ''
+                  substituteInPlace crash.cc \
+                    --replace-fail 'opt.value();' '(void) opt.value();'
+                '';
                 buildInputs = builtins.filter (
                   p: !(lib.hasInfix "sentry-native" (p.name or ""))
                 ) prevAttrs.buildInputs;
