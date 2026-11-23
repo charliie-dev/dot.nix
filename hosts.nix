@@ -32,6 +32,7 @@
     ];
     homeDirectory = "/Users/charles";
     enableSecrets = true;
+    enableSigningAgent = true;
   };
   "charles@dorcus.local" = {
     sharedConfig = "charles@dorcus";
