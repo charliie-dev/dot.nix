@@ -88,10 +88,33 @@ let
                 current = os.path.join(current, component)
                 validate_directory(current)
 
-        def ensure_leaf_directory(path, root):
+        def tighten_directory(path):
+            # Narrow an owner-only-writable directory to 0700; unsafe ones still fail.
+            validate_directory(path)
+            flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0)
+            try:
+                fd = os.open(path, flags)
+            except OSError:
+                fail("managed directory cannot be opened safely")
+            try:
+                st = os.fstat(fd)
+                if (
+                    not stat.S_ISDIR(st.st_mode)
+                    or st.st_uid != os.getuid()
+                    or stat.S_IMODE(st.st_mode) & 0o022
+                ):
+                    fail("managed directory has unsafe ownership or mode")
+                if stat.S_IMODE(st.st_mode) != 0o700:
+                    os.fchmod(fd, 0o700)
+            finally:
+                os.close(fd)
+
+        def ensure_leaf_directory(path, root, tighten=False):
             validate_existing_parents(path, root)
             if not exists(path):
                 os.mkdir(path, 0o700)
+            elif tighten:
+                tighten_directory(path)
             validate_directory(path, 0o700)
 
         def open_regular(path, modes, missing_ok=False, writable=False):
@@ -526,7 +549,9 @@ let
         args.gnupg_home = beneath(args.gnupg_home, args.xdg_data)
         args.password_store = beneath(args.password_store, args.xdg_data)
         docker_directory = os.path.dirname(args.docker_config)
-        ensure_leaf_directory(docker_directory, args.xdg_config)
+        # On a fresh host, linkGeneration creates this directory as 0755 for the
+        # docker/cli-plugins links (modules/runtime/mise.nix) before this runs.
+        ensure_leaf_directory(docker_directory, args.xdg_config, tighten=True)
         validate_existing_parents(args.lock, args.home)
         if not exists(args.lock):
             flags = os.O_RDWR | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)

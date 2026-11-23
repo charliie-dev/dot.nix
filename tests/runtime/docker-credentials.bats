@@ -115,6 +115,29 @@ run_darwin_bootstrap() {
   [ ! -e "$PASSWORD_STORE" ]
 }
 
+@test "Darwin tightens a Home Manager-created 0755 Docker directory" {
+  [ "$(uname -s)" = Darwin ] || skip "Darwin helper policy"
+  # linkGeneration creates docker/ as 0755 for the cli-plugins links on a fresh host.
+  mkdir -m 755 "$(dirname "$DOCKER_CONFIG")"
+  run_darwin_bootstrap
+  if [ "$status" -ne 0 ]; then
+    echo "$output" >&2
+    return 1
+  fi
+  [ "$(/usr/bin/stat -f '%Lp' "$(dirname "$DOCKER_CONFIG")")" = 700 ]
+  [ "$(/usr/bin/stat -f '%Lp' "$DOCKER_CONFIG")" = 600 ]
+}
+
+@test "Darwin still rejects a group-writable Docker directory" {
+  [ "$(uname -s)" = Darwin ] || skip "Darwin helper policy"
+  mkdir "$(dirname "$DOCKER_CONFIG")"
+  chmod 775 "$(dirname "$DOCKER_CONFIG")"
+  run_darwin_bootstrap
+  [ "$status" -ne 0 ]
+  [ "$(/usr/bin/stat -f '%Lp' "$(dirname "$DOCKER_CONFIG")")" = 775 ]
+  [ ! -e "$DOCKER_CONFIG" ]
+}
+
 assert_exact_key() {
   public="$(GNUPGHOME="$GNUPG_HOME" gpg --batch --with-colons --fixed-list-mode --with-fingerprint --list-keys)"
   secret="$(GNUPGHOME="$GNUPG_HOME" gpg --batch --with-colons --fixed-list-mode --with-fingerprint --list-secret-keys)"
