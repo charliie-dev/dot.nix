@@ -105,7 +105,10 @@ let
                 ):
                     fail("managed directory has unsafe ownership or mode")
                 if stat.S_IMODE(st.st_mode) != 0o700:
-                    os.fchmod(fd, 0o700)
+                    try:
+                        os.fchmod(fd, 0o700)
+                    except OSError:
+                        fail("managed directory mode cannot be narrowed to 0700")
             finally:
                 os.close(fd)
 
@@ -549,8 +552,9 @@ let
         args.gnupg_home = beneath(args.gnupg_home, args.xdg_data)
         args.password_store = beneath(args.password_store, args.xdg_data)
         docker_directory = os.path.dirname(args.docker_config)
-        # On a fresh host, linkGeneration creates this directory as 0755 for the
-        # docker/cli-plugins links (modules/runtime/mise.nix) before this runs.
+        # On a fresh Darwin host, linkGeneration may already have created this directory
+        # as 0755 for the docker/cli-plugins links (modules/runtime/mise.nix); the DAG
+        # does not order the two steps, so accept and narrow that case.
         ensure_leaf_directory(docker_directory, args.xdg_config, tighten=True)
         validate_existing_parents(args.lock, args.home)
         if not exists(args.lock):

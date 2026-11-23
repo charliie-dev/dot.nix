@@ -132,11 +132,12 @@ run_darwin_bootstrap() {
   [ ! -e "$PASSWORD_STORE" ]
 }
 
-@test "Darwin tightens a Home Manager-created 0755 Docker directory" {
-  [ "$(uname -s)" = Darwin ] || skip "Darwin helper policy"
-  # linkGeneration creates docker/ as 0755 for the cli-plugins links on a fresh host.
+# The pass/--linux bootstrap runs on both platforms, so these also run on Linux hosts
+# listed in hosts.nix (CI does not run bats).
+@test "a Home Manager-created 0755 Docker directory is tightened to 0700" {
+  # linkGeneration can create docker/ as 0755 for the cli-plugins links on a fresh host.
   mkdir -m 755 "$(dirname "$DOCKER_CONFIG")"
-  run_darwin_bootstrap
+  run_bootstrap
   if [ "$status" -ne 0 ]; then
     echo "$output" >&2
     return 1
@@ -145,14 +146,14 @@ run_darwin_bootstrap() {
   [ "$(file_mode "$DOCKER_CONFIG")" = 600 ]
 }
 
-@test "Darwin still rejects a group-writable Docker directory" {
-  [ "$(uname -s)" = Darwin ] || skip "Darwin helper policy"
+@test "a group-writable Docker directory is still rejected unchanged" {
   mkdir "$(dirname "$DOCKER_CONFIG")"
   chmod 775 "$(dirname "$DOCKER_CONFIG")"
-  run_darwin_bootstrap
+  run_bootstrap
   [ "$status" -ne 0 ]
   [ "$(file_mode "$(dirname "$DOCKER_CONFIG")")" = 775 ]
   [ ! -e "$DOCKER_CONFIG" ]
+  [ ! -e "$GNUPG_HOME" ]
 }
 
 assert_exact_key() {
