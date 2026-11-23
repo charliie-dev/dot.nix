@@ -53,6 +53,23 @@ config_hash() {
   shasum -a 256 "$DOCKER_CONFIG" | awk '{print $1}'
 }
 
+# A Nix profile can put GNU stat ahead of BSD stat on macOS; pick the syntax per platform.
+file_mode() {
+  if [ "$(uname -s)" = Darwin ]; then
+    /usr/bin/stat -f '%Lp' "$1"
+  else
+    stat -c '%a' "$1"
+  fi
+}
+
+link_count() {
+  if [ "$(uname -s)" = Darwin ]; then
+    /usr/bin/stat -f '%l' "$1"
+  else
+    stat -c '%h' "$1"
+  fi
+}
+
 run_darwin_bootstrap() {
   run "$PROGRAM" \
     --home "$HOME_DIR" \
@@ -96,7 +113,7 @@ run_darwin_bootstrap() {
   [ "$status" -eq 0 ]
   jq -e '.credsStore == "osxkeychain" and .credHelpers["asia-east1-docker.pkg.dev"] == "gcloud"' \
     "$DOCKER_CONFIG" >/dev/null
-  [ "$(stat -f '%Lp' "$DOCKER_CONFIG")" = 600 ]
+  [ "$(file_mode "$DOCKER_CONFIG")" = 600 ]
   [ ! -e "$GNUPG_HOME" ]
   [ ! -e "$PASSWORD_STORE" ]
 }
@@ -124,8 +141,8 @@ run_darwin_bootstrap() {
     echo "$output" >&2
     return 1
   fi
-  [ "$(/usr/bin/stat -f '%Lp' "$(dirname "$DOCKER_CONFIG")")" = 700 ]
-  [ "$(/usr/bin/stat -f '%Lp' "$DOCKER_CONFIG")" = 600 ]
+  [ "$(file_mode "$(dirname "$DOCKER_CONFIG")")" = 700 ]
+  [ "$(file_mode "$DOCKER_CONFIG")" = 600 ]
 }
 
 @test "Darwin still rejects a group-writable Docker directory" {
@@ -134,17 +151,20 @@ run_darwin_bootstrap() {
   chmod 775 "$(dirname "$DOCKER_CONFIG")"
   run_darwin_bootstrap
   [ "$status" -ne 0 ]
-  [ "$(/usr/bin/stat -f '%Lp' "$(dirname "$DOCKER_CONFIG")")" = 775 ]
+  [ "$(file_mode "$(dirname "$DOCKER_CONFIG")")" = 775 ]
   [ ! -e "$DOCKER_CONFIG" ]
 }
 
 assert_exact_key() {
   public="$(GNUPGHOME="$GNUPG_HOME" gpg --batch --with-colons --fixed-list-mode --with-fingerprint --list-keys)"
   secret="$(GNUPGHOME="$GNUPG_HOME" gpg --batch --with-colons --fixed-list-mode --with-fingerprint --list-secret-keys)"
-  [ "$(printf '%s\n' "$public" | awk -F: '$1=="pub" && $4==22 && $7=="" && $12 ~ /c/i && $17=="ed25519" {n++} END{print n+0}')" -eq 1 ]
-  [ "$(printf '%s\n' "$public" | awk -F: '$1=="sub" && $4==18 && $7=="" && $12 ~ /e/i && $17=="cv25519" {n++} END{print n+0}')" -eq 1 ]
-  [ "$(printf '%s\n' "$secret" | awk -F: '$1=="ssb" && $4==18 && $12 ~ /e/i {n++} END{print n+0}')" -eq 1 ]
-  [ "$(grep -cv '^[[:space:]]*\($\|#\)' "$PASSWORD_STORE/.gpg-id")" -eq 1 ]
+  # awk has no /re/i flag: gawk parsed `$12 ~ /c/i` as `$12 ~ (($0 ~ /c/) i)` (never true) and
+  # BSD awk as `($12 ~ /c/) i` (always true), so match case-insensitively with tolower().
+  [ "$(printf '%s\n' "$public" | awk -F: '$1=="pub" && $4==22 && $7=="" && tolower($12) ~ /c/ && $17=="ed25519" {n++} END{print n+0}')" -eq 1 ]
+  [ "$(printf '%s\n' "$public" | awk -F: '$1=="sub" && $4==18 && $7=="" && tolower($12) ~ /e/ && $17=="cv25519" {n++} END{print n+0}')" -eq 1 ]
+  [ "$(printf '%s\n' "$secret" | awk -F: '$1=="ssb" && $4==18 && tolower($12) ~ /e/ {n++} END{print n+0}')" -eq 1 ]
+  # Separate -e patterns: BSD grep treats `$` inside a \(...\) group as a literal.
+  [ "$(grep -cv -e '^[[:space:]]*$' -e '^[[:space:]]*#' "$PASSWORD_STORE/.gpg-id")" -eq 1 ]
 }
 
 @test "pristine Linux fixture generates exact key initializes pass then replaces config" {
@@ -153,9 +173,9 @@ assert_exact_key() {
     echo "$output" >&2
     return 1
   fi
-  [ "$(stat -f '%Lp' "$GNUPG_HOME")" = 700 ]
-  [ "$(stat -f '%Lp' "$PASSWORD_STORE")" = 700 ]
-  [ "$(stat -f '%Lp' "$PASSWORD_STORE/.gpg-id")" = 600 ]
+  [ "$(file_mode "$GNUPG_HOME")" = 700 ]
+  [ "$(file_mode "$PASSWORD_STORE")" = 700 ]
+  [ "$(file_mode "$PASSWORD_STORE/.gpg-id")" = 600 ]
   [ ! -e "$BOOTSTRAP_MARKER" ]
   helper=gcr
   if [ "$(uname -s)" = Darwin ]; then
@@ -282,8 +302,8 @@ JSON
   [ "$status" -ne 0 ]
   [ "$(config_hash)" = "$before" ]
   [ -d "$GNUPG_HOME" ]
-  [ "$(stat -f '%Lp' "$BOOTSTRAP_MARKER")" = 600 ]
-  [ "$(stat -f '%l' "$BOOTSTRAP_MARKER")" = 1 ]
+  [ "$(file_mode "$BOOTSTRAP_MARKER")" = 600 ]
+  [ "$(link_count "$BOOTSTRAP_MARKER")" = 1 ]
   [ "$(cat "$BOOTSTRAP_MARKER")" = bootstrap-in-progress ]
 }
 
@@ -296,7 +316,7 @@ JSON
   run_bootstrap --test-fail-at after-subkey
   [ "$status" -ne 0 ]
   [ "$(config_hash)" = "$before" ]
-  [ "$(stat -f '%Lp' "$BOOTSTRAP_MARKER")" = 600 ]
+  [ "$(file_mode "$BOOTSTRAP_MARKER")" = 600 ]
   run_bootstrap
   [ "$status" -ne 0 ]
   [ "$(config_hash)" = "$before" ]
