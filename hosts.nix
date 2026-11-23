@@ -22,7 +22,7 @@
     sharedConfig = "charles@24041-LABNB01";
     system = "aarch64-darwin";
   };
-  # Mac Studio (M5 Max); first deploy without secrets until its age key is enrolled
+  # Mac Studio (M5 Max)
   "charles@dorcus" = {
     system = "aarch64-darwin";
     roles = [
@@ -31,7 +31,7 @@
       "top"
     ];
     homeDirectory = "/Users/charles";
-    enableSecrets = false;
+    enableSecrets = true;
   };
   "charles@dorcus.local" = {
     sharedConfig = "charles@dorcus";
