@@ -33,7 +33,7 @@ let
     /bin/launchctl setenv COPILOT_HOME "${env.COPILOT_HOME}"
     /bin/launchctl setenv GROK_HOME "${env.GROK_HOME}"
     /bin/launchctl setenv MCP_REMOTE_CONFIG_DIR "${env.MCP_REMOTE_CONFIG_DIR}"
-    # 不經 zsh 的行程(launchd agent 如 herdr.collie、GUI app 叫起的 bash -c)讀不到
+    # 不經 zsh 的行程(launchd agent、GUI app 叫起的 bash -c)讀不到
     # hm-session-vars,會落回 ~/.bun、~/.npm、~/.terraform.d。
     /bin/launchctl setenv BUN_INSTALL "${env.BUN_INSTALL}"
     /bin/launchctl setenv BUN_INSTALL_CACHE_DIR "${env.BUN_INSTALL_CACHE_DIR}"
@@ -69,9 +69,6 @@ let
     /bin/launchctl setenv COPILOT_AUTO_UPDATE "${env.COPILOT_AUTO_UPDATE}"
     /bin/launchctl setenv HOMEBREW_NO_ANALYTICS "${env.HOMEBREW_NO_ANALYTICS}"
     /bin/launchctl setenv HOMEBREW_NO_ENV_HINTS "${env.HOMEBREW_NO_ENV_HINTS}"
-    # herdr.collie 同樣 RunAtLoad,登入時常比這裡早起而拿不到上面的值,setenv 完重啟它。
-    # 沒裝 collie 時 kickstart 會失敗,忽略即可。
-    /bin/launchctl kickstart -k "gui/$(/usr/bin/id -u)/herdr.collie" 2>/dev/null || true
   '';
 in
 lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {

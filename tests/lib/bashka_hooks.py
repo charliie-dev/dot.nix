@@ -1026,7 +1026,7 @@ class Registration(Fixture):
             "hooks": {
                 "SessionStart": [
                     {"hooks": [{"type": "command", "command": "first"}]},
-                    {"hooks": [{"type": "command", "command": "herdr"}]},
+                    {"hooks": [{"type": "command", "command": "second"}]},
                 ],
                 "PreCompact": [{"hooks": [{"type": "command", "command": "compact"}]}],
                 "PreToolUse": [

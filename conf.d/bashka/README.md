@@ -133,7 +133,7 @@ ACLs and extended attributes are not copied; review them before deployment if us
 
 Only one Claude `PreToolUse`/`Bash` group is added. Grok's enabled Claude
 compatibility supplies the same hook; do not register a second Grok hook.
-SessionStart/PreCompact groups and Herdr indices are not reordered. Restart cc/gb
+SessionStart/PreCompact groups and their indices are not reordered. Restart cc/gb
 and verify one loaded hook in each, a bare installer denial, and the expected
 fixed-entry allow/deny behavior. Check project/plugin hooks for later rewrites.
 Live loading is a separate user-run acceptance check.

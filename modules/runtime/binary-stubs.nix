@@ -406,45 +406,4 @@ in
       "Linux/x86_64" = "x86_64-unknown-linux-musl";
     };
   };
-
-  herdr = mkRuntimeStub {
-    name = "herdr";
-    repo = "herdrdev/herdr";
-    assetName = "herdr-$arch";
-    generatedAssets = [
-      {
-        path = "bash-completion/completions/herdr.bash";
-        args = [
-          "completion"
-          "bash"
-        ];
-      }
-      {
-        path = "fish/vendor_completions.d/herdr.fish";
-        args = [
-          "completion"
-          "fish"
-        ];
-      }
-      {
-        path = "zsh/site-functions/_herdr";
-        args = [
-          "completion"
-          "zsh"
-        ];
-      }
-      {
-        path = "herdr/skills/herdr/SKILL.md";
-        args = [ "--skill" ];
-      }
-    ];
-    installDir = ".local/bin";
-    arches = {
-      "Darwin/arm64" = "macos-aarch64";
-      "Darwin/x86_64" = "macos-x86_64";
-      "Linux/aarch64" = "linux-aarch64";
-      "Linux/arm64" = "linux-aarch64";
-      "Linux/x86_64" = "linux-x86_64";
-    };
-  };
 }

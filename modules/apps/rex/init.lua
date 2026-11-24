@@ -1,5 +1,5 @@
 -- Rex 設定:快捷鍵沿用 ghostty 的 cmd+s 前綴(../ghostty/config),
--- herdr 才有的功能(close tab、sidebar、popup)也掛在同一個前綴下(../herdr.nix)。
+-- close tab、sidebar、popup 也掛在同一個前綴下。
 -- 驗證:rex config check;home-manager switch 後會自動 rex config reload。
 -- 注意:在 app 用 Change Shortcut… 設的快捷鍵優先於本檔。
 
@@ -41,7 +41,7 @@ rex.bind("resize/enter", "client.mode.exit")
 
 -- tab
 rex.bind("cmd+s>t", "client.tab.new")
-rex.bind("cmd+s>shift+q", "client.tab.close") -- herdr close_tab
+rex.bind("cmd+s>shift+q", "client.tab.close")
 rex.bind("cmd+s>]", "client.tab.next")
 rex.bind("cmd+s>[", "client.tab.previous")
 rex.bind("cmd+s>,", "client.tab.move.backward")
@@ -52,7 +52,7 @@ for i = 1, 9 do
 	rex.bind("cmd+s>" .. i, "client.tab.goto", { index = i })
 end
 
--- session:對應 herdr 的 spaces 與 sidebar
+-- session 與 sidebar
 rex.bind("cmd+s>s", "session.switch")
 rex.bind("cmd+s>b", "client.sidebar.toggle")
 
@@ -64,7 +64,7 @@ rex.bind("cmd+s>/", "client.find.open")
 rex.bind("cmd+s>n", "client.find.next")
 rex.bind("cmd+s>shift+n", "client.find.previous")
 
--- popup:對應 herdr 的 popup 與 ghostty 的 quick terminal。
+-- popup:對應 ghostty 的 quick terminal。
 -- 在目前 tab 上開 80% 浮動層,cwd 跟著 focused pane,程式結束就關閉。
 -- 焦點已在浮動層裡時改為關閉該層,所以同一組鍵可開可關(cmd+s>q 也行)。
 -- 用 process 的 cwd 而非 pwd:zsh 沒回報 OSC 7 時 pwd 是空的。

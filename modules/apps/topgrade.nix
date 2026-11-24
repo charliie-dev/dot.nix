@@ -159,10 +159,6 @@
         # matches the NOPASSWD sudoers rule for /usr/local/bin/determinate-nixd;
         # if that rule ever disappears, -n fails loudly instead of prompting.
         "Determinate Nix upgrade" = "sudo -n /usr/local/bin/determinate-nixd upgrade";
-        # herdr bootstrap installs a self-managed binary under ~/.local/bin.
-        # No --handoff: the running server keeps the old version until its next
-        # restart instead of live-swapping mid-run.
-        "herdr" = "herdr update";
         # Check plugins out at the commits pinned in ~/.config/nvim/lazy-lock.json,
         # never at upstream HEAD. Runs after the git step has pulled the lockfile
         # (custom_commands is in misc.last). `clean` drops plugins removed from

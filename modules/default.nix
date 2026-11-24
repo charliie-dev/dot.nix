@@ -5,7 +5,6 @@
     ./platform
     ./runtime/bashka.nix
     ./runtime/docker.nix
-    ./runtime/herdr.nix
     ./runtime/mise.nix
     ./runtime/neovim.nix
     ./runtime/topgrade.nix

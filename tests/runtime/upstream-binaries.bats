@@ -15,83 +15,12 @@ teardown() {
   generation=$(nix build --no-link --print-out-paths --impure --expr \
     "let f = builtins.getFlake \"path:$REPO\"; in f.homeConfigurations.\"$(home_config_name)\".activationPackage")
 
-  run grep -E 'upgradeMise|upgradeTopgrade|upgradeHerdr' "$generation/activate"
+  run grep -E 'upgradeMise|upgradeTopgrade' "$generation/activate"
   [ "$status" -ne 0 ]
 }
 
-@test "herdr stub installs the verified native binary on first use" {
-  package=$(nix build --no-link --print-out-paths --impure --expr \
-    "let f = builtins.getFlake \"path:$REPO\"; in f.homeConfigurations.\"$(home_config_name)\".config.programs.herdr.package")
-  home="$TEST_ROOT/home"
-  payload="$TEST_ROOT/herdr"
-  cat > "$payload" <<'SH'
-#!/bin/sh
-case "${1-}" in
-  completion) printf 'native herdr %s completion\n' "$2" ;;
-  --skill) printf '# Native Herdr skill\n' ;;
-  *) printf 'native herdr: %s\n' "$*" ;;
-esac
-SH
-  chmod +x "$payload"
-
-  case "$(uname -s)/$(uname -m)" in
-    Darwin/arm64) arch=macos-aarch64 ;;
-    Darwin/x86_64) arch=macos-x86_64 ;;
-    Linux/aarch64 | Linux/arm64) arch=linux-aarch64 ;;
-    Linux/x86_64) arch=linux-x86_64 ;;
-    *) return 1 ;;
-  esac
-  tag=v1.2.3
-  asset_name="herdr-$arch"
-  asset_url="https://github.com/herdrdev/herdr/releases/download/$tag/$asset_name"
-  digest=$(nix hash file --type sha256 --base16 "$payload")
-  release_json="$TEST_ROOT/release.json"
-  jq -n \
-    --arg tag "$tag" \
-    --arg name "$asset_name" \
-    --arg url "$asset_url" \
-    --arg digest "sha256:$digest" \
-    '{tag_name: $tag, assets: [{name: $name, browser_download_url: $url, digest: $digest}]}' \
-    > "$release_json"
-
-  export FIXTURE_PAYLOAD="$payload" FIXTURE_RELEASE_JSON="$release_json"
-  curl() {
-    local output=""
-    while [ "$#" -gt 0 ]; do
-      if [ "$1" = -o ]; then
-        output=$2
-        shift 2
-      else
-        shift
-      fi
-    done
-    if [[ "$output" = */release.json ]]; then
-      cp "$FIXTURE_RELEASE_JSON" "$output"
-      printf 200
-    else
-      cp "$FIXTURE_PAYLOAD" "$output"
-    fi
-  }
-  export -f curl
-
-  stdout_file="$TEST_ROOT/stdout"
-  stderr_file="$TEST_ROOT/stderr"
-  run bash -c 'HOME="$1" XDG_DATA_HOME="$2" XDG_STATE_HOME="$3" "$4/bin/herdr" status > "$5" 2> "$6"' \
-    _ "$home" "$home/.local/share" "$home/.local/state" "$package" "$stdout_file" "$stderr_file"
-  [ "$status" -eq 0 ]
-  [ "$(cat "$stdout_file")" = "native herdr: status" ]
-  grep -q '^herdr bootstrap: installing v1.2.3$' "$stderr_file"
-  [ -x "$home/.local/bin/herdr" ]
-  cmp "$payload" "$home/.local/bin/herdr"
-  grep -q '^native herdr bash completion$' "$home/.local/share/bash-completion/completions/herdr.bash"
-  grep -q '^native herdr fish completion$' "$home/.local/share/fish/vendor_completions.d/herdr.fish"
-  grep -q '^native herdr zsh completion$' "$home/.local/share/zsh/site-functions/_herdr"
-  grep -q '^# Native Herdr skill$' "$home/.local/share/herdr/skills/herdr/SKILL.md"
-  [ ! -e "$package/share" ]
-}
-
 @test "runtime stubs do not depend on packaged upstream builds" {
-  for name in herdr mise topgrade; do
+  for name in mise topgrade; do
     package_drv=$(nix eval --raw --impure --expr \
       "let f = builtins.getFlake \"path:$REPO\"; in f.homeConfigurations.\"$(home_config_name)\".config.programs.$name.package.drvPath")
 
