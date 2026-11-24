@@ -39,10 +39,8 @@ hooks, memory, storage, dashboard, and UI settings.
   cannot be mistaken for a native fix. Use existing regression fixtures and an isolated test
   instance as needed; follow the shared-service constraints in memory. If live testing is blocked,
   distinguish fixture coverage from unverified provider behavior.
-- **Herdr and hooks:** when installed, check whether changed dock/status output affects
-  agent-state detection and whether imported versus native hooks duplicate each other. Locate the
-  integration's maintained source before proposing an adjustment; inspecting configuration does
-  not require controlling live panes.
+- **Hooks:** check whether imported versus native hooks duplicate each other. Locate the
+  integration's maintained source before proposing an adjustment.
 - **Skills, plugins, and language tooling:** check changed discovery rules, inherited sources,
   duplicate installations, and affected language-server file matching. Use the saved installation
   preference instead of repeating an old removal or reinstalling an already-correct setup.

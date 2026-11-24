@@ -1,6 +1,6 @@
 ---
 name: handoff
-description: "Hand the current conversation off to another agent session: write a handoff document, then optionally deliver it to an agent in a neighboring Rex pane (Herdr as fallback), either an existing session or a newly started Claude Code / Grok Build agent. Use when the user asks to hand off, pass, or transfer the current work, including mid-sentence mentions like \"/handoff to the right pane\"."
+description: "Hand the current conversation off to another agent session: write a handoff document, then optionally deliver it to an agent in a neighboring Rex pane, either an existing session or a newly started Claude Code / Grok Build agent. Use when the user asks to hand off, pass, or transfer the current work, including mid-sentence mentions like \"/handoff to the right pane\"."
 argument-hint: "Where the work goes and what the next session focuses on, e.g. \"to right pane with a new cc session\""
 ---
 
@@ -38,7 +38,7 @@ When the target pane is ambiguous, or more than one agent matches, ask the user 
 
 ## 3. Deliver
 
-Only when a pane destination was requested. Deliver through Rex when `REX_SESSION` is set and `rex whoami --json` succeeds. Otherwise, inside Herdr, follow [references/herdr.md](references/herdr.md). With neither, report the handoff file path and tell the user no multiplexer is available.
+Only when a pane destination was requested. Deliver through Rex when `REX_SESSION` is set and `rex whoami --json` succeeds. Otherwise, report the handoff file path and tell the user no multiplexer is available.
 
 The prompt to send is short and points at the file:
 

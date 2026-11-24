@@ -25,8 +25,8 @@ These are starting locations for this user's existing setup. Expand `~`, resolve
 actual paths and overrides, and open the named files before searching nearby.
 Confirm a moved source with the user using non-secret path information.
 
-- **Shared user rules:** [CLAUDE.md][rules] owns shell, authentication, tooling,
-  browser and Herdr rules.
+- **Shared user rules:** [CLAUDE.md][rules] owns shell, authentication, tooling
+  and browser rules.
 - **Claude configuration root:** `~/.config/claude`. Read relevant public fields
   in `settings.json`; read `tests/test_permissions.py` when permissions are
   involved.

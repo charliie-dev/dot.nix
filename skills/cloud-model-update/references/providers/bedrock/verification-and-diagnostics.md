@@ -88,8 +88,7 @@ uncertainty and precise next evidence request.
 
 Use this branch only when the user selects interactive diagnosis and explicitly
 authorizes the bounded interaction. The user starts the credential-bearing
-session. If Herdr is requested, load its current protocol with `herdr --skill`
-under the shared rules.
+session.
 
 1. Create a task-owned synthetic fixture with a fresh nonce. Give the user the
    current standalone launch command scoped to that fixture, the requested
