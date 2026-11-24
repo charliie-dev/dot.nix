@@ -263,7 +263,7 @@ PY
   [ "$output" = run-config-dir-fixtures-ok ]
 }
 
-@test "HERDR-ENV-SIMPLE-R5 source has no requirements or migration subsystem" {
+@test "AGENT-ENV-SIMPLE-R5 source has no requirements or migration subsystem" {
   run ! grep -q 'grokRequirements' "$MODULE"
   run ! grep -q 'grok/requirements.toml' "$MODULE"
   run ! grep -q 'grokPolicyMigration' "$MODULE"
@@ -271,7 +271,7 @@ PY
   run ! grep -q 'migrateGrokShellEnvironmentPolicy' "$MODULE"
 }
 
-@test "HERDR-ENV-SIMPLE-R5 mutable Grok validator accepts only the exact policy" {
+@test "AGENT-ENV-SIMPLE-R5 mutable Grok validator accepts only the exact policy" {
   runner="$(build_home_package doppler-run)"
   script="$(grep -o '/nix/store/[^ ]*doppler-run\.py' "$runner/bin/doppler-run" | head -n1)"
   python="$(grep -o '/nix/store/[^:]*python3[^:]*/bin' "$runner/bin/doppler-run" | head -n1)/python3"
@@ -291,8 +291,7 @@ if "bedrock-grok-token" in ns["PROFILES"]:
     sensitive.append("AWS_BEARER_TOKEN_BEDROCK")
 agent = [
     "PATH", "SHELL", "TMPDIR", "TEMP", "TMP", "HOME", "LANG", "LC_ALL",
-    "LC_CTYPE", "LOGNAME", "USER", "TYPESAFE_API_KEY", "HERDR_ENV", "HERDR_SOCKET_PATH",
-    "HERDR_WORKSPACE_ID", "HERDR_TAB_ID", "HERDR_PANE_ID",
+    "LC_CTYPE", "LOGNAME", "USER", "TYPESAFE_API_KEY",
 ]
 root = tempfile.mkdtemp()
 path = os.path.join(root, "config.toml")
@@ -332,8 +331,8 @@ rejected({**exact, "ignore_default_excludes": False})
 rejected({**exact, "include_only": [name for name in agent if name != "TYPESAFE_API_KEY"]})
 rejected({**exact, "exclude": sensitive + [sensitive[0]]})
 rejected({**exact, "include_only": agent + [agent[0]]})
-rejected({**exact, "include_only": [*agent[:-5], "HERDR_*"]})
-rejected({**exact, "include_only": [*agent[:-5], "herdr_env", *agent[-4:]]})
+rejected({**exact, "include_only": [*agent[:-1], "TYPESAFE_*"]})
+rejected({**exact, "include_only": [*agent[:-1], "typesafe_api_key"]})
 rejected({**exact, "include_only": [agent[1], agent[0], *agent[2:]]})
 print("mutable-grok-policy-ok")
 PY
@@ -341,7 +340,7 @@ PY
   [ "$output" = mutable-grok-policy-ok ]
 }
 
-@test "HERDR-ENV-S1 azure-grok internal launch pins policy root and preserves the complete tuple" {
+@test "AGENT-ENV-S1 azure-grok internal launch pins policy root" {
   runner="$(build_home_package doppler-run)"
   expected_home="$(configured_xdg_config_home)/grok"
   run env -i HOME="$HOME" PATH=/usr/bin:/bin \
@@ -350,71 +349,28 @@ PY
     AZURE_OPENAI_API_KEY=SYNTHETIC_PROFILE_VALUE \
     GROK_CONFIG=LOWER_PRECEDENCE_CONFIG GROK_CONFIG_PATH=LOWER_PRECEDENCE_CONFIG_PATH \
     GROK_HOME=LOWER_PRECEDENCE_HOME \
-    HERDR_ENV='env value $*' HERDR_SOCKET_PATH='/tmp/herdr socket=1' \
-    HERDR_WORKSPACE_ID='workspace:alpha' HERDR_TAB_ID='tab=beta' HERDR_PANE_ID='pane/gamma' \
     "$runner/bin/doppler-run" --internal-launch azure-grok -- /bin/sh -c \
-    'test "$HERDR_ENV" = "$1" && test "$HERDR_SOCKET_PATH" = "$2" && test "$HERDR_WORKSPACE_ID" = "$3" && test "$HERDR_TAB_ID" = "$4" && test "$HERDR_PANE_ID" = "$5" && test -z "${GROK_CONFIG+x}" && test -z "${GROK_CONFIG_PATH+x}" && test "$GROK_HOME" = "$6"' \
-    sh 'env value $*' '/tmp/herdr socket=1' 'workspace:alpha' 'tab=beta' 'pane/gamma' "$expected_home"
+    'test -z "${GROK_CONFIG+x}" && test -z "${GROK_CONFIG_PATH+x}" && test "$GROK_HOME" = "$1"' \
+    sh "$expected_home"
   [ "$status" -eq 0 ]
   [ -z "$output" ]
 }
 
-@test "HERDR-ENV-S1 azure-codex internal launch pins CODEX_HOME and preserves the complete tuple" {
+@test "AGENT-ENV-S1 azure-codex internal launch pins CODEX_HOME" {
   runner="$(build_home_package doppler-run)"
   expected_home="$(configured_xdg_config_home)/codex"
   run env -i HOME="$HOME" PATH=/usr/bin:/bin \
     DOPPLER_TOKEN=SYNTHETIC_BOOTSTRAP_TOKEN \
     DOPPLER_PROJECT=dot-nix DOPPLER_CONFIG=dev_personal DOPPLER_ENVIRONMENT=dev \
     AZURE_OPENAI_API_KEY=SYNTHETIC_PROFILE_VALUE CODEX_HOME=LOWER_PRECEDENCE_HOME \
-    HERDR_ENV='env value $*' HERDR_SOCKET_PATH='/tmp/herdr socket=1' \
-    HERDR_WORKSPACE_ID='workspace:alpha' HERDR_TAB_ID='tab=beta' HERDR_PANE_ID='pane/gamma' \
     "$runner/bin/doppler-run" --internal-launch azure-codex -- /bin/sh -c \
-    'test "$HERDR_ENV" = "$1" && test "$HERDR_SOCKET_PATH" = "$2" && test "$HERDR_WORKSPACE_ID" = "$3" && test "$HERDR_TAB_ID" = "$4" && test "$HERDR_PANE_ID" = "$5" && test "$CODEX_HOME" = "$6"' \
-    sh 'env value $*' '/tmp/herdr socket=1' 'workspace:alpha' 'tab=beta' 'pane/gamma' "$expected_home"
+    'test "$CODEX_HOME" = "$1"' \
+    sh "$expected_home"
   [ "$status" -eq 0 ]
   [ -z "$output" ]
 }
 
-@test "HERDR-ENV-S1 Codex trusted policy overrides every lower Herdr set key" {
-  codex_bin="$(command -v codex || true)"
-  if [ "$(uname -s)" != Darwin ] || [ -z "$codex_bin" ]; then
-    return 0
-  fi
-  fixture="$BATS_TEST_TMPDIR/codex-home"
-  sandbox_home="$BATS_TEST_TMPDIR/sandbox-home"
-  mkdir -p "$fixture" "$sandbox_home"
-  cat > "$fixture/config.toml" <<'TOML'
-[shell_environment_policy]
-set = { HERDR_ENV = "lower", HERDR_SOCKET_PATH = "lower", HERDR_WORKSPACE_ID = "lower", HERDR_TAB_ID = "lower", HERDR_PANE_ID = "lower" }
-TOML
-  run env -i HOME="$sandbox_home" PATH=/usr/bin:/bin CODEX_HOME="$fixture" \
-    HERDR_ENV=caller-env HERDR_SOCKET_PATH='caller socket' \
-    HERDR_WORKSPACE_ID=caller-workspace HERDR_TAB_ID=caller-tab HERDR_PANE_ID=caller-pane \
-    "$codex_bin" \
-    -c 'shell_environment_policy.inherit="all"' \
-    -c 'shell_environment_policy.include_only=["HERDR_ENV","HERDR_SOCKET_PATH","HERDR_WORKSPACE_ID","HERDR_TAB_ID","HERDR_PANE_ID"]' \
-    -c 'shell_environment_policy.ignore_default_excludes=false' \
-    -c 'shell_environment_policy.exclude=[]' \
-    -c 'shell_environment_policy.set.HERDR_ENV="caller-env"' \
-    -c 'shell_environment_policy.set.HERDR_SOCKET_PATH="caller socket"' \
-    -c 'shell_environment_policy.set.HERDR_WORKSPACE_ID="caller-workspace"' \
-    -c 'shell_environment_policy.set.HERDR_TAB_ID="caller-tab"' \
-    -c 'shell_environment_policy.set.HERDR_PANE_ID="caller-pane"' \
-    sandbox -- /bin/sh -c \
-    'test "$HERDR_ENV" = caller-env && test "$HERDR_SOCKET_PATH" = "caller socket" && test "$HERDR_WORKSPACE_ID" = caller-workspace && test "$HERDR_TAB_ID" = caller-tab && test "$HERDR_PANE_ID" = caller-pane'
-  [ "$status" -eq 0 ]
-}
-
-@test "HERDR-ENV-S1 Codex wrapper rejects a partial tuple before token access" {
-  codex="$(build_home_package codex-azure)"
-  wrapper="$codex/bin/codex-azure"
-  grep -Fq 'codex-azure: partial Herdr context is not allowed' "$wrapper"
-  run env -i HOME="$HOME" PATH=/usr/bin:/bin HERDR_ENV=partial "$wrapper"
-  [ "$status" -eq 2 ]
-  [ "$output" = "codex-azure: partial Herdr context is not allowed" ]
-}
-
-@test "HERDR-ENV-S1 Codex wrapper pins exact policy and rejects every accepted override form" {
+@test "AGENT-ENV-S1 Codex wrapper pins exact policy and rejects every accepted override form" {
   codex="$(build_home_package codex-azure)"
   wrapper="$codex/bin/codex-azure"
   pattern='-c | -c?* | --config | --config=* | -p | -p?* | --profile | --profile=* | --enable | --enable=* | --disable | --disable=*'
@@ -432,23 +388,11 @@ assert set(matches) == {"inherit", "include_only", "ignore_default_excludes", "e
 assert json.loads(matches["inherit"]) == "all"
 assert json.loads(matches["include_only"]) == [
     "PATH", "SHELL", "TMPDIR", "TEMP", "TMP", "HOME", "LANG", "LC_ALL",
-    "LC_CTYPE", "LOGNAME", "USER", "HERDR_ENV", "HERDR_SOCKET_PATH",
-    "HERDR_WORKSPACE_ID", "HERDR_TAB_ID", "HERDR_PANE_ID",
+    "LC_CTYPE", "LOGNAME", "USER",
 ]
 assert matches["ignore_default_excludes"] == "false"
 assert json.loads(matches["exclude"]) == ["AZURE_OPENAI_API_KEY"]
-block = re.search(r"herdr_context_names=\(\n(.*?)\n\s*\)", text, re.S)
-assert block is not None
-assert re.findall(r"\b[A-Z][A-Z0-9_]*\b", block.group(1)) == [
-    "HERDR_ENV", "HERDR_SOCKET_PATH", "HERDR_WORKSPACE_ID", "HERDR_TAB_ID",
-    "HERDR_PANE_ID",
-]
-assert "shell_environment_policy.set={}" not in text
-assert 'printf \'%s\' "$value"' in text
-assert "/bin/jq -Rs ." in text
-assert 'shell_environment_policy.set.$name=$json' in text
-assert 'value=""' in text
-assert text.index('"${trusted_herdr_args[@]}"') < text.rindex('"$@"')
+assert "shell_environment_policy.set" not in text
 assert "-c 'hooks=[]'" not in text
 assert "-c 'shell_snapshot=false'" not in text
 print("codex-policy-ok")

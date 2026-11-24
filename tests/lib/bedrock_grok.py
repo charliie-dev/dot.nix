@@ -225,13 +225,13 @@ class GrokContracts(unittest.TestCase):
             "AWS_BEARER_TOKEN_BEDROCK": FAKE_KEY,
             "AZURE_OPENAI_API_KEY": "SYNTHETIC_AZURE",
             "ANTHROPIC_API_KEY": "SYNTHETIC_ANTHROPIC",
-            "HERDR_PANE_ID": "synthetic-pane",
+            "REX_BLOCK": "synthetic-block",
             "GROK_HOME": "SYNTHETIC_HOME",
         }
         with mock.patch.dict(os.environ, environment, clear=True):
             result = GROK["launch_environment"](self.runtime)
         self.assertEqual(
-            result, {"GROK_HOME": str(self.home), "HERDR_PANE_ID": "synthetic-pane"}
+            result, {"GROK_HOME": str(self.home), "REX_BLOCK": "synthetic-block"}
         )
 
     def test_launch_clears_extra_credentials_and_preserves_typesafe(self):
@@ -249,7 +249,7 @@ class GrokContracts(unittest.TestCase):
         retained = {
             "HOME": str(self.root),
             "PATH": "/usr/bin:/bin",
-            "HERDR_PANE_ID": "synthetic-pane",
+            "REX_BLOCK": "synthetic-block",
             "TYPESAFE_API_KEY": "SYNTHETIC_ALLOWED_TYPESAFE",
             "UNRELATED_SETTING": "SYNTHETIC_UNRELATED",
         }
